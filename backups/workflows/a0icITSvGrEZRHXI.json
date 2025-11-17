@@ -1,0 +1,211 @@
+{
+  "createdAt": "2025-08-14T18:46:56.631Z",
+  "updatedAt": "2025-08-20T13:06:27.000Z",
+  "id": "a0icITSvGrEZRHXI",
+  "name": "Backup via código - Estudar",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "On clicking 'execute'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        368,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "c4060971-c884-4d54-b0cc-17f952234d94"
+    },
+    {
+      "parameters": {
+        "command": "npx n8n export:workflow --backup --output repo/workflows/"
+      },
+      "name": "Export Workflows",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [
+        576,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "30a7a091-1c2c-4117-bd9b-feb94694c850"
+    },
+    {
+      "parameters": {
+        "command": "npx n8n export:credentials --backup --output repo/credentials/"
+      },
+      "name": "Export Credentials",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [
+        720,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "4ab1ec5e-5ab5-47e1-a935-6688b7f31a32"
+    },
+    {
+      "parameters": {
+        "command": "git -C repo add ."
+      },
+      "name": "git add",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [
+        880,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "bb548ac2-5613-46a3-b2cc-f89f30a5538c"
+    },
+    {
+      "parameters": {
+        "command": "=git -C repo commit -m \"Auto backup ({{ new Date().toISOString() }})\""
+      },
+      "name": "git commit",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [
+        1024,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "f25e7711-720f-4f3e-a134-983fa9d85d8e"
+    },
+    {
+      "parameters": {
+        "command": "git -C repo push"
+      },
+      "name": "git push",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [
+        1168,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "6f1c4fbf-cbb5-4ae4-8f42-ff67046ae3f3"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 0
+            },
+            {
+              "hour": 12
+            },
+            {
+              "hour": 6
+            },
+            {
+              "hour": 18
+            }
+          ]
+        }
+      },
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        368,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "3c9ed466-59b8-49e5-82e5-c38f50938b4c"
+    }
+  ],
+  "connections": {
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "Export Workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "git add": {
+      "main": [
+        [
+          {
+            "node": "git commit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "git commit": {
+      "main": [
+        [
+          {
+            "node": "git push",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Export Workflows": {
+      "main": [
+        [
+          {
+            "node": "Export Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Export Credentials": {
+      "main": [
+        [
+          {
+            "node": "git add",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On clicking 'execute'": {
+      "main": [
+        [
+          {
+            "node": "Export Workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "1053"
+  },
+  "pinData": {},
+  "versionId": "710e593a-ee23-4597-afac-a0f1d1ed963c",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "createdAt": "2025-08-14T18:46:56.635Z",
+      "updatedAt": "2025-08-14T18:46:56.635Z",
+      "role": "workflow:owner",
+      "workflowId": "a0icITSvGrEZRHXI",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": [],
+  "hasBackup": false,
+  "backupData": null,
+  "backupUpdatedAt": null,
+  "parseError": "The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined",
+  "workflowId": "a0icITSvGrEZRHXI",
+  "workflowName": "Backup via código - Estudar",
+  "filePath": "backups/workflows/a0icITSvGrEZRHXI.json",
+  "workflowUpdatedAt": "2025-08-20T13:06:27.000Z",
+  "status": "CRIAR"
+}
