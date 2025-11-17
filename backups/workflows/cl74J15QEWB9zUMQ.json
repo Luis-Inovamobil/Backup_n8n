@@ -1,0 +1,254 @@
+{
+  "createdAt": "2025-08-25T12:31:23.955Z",
+  "updatedAt": "2025-09-19T12:02:31.000Z",
+  "id": "cl74J15QEWB9zUMQ",
+  "name": "WebHook Download - Produção",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "responseDataSource": "set",
+        "inputFieldName": "html",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              },
+              {
+                "name": "Content-Disposition",
+                "value": "=inline; filename={{$json[\"fileName\"]}}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        288,
+        -192
+      ],
+      "id": "591234c5-8840-4c50-af49-9fdc8e057c81",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "path": "visualizar-html",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        -192
+      ],
+      "id": "13a5b936-0a67-4907-826b-6a6bd806eb3b",
+      "name": "Webhook (GET /visualizar-html)",
+      "webhookId": "5ca624b5-a6b0-431a-8ea3-92ebaae76352"
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "responseDataSource": "set",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "={{$binary.data.mimeType || 'application/vnd.ms-excel'}}"
+              },
+              {
+                "name": "Content-Disposition",
+                "value": "=attachment; filename={{$binary.data.fileName || 'dados.xls'}}"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Accept, Accept-Language, Content-Language, Content-Type"
+              },
+              {
+                "name": "Access-Control-Expose-Headers",
+                "value": "Content-Disposition"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        16
+      ],
+      "id": "fc849c58-97f0-49da-8bd6-a5e927bae937",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "filePath": "={{$json.path}}",
+        "dataPropertyName": "html"
+      },
+      "id": "371c2797-d7e9-4d22-9dc3-a80b82c1f501",
+      "name": "Ler Arquivo HTML",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        48,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== utils =====\nfunction genId(n) {\n  const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';\n  let s = '';\n  for (let i = 0; i < (n || 14); i++) s += a[Math.floor(Math.random() * a.length)];\n  return s;\n}\nfunction esc(s) {\n  s = String(s == null ? '' : s);\n  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')\n          .replace(/>/g,'&gt;').replace(/\"/g,'&quot;');\n}\nfunction parsePipe(raw) {\n  const lines = String(raw || '')\n    .split(/\\r?\\n/)\n    .map(t => t.trim())\n    .filter(Boolean);\n  if (!lines.length) return { headers: [], rows: [] };\n\n  const split = (s) => s.split('|').map(x => x.trim());\n  const headers = split(lines[0]);\n  const rows = lines.slice(1).map(l => {\n    const cols = split(l);\n    while (cols.length < headers.length) cols.push('');\n    return cols.slice(0, headers.length);\n  });\n  return { headers, rows };\n}\nfunction buildWorkbookHtml(htmlTable) {\n  // Tudo com aspas simples e concatenação p/ evitar crases\n  var h = '';\n  h += '<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" ';\n  h += 'xmlns:x=\"urn:schemas-microsoft-com:office:excel\" ';\n  h += 'xmlns=\"http://www.w3.org/TR/REC-html40\">';\n  h += '<head><meta charset=\"utf-8\">';\n  h += '<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>';\n  h += '<x:ExcelWorksheet><x:Name>Dados</x:Name><x:WorksheetOptions>';\n  h += '<x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>';\n  h += '</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->';\n  h += '</head><body>';\n  h += htmlTable;\n  h += '</body></html>';\n  return h;\n}\nfunction toBinary(html, fileName) {\n  return [{\n    json: {\n      ok: true,\n      fileName: fileName,\n      fileExtension: 'xls',\n      mimeType: 'application/vnd.ms-excel'\n    },\n    binary: {\n      data: {\n        data: Buffer.from(html, 'utf8').toString('base64'),\n        mimeType: 'application/vnd.ms-excel',\n        fileName: fileName,\n        fileExtension: 'xls'\n      }\n    }\n  }];\n}\n\n// ===== entrada do webhook =====\n// O Webhook do n8n envia em $json.body\nconst j = $input.first().json || {};\nconst body = j.body || j; // garante nos dois formatos\n\nconst id = String(body.id || genId(12));\nconst rawText = body.rawText || body.text || body.sqloutput || '';\n\n// Se não vier rawText, devolve um XLS válido com aviso (p/ o Respond não quebrar)\nif (!rawText || !String(rawText).trim()) {\n  var tableEmpty = '';\n  tableEmpty += '<table border=\"1\">';\n  tableEmpty += '<thead><tr><th>Mensagem</th></tr></thead>';\n  tableEmpty += '<tbody><tr><td>Sem dados: rawText vazio ou não informado</td></tr></tbody>';\n  tableEmpty += '</table>';\n\n  const html = buildWorkbookHtml(tableEmpty);\n  return toBinary(html, 'dados_' + id + '_vazio.xls');\n}\n\n// Monta a tabela a partir do texto com pipes\nconst parsed = parsePipe(rawText);\nconst headers = parsed.headers;\nconst rows = parsed.rows;\n\nvar thead = '<tr>';\nfor (var i = 0; i < headers.length; i++) {\n  thead += '<th>' + esc(headers[i]) + '</th>';\n}\nthead += '</tr>';\n\nvar tbody = '';\nfor (var r = 0; r < rows.length; r++) {\n  var cols = rows[r];\n  tbody += '<tr>';\n  for (var c = 0; c < cols.length; c++) {\n    tbody += '<td>' + esc(cols[c]) + '</td>';\n  }\n  tbody += '</tr>';\n}\n\nvar table = '';\ntable += '<table border=\"1\">';\ntable += '<thead>' + thead + '</thead>';\ntable += '<tbody>' + tbody + '</tbody>';\ntable += '</table>';\n\n// Workbook HTML completo para Excel\nconst workbookHtml = buildWorkbookHtml(table);\n\n// Retorna binário no campo 'data' (o Respond vai ler esse campo)\nreturn toBinary(workbookHtml, 'dados_' + id + '.xls');\n"
+      },
+      "id": "bd637427-248b-4126-995f-dc0fdbc486b9",
+      "name": "Code — Montar caminho xls",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "command": "n8n --version\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        688,
+        -80
+      ],
+      "id": "bcaac47b-0b94-4bd1-87d1-5d18b8ab88db",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "let id = String($input.first().json.query.id || \"\").trim();\nif (!id) return [{ json: { error: \"Faltou ?id\" } }];\n\n// normaliza entradas: /tmp/..., id puro, visualizador_ID(.html)\nid = id.replace(/^\\/tmp\\//, \"\");\nif (!id.startsWith(\"visualizador_\")) id = `visualizador_${id}`;\nif (!id.endsWith(\".html\")) id = `${id}.html`;\n\nconst path = `/tmp/${id}`;\nreturn [{ json: { fileName: id, path } }];\n"
+      },
+      "id": "7df4de4d-af82-4543-ac72-8a5bb2add134",
+      "name": "Code — Montar arquivo HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "visualizar-xls",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        16
+      ],
+      "id": "a788f982-33b9-412c-a77a-b7de9996a76b",
+      "name": "Webhook (POST /visualizar-xls",
+      "webhookId": "2dfad1f6-a0de-4ed4-9b19-eeee557f773e"
+    }
+  ],
+  "connections": {
+    "Webhook (GET /visualizar-html)": {
+      "main": [
+        [
+          {
+            "node": "Code — Montar arquivo HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler Arquivo HTML": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — Montar caminho xls": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — Montar arquivo HTML": {
+      "main": [
+        [
+          {
+            "node": "Ler Arquivo HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook (POST /visualizar-xls": {
+      "main": [
+        [
+          {
+            "node": "Code — Montar caminho xls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "38973411-f819-4b40-a702-7e8d539cb3cb",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "createdAt": "2025-08-25T12:31:23.959Z",
+      "updatedAt": "2025-08-25T12:31:23.959Z",
+      "role": "workflow:owner",
+      "workflowId": "cl74J15QEWB9zUMQ",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": [],
+  "hasBackup": false,
+  "backupData": null,
+  "backupUpdatedAt": null,
+  "parseError": "The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined",
+  "workflowId": "cl74J15QEWB9zUMQ",
+  "workflowName": "WebHook Download - Produção",
+  "filePath": "backups/workflows/cl74J15QEWB9zUMQ.json",
+  "workflowUpdatedAt": "2025-09-19T12:02:31.000Z",
+  "status": "CRIAR"
+}
