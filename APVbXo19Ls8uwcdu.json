@@ -1,0 +1,465 @@
+{
+  "id": "APVbXo19Ls8uwcdu",
+  "name": "Vector Store - Datamobil Reader - Produção",
+  "createdAt": "2025-11-13T13:01:37.717Z",
+  "updatedAt": "2025-11-17T12:05:47.000Z",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1QQSmwbXjo0-jTDq2a0_TrhvPruhROeON",
+          "mode": "list",
+          "cachedResultName": "ReaderWeb.json",
+          "cachedResultUrl": "https://drive.google.com/file/d/1QQSmwbXjo0-jTDq2a0_TrhvPruhROeON/view?usp=drivesdk"
+        },
+        "options": {
+          "binaryPropertyName": "json"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1744,
+        -304
+      ],
+      "id": "9126d9a6-d6f5-4f58-9161-b28dbc94fecc",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "A7dItjE7OWcTVPSQ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "binaryPropertyName": "json",
+        "destinationKey": "***MASKED_SECRET***",
+        "options": {
+          "encoding": "utf8"
+        }
+      },
+      "id": "0ee02d41-2905-4db4-b0d1-f0d3757ef637",
+      "name": "Extract data from file",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -1520,
+        -304
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/vector_stores",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***MASKED_SECRET***"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"name\": \"schema_readerweb\",\n  \"metadata\": {\n    \"tipo\": \"schema\",\n    \"sistema\": \"ReaderWeb\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1616,
+        -592
+      ],
+      "id": "a05c65d4-1f7a-4176-bf19-45461bd9981d",
+      "name": "Criar arquivo vazio e pegar ID do Vector"
+    },
+    {
+      "parameters": {
+        "jsCode": "const schemaObj = $node[\"Extract data from file\"].json;\nconst schemaStr = JSON.stringify(schemaObj);\n\nreturn [\n  {\n    json: {},\n    binary: {\n      file: {\n        data: Buffer.from(schemaStr, \"utf8\"),\n        mimeType: \"application/json\",\n        fileName: \"schema.json\",\n      },\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        -304
+      ],
+      "id": "b56f7e42-a7c4-4397-a402-36e43fbab8e8",
+      "name": "Preparar arquivo para upload"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/files",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***MASKED_SECRET***"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "file"
+            },
+            {
+              "name": "purpose",
+              "value": "assistants"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        -304
+      ],
+      "id": "82340546-2c7f-4b4f-913b-11dc17272b3b",
+      "name": "Upload Arquivo OpenAI"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1968,
+        -304
+      ],
+      "id": "06a923c3-a246-46f5-af31-dfb82c88b704",
+      "name": "When chat message received",
+      "webhookId": "dcac3555-f32f-4c89-baa8-951ea57cbd79"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.openai.com/v1/vector_stores/{{ $('Transformar lista em Itens para deleção').item.json.vector_store_id }}/files",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***MASKED_SECRET***"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"file_id\": \"{{ $json.id }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        272,
+        -304
+      ],
+      "id": "6861b772-4654-474a-ad23-6595753f2d3b",
+      "name": "Anexar Arquivo no Vector store"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "89b13f78-d176-4de4-b9eb-0c861a70a953",
+              "name": "vector_store_id",
+              "value": "=vs_691735074a1081918f761d1dd6115160",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1248,
+        -304
+      ],
+      "id": "8a9c7939-00bc-43b2-8392-5cff7fb78f58",
+      "name": "Setar id do arquivo",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "=https://api.openai.com/v1/vector_stores/{{ $json.vector_store_id }}/files",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***MASKED_SECRET***"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -992,
+        -464
+      ],
+      "id": "f11146ff-616a-487e-99f6-d1a1cda17844",
+      "name": "Listar arquivos no Vector"
+    },
+    {
+      "parameters": {
+        "jsCode": "// resposta do GET: { data: [...] }\nconst files = $json.data || [];\n\n// pega o vector_store_id direto do nó \"Setar id do arquivo\"\nconst vectorStoreId = $items('Setar id do arquivo')[0].json.vector_store_id;\n\n// se não tiver arquivos, devolve um item “vazio” para o fluxo seguir\nif (!files.length) {\n  return [\n    {\n      json: {\n        vector_store_id: vectorStoreId,\n        has_files: false,\n      },\n    },\n  ];\n}\n\n// se tiver arquivos, gera um item por arquivo\nreturn files.map(f => ({\n  json: {\n    file_id: f.id,\n    vector_store_id: vectorStoreId,\n    has_files: true,\n  },\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        -464
+      ],
+      "id": "6eaf4b72-fbcf-4c17-bcc4-f695d67547c0",
+      "name": "Transformar lista em Itens para deleção"
+    },
+    {
+      "parameters": {
+        "content": "Processo de exclusão de arquivos anteriores para manter sempre o ultimo arquivo no Vector",
+        "height": 256,
+        "width": 784,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        -544
+      ],
+      "id": "6e4d3385-1146-44b4-977b-eb3eebcad4f6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e1d4b2d8-51e5-4760-937d-19bc0cc55456",
+              "leftValue": "={{ $json.has_files }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -624,
+        -464
+      ],
+      "id": "a0e85509-2548-4206-9557-4a2aaf34c63a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.openai.com/v1/vector_stores/{{ $json.vector_store_id }}/files/{{ $json.file_id }}\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***MASKED_SECRET***"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        -480
+      ],
+      "id": "fe30b61b-2fd9-4199-8665-945cb7882fd3",
+      "name": "Deletar arquivos anteriores",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract data from file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract data from file": {
+      "main": [
+        [
+          {
+            "node": "Setar id do arquivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar arquivo para upload": {
+      "main": [
+        [
+          {
+            "node": "Upload Arquivo OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Arquivo OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Anexar Arquivo no Vector store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar arquivo vazio e pegar ID do Vector": {
+      "main": [
+        []
+      ]
+    },
+    "Setar id do arquivo": {
+      "main": [
+        [
+          {
+            "node": "Listar arquivos no Vector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Listar arquivos no Vector": {
+      "main": [
+        [
+          {
+            "node": "Transformar lista em Itens para deleção",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transformar lista em Itens para deleção": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Deletar arquivos anteriores",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar arquivo para upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deletar arquivos anteriores": {
+      "main": [
+        [
+          {
+            "node": "Preparar arquivo para upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "35e0560b-86c8-4e18-bb8c-98f5d7029d1a",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "createdAt": "2025-11-13T13:01:37.729Z",
+      "updatedAt": "2025-11-13T13:01:37.729Z",
+      "role": "workflow:owner",
+      "workflowId": "APVbXo19Ls8uwcdu",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
