@@ -1,0 +1,214 @@
+{
+  "createdAt": "2025-08-13T19:43:57.968Z",
+  "updatedAt": "2025-11-05T17:43:23.000Z",
+  "id": "isqBHJiU5aRTKOmr",
+  "name": "Monitoramento de Clientes",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "allowUnauthorizedCerts": true,
+        "responseFormat": "string",
+        "options": {
+          "fullResponse": true,
+          "ignoreResponseCode": false
+        }
+      },
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1536,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "010242d8-7765-4f68-bc1c-a44801e44296",
+      "retryOnFail": false,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.error.status }}",
+              "operation": "notEqual",
+              "value2": "200"
+            }
+          ]
+        }
+      },
+      "name": "IF",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1264,
+        272
+      ],
+      "typeVersion": 1,
+      "id": "3e4a7ae1-5ff8-4655-897c-b45e42704d65"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 20,
+              "unit": "minutes"
+            }
+          ]
+        }
+      },
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        -2064,
+        144
+      ],
+      "typeVersion": 1,
+      "id": "7288b7a5-d476-493c-9746-a890209a4525"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = `https://gaviaopeixoto.fatura.gestaosaneamentoweb.com.br\nhttps://gaviaopeixoto.fatura.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://gaviaopeixoto.fatura.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://gaviaopeixoto.fatura.requerimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://analandia.fatura.gestaosaneamentoweb.com.br\nhttps://analandia.fatura.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://analandia.fatura.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://analandia.fatura.requerimento.gestaosaneamentoweb.com.br/api/versao\nhttps://analandia.fatura.atendimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://bandeiradosul.sfc.cwcsistemas.com.br\nhttps://bandeiradosul.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://bandeiradosul.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://bandeiradosul.sfc.requerimento.cwcsistemas.com.br/api/versao\nhttps://bandeiradosul.sfc.src.cwcsistemas.com.br/api/versao\n\nhttps://alfredochaves.sfc.gestaosaneamentoweb.com.br\nhttps://alfredochaves.sfc.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://alfredochaves.sfc.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://alfredochaves.sfc.requerimento.gestaosaneamentoweb.com.br/api/versao\nhttps://alfredochaves.sfc.atendimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://dombasilio.sfc.cwcsistemas.com.br/api/versao\nhttps://dombasilio.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://dombasilio.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://dombasilio.sfc.requerimento.cwcsistemas.com.br/api/versao\nhttps://dombasilio.sfc.src.cwcsistemas.com.br/api/versao\n\nhttps://raposa.sfc.gestaosaneamentoweb.com.br\nhttps://raposa.sfc.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://raposa.sfc.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://raposa.sfc.requerimento.gestaosaneamentoweb.com.br/api/versao\nhttps://raposa.sfc.atendimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://primavera.fatura.gestaosaneamentoweb.com.br\nhttps://primavera.fatura.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://primavera.fatura.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://primavera.fatura.requerimento.gestaosaneamentoweb.com.br/api/versao\nhttps://primavera.fatura.atendimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://capaonovo.gestaosaneamentoweb.com.br/api/versao\nhttps://capaonovo.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://capaonovo.faturamento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://iuna.sfc.cwcsistemas.com.br\nhttps://iuna.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://iuna.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://iuna.sfc.requerimento.cwcsistemas.com.br/api/versao\nhttps://iuna.sfc.atendimento.cwcsistemas.com.br/api/versao\n\nhttps://estreladonorte.sfc.cwcsistemas.com.br\nhttps://estreladonorte.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://estreladonorte.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://estreladonorte.sfc.requerimento.cwcsistemas.com.br/api/versao\nhttps://estreladonorte.sfc.atendimento.cwcsistemas.com.br/api/versao\n\nhttps://itapeba.sfc.cwcsistemas.com.br/api/versao\nhttps://itapeba.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://itapeba.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://itapeba.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://associacaosaojoseterraroxa.fatura.gestaosaneamentoweb.com.br\nhttps://associacaosaojoseterraroxa.fatura.pri.gestaosaneamentoweb.com.br/api/versao\nhttps://associacaosaojoseterraroxa.fatura.fat.gestaosaneamentoweb.com.br/api/versao\nhttps://associacaosaojoseterraroxa.fatura.req.gestaosaneamentoweb.com.br/api/versao\nhttps://associacaosaojoseterraroxa.fatura.ate.gestaosaneamentoweb.com.br/api/versao\n\nhttps://associacaosaofrancisco.fatura.gestaosaneamentoweb.com.br\nhttps://associacaosaofrancisco.fatura.pri.gestaosaneamentoweb.com.br/api/versao\nhttps://associacaosaofrancisco.fatura.fat.gestaosaneamentoweb.com.br/api/versao\nhttps://associacaosaofrancisco.fatura.ag.gestaosaneamentoweb.com.br/api/versao\nhttps://associacaosaofrancisco.fatura.ag.api.gestaosaneamentoweb.com.br/api/versao\n\nhttps://associacaocp.fatura.gestaosaneamentoweb.com.br\nhttps://associacaocp.fatura.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://associacaocp.fatura.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://associacaocp.fatura.requerimento.gestaosaneamentoweb.com.br/api/versao\nhttps://associacaocp.fatura.av.api.gestaosaneamentoweb.com.br/api/versao\n\nhttps://demo.sfc.cwcsistemas.com.br\nhttps://demo.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://demo.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://demo.sfc.requerimento.cwcsistemas.com.br/api/versao\nhttps://demo.sfc.atendimento.cwcsistemas.com.br/api/versao\nhttps://demo.sfc.bi.cwcsistemas.com.br/api/versao\n\nhttps://graopara.fatura.gestaosaneamentoweb.com.br\nhttps://graopara.fatura.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://graopara.fatura.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://graopara.fatura.requerimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://demonstracao.gestaosaneamentoweb.com.br\nhttps://demonstracao.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://demonstracao.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://demonstracao.requerimento.gestaosaneamentoweb.com.br/api/versao\nhttps://demonstracao.atendimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://jaguare.sfc.cwcsistemas.com.br\nhttps://jaguare.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://jaguare.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://jaguare.sfc.requerimento.cwcsistemas.com.br/api/versao\nhttps://jaguare.sfc.src.cwcsistemas.com.br/api/versao\n\nhttps://barcelos.sfc.cwcsistemas.com.br\nhttps://barcelos.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://barcelos.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://barcelos.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://ibicarai.sfc.cwcsistemas.com.br\nhttps://ibicarai.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://ibicarai.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://ibicarai.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://sooretama.sfc.cwcsistemas.com.br\nhttps://sooretama.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://sooretama.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://sooretama.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://guatapara.fatura.gestaosaneamentoweb.com.br\nhttps://guatapara.fatura.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://guatapara.fatura.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://guatapara.fatura.requerimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://macaubas.sfc.cwcsistemas.com.br\nhttps://macaubas.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://macaubas.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://macaubas.sfc.requerimento.cwcsistemas.com.br/api/versao\nhttps://macaubas.sfc.atendimento.cwcsistemas.com.br/api/versao\n\nhttps://paraisodasaguas.sfc.cwcsistemas.com.br\nhttps://paraisodasaguas.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://paraisodasaguas.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://paraisodasaguas.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://samisa.fatura.gestaosaneamentoweb.com.br\nhttps://samisa.fatura.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://samisa.fatura.faturamento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://saofrancisco.gestaosaneamentoweb.com.br\nhttps://saofrancisco.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://saofrancisco.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://saofrancisco.requerimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://demo.gestaosaneamentoweb.com.br\nhttps://demo.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://demo.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://demo.requerimento.gestaosaneamentoweb.com.br/api/versao\nhttps://demo.atendimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://cambui.sfc.cwcsistemas.com.br\nhttps://cambui.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://cambui.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://cambui.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://jaguariaiva.sfc.cwcsistemas.com.br\nhttps://jaguariaiva.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://jaguariaiva.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://jaguariaiva.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://santoantoniodoparaiso.sfc.cwcsistemas.com.br\nhttps://santoantoniodoparaiso.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://santoantoniodoparaiso.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://santoantoniodoparaiso.sfc.requerimento.cwcsistemas.com.br/api/versao\n\n\nhttps://vargemalta.sfc.cwcsistemas.com.br\nhttps://vargemalta.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://vargemalta.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://vargemalta.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://itapemirim.sfc.cwcsistemas.com.br\nhttps://itapemirim.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://itapemirim.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://itapemirim.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://humaita.sfc.cwcsistemas.com.br\nhttps://humaita.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://humaita.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://humaita.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://codo.gestaosaneamentoweb.com.br\nhttps://codo.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://codo.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://codo.requerimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://ibiracu.sfc.cwcsistemas.com.br\nhttps://ibiracu.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://ibiracu.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://ibiracu.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://itarana.sfc.cwcsistemas.com.br\nhttps://itarana.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://itarana.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://itarana.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://marilandia.sfc.cwcsistemas.com.br\nhttps://marilandia.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://marilandia.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://marilandia.sfc.requerimento.cwcsistemas.com.br/api/versao\n\nhttps://batatais.fatura.gestaosaneamentoweb.com.br\nhttps://batatais.fatura.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://batatais.fatura.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://batatais.fatura.requerimento.gestaosaneamentoweb.com.br/api/versao\nhttps://batatais.fatura.atendimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://corumbatai.fatura.gestaosaneamentoweb.com.br\nhttps://corumbatai.fatura.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://corumbatai.fatura.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://corumbatai.fatura.requerimento.gestaosaneamentoweb.com.br/api/versao\nhttps://corumbatai.fatura.atendimento.gestaosaneamentoweb.com.br/api/versao\n\nhttps://mossamedes.gestaosaneamentoweb.com.br\nhttps://mossamedes.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://mossamedes.faturamento.gestaosaneamentoweb.com.br/api/versao\n\n\nhttps://nanuque.sfc.cwcsistemas.com.br\nhttps://nanuque.sfc.principal.cwcsistemas.com.br/api/versao\nhttps://nanuque.sfc.faturamento.cwcsistemas.com.br/api/versao\nhttps://nanuque.sfc.requerimento.cwcsistemas.com.br/api/versao\nhttps://nanuque.sfc.atendimento.cwcsistemas.com.br/api/versao\nhttps://nanuque.sfc.bi.cwcsistemas.com.br/api/versao\n\nhttps://sjsafira.gestaosaneamentoweb.com.br\nhttps://sjsafira.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://sjsafira.faturamento.gestaosaneamentoweb.com.br/api/versao\n\n\nhttps://trespassos.gestaosaneamentoweb.com.br\nhttps://trespassos.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://trespassos.faturamento.gestaosaneamentoweb.com.br/api/versao\n\n\nhttps://sanengejequitiba.gestaosaneamentoweb.com.br\nhttps://sanengejequitiba.principal.gestaosaneamentoweb.com.br/api/versao\nhttps://sanengejequitiba.faturamento.gestaosaneamentoweb.com.br/api/versao\nhttps://sanengejequitiba.requerimento.gestaosaneamentoweb.com.br/api/versao`\n;\nconst lines = data.split(/\\r?\\n/).filter(line => line.trim() !== '');\nreturn lines.map(url => ({ json: { url } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1728,
+        240
+      ],
+      "id": "2de29e35-499d-41e4-975a-c94b07056e07",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "webhookUri": "https://discord.com/api/webhooks/1404449880520261704/xJH1w2R9K1BXOa4_-34Vv0geJlBMAo1B0SUMOVHoR3PYLf1X08fpMxTEYlON7mOrE9-H",
+        "text": "={{ $json.result.text }}",
+        "options": {}
+      },
+      "name": "Discord",
+      "type": "n8n-nodes-base.discord",
+      "position": [
+        -896,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "3e8169d3-1d07-45d9-842b-721fc18856ce"
+    },
+    {
+      "parameters": {
+        "chatId": "-4839166523",
+        "text": "=Atenção : Link : {{ $json.url }} está fora !!!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1056,
+        176
+      ],
+      "id": "0c1ecb96-b85f-4974-a248-03d8cdfccbb0",
+      "name": "Send a text message",
+      "webhookId": "4c2a8dca-cbc5-4c10-aa91-1912efa8b5ad",
+      "credentials": {
+        "telegramApi": {
+          "id": "dMpHryt4Rv5NnNUE",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [],
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "d28128e2-4585-4692-8abe-30e6734c5220",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "createdAt": "2025-08-13T19:43:57.971Z",
+      "updatedAt": "2025-08-13T19:43:57.971Z",
+      "role": "workflow:owner",
+      "workflowId": "isqBHJiU5aRTKOmr",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": [],
+  "hasBackup": false,
+  "backupData": null,
+  "backupUpdatedAt": null,
+  "parseError": "The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined",
+  "workflowId": "isqBHJiU5aRTKOmr",
+  "workflowName": "Monitoramento de Clientes",
+  "filePath": "backups/workflows/isqBHJiU5aRTKOmr.json",
+  "workflowUpdatedAt": "2025-11-05T17:43:23.000Z",
+  "status": "CRIAR"
+}
