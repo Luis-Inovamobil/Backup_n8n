@@ -1,0 +1,297 @@
+{
+  "createdAt": "2025-08-13T20:43:43.693Z",
+  "updatedAt": "2025-09-19T11:44:49.000Z",
+  "id": "9slXi6BPCBz9vPL7",
+  "name": "Base de Conhecimento",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 0.7,
+          "timeout": 25000
+        }
+      },
+      "id": "6ba139db-9139-43aa-bca3-0b2161f655db",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        624,
+        192
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "H4HnbIJCN7JE8cR5",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Use this tool to search the \"\" Notion app database.\n\nIt is structured with question and answer format. \nYou can filter query result by:\n- By keyword\n- filter by tag.\n\nKeyword and Tag have an OR relationship not AND.\n\n",
+        "method": "POST",
+        "url": "=https://api.notion.com/v1/databases/{{ $json.notionID }}/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"filter\": {\n    \"or\": [\n      {\n        \"property\": \"question\",\n        \"rich_text\": {\n          \"contains\": \"{keyword}\"\n        }\n      },\n      {\n        \"property\": \"tags\",\n        \"multi_select\": {\n          \"contains\": \"{tag}\"\n        }\n      }\n    ]\n  },\n  \"sorts\": [\n    {\n      \"property\": \"updated_at\",\n      \"direction\": \"ascending\"\n    }\n  ]\n}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "keyword",
+              "description": "Searches question of the record. Use one keyword at a time."
+            },
+            {
+              "name": "tag",
+              "description": "=Options: {{ $json.tagsOptions }}"
+            }
+          ]
+        }
+      },
+      "id": "c7b00a8b-8786-4276-bf48-74ca82ff75d8",
+      "name": "Search notion database",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "position": [
+        928,
+        192
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "notionApi": {
+          "id": "8XWYdi5Wz7rS1me9",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "database",
+        "databaseId": {
+          "__rl": true,
+          "value": "24deb46a-be79-8055-948c-d6b71bdad841",
+          "mode": "list",
+          "cachedResultName": "Company Knowledge Base",
+          "cachedResultUrl": "https://www.notion.so/24deb46abe798055948cd6b71bdad841"
+        },
+        "simple": false
+      },
+      "id": "b529c216-4397-4ea1-ae05-301dd01878df",
+      "name": "Get database details",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        368,
+        -64
+      ],
+      "typeVersion": 2.2,
+      "credentials": {
+        "notionApi": {
+          "id": "8XWYdi5Wz7rS1me9",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 4
+      },
+      "id": "85a6082e-2fed-4051-a7d4-3a55fdd42f18",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        768,
+        192
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a8e58791-ba51-46a2-8645-386dd1a0ff6e",
+              "name": "sessionId",
+              "type": "string",
+              "value": "={{ $('When chat message received').item.json.sessionId }}"
+            },
+            {
+              "id": "434209de-39d5-43d8-a964-0fcb7396306c",
+              "name": "action",
+              "type": "string",
+              "value": "={{ $('When chat message received').item.json.action }}"
+            },
+            {
+              "id": "cad4c972-51a9-4e16-a627-b00eea77eb30",
+              "name": "chatInput",
+              "type": "string",
+              "value": "={{ $('When chat message received').item.json.chatInput }}"
+            },
+            {
+              "id": "8e88876c-2714-494d-bd5e-5e80c99f83e3",
+              "name": "notionID",
+              "type": "string",
+              "value": "={{ $('Get database details').item.json.id }}"
+            },
+            {
+              "id": "a88a15f6-317c-4d2e-9d64-26f5ccaf7a97",
+              "name": "databaseName",
+              "type": "string",
+              "value": "={{ $json.title[0].text.content }}"
+            },
+            {
+              "id": "7c3bf758-8ed3-469a-8695-6777f4af4fb9",
+              "name": "tagsOptions",
+              "type": "string",
+              "value": "={{ $json.properties.tags.multi_select.options.map(item => item.name).join(',') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "13b3d007-ee05-4cea-97f6-0c636b62d309",
+      "name": "Format schema",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        560,
+        -64
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=# Role:\nYou are a helpful agent. Query the \"{{ $json.databaseName }}\" Notion database to find relevant records or summarize insights based on multiple records.\n\n# Behavior:\n\nBe clear, very concise, efficient, and accurate in responses. Do not hallucinate.\nIf the request is ambiguous, ask for clarification. Do not embellish, only use facts from the Notion records. Do not offer general advice.\n\n# Error Handling:\n\nIf no matching records are found, try alternative search criteria. Example 1: Laptop, then Computer, then Equipment. Example 2: meetings, then meeting.\nClearly explain any issues with queries (e.g., missing fields or unsupported filters).\n\n# Output:\n\nReturn concise, user-friendly results or summaries.\nFor large sets, show top results by default and offer more if needed. Output URLs in markdown format. \n\nWhen a record has the answer to user question, always output the URL to that page. Do not output links twice."
+        }
+      },
+      "id": "5e1101f0-61c3-4da4-8547-4849dc902fd1",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        768,
+        -64
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "=Happy {{ $today.weekdayLong }}!\nKnowledge source assistant at your service. How can I help you?",
+        "options": {
+          "subtitle": "",
+          "title": "Notion Knowledge Base"
+        }
+      },
+      "id": "71be43db-d11e-4f6b-aa58-98e66c63ca58",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        160,
+        -64
+      ],
+      "webhookId": "b76d02c0-b406-4d21-b6bf-8ad2c623def3",
+      "typeVersion": 1.1
+    }
+  ],
+  "connections": {
+    "Format schema": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get database details": {
+      "main": [
+        [
+          {
+            "node": "Format schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search notion database": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Get database details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "212a8fe3-43b8-40be-b494-fe4f167c2506",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "createdAt": "2025-08-13T20:43:43.695Z",
+      "updatedAt": "2025-08-13T20:43:43.695Z",
+      "role": "workflow:owner",
+      "workflowId": "9slXi6BPCBz9vPL7",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": [],
+  "hasBackup": false,
+  "backupData": null,
+  "backupUpdatedAt": null,
+  "parseError": "The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined",
+  "workflowId": "9slXi6BPCBz9vPL7",
+  "workflowName": "Base de Conhecimento",
+  "filePath": "backups/workflows/9slXi6BPCBz9vPL7.json",
+  "workflowUpdatedAt": "2025-09-19T11:44:49.000Z",
+  "status": "CRIAR"
+}
