@@ -1,0 +1,743 @@
+{
+  "createdAt": "2025-11-04T17:07:38.300Z",
+  "updatedAt": "2025-11-05T18:19:22.000Z",
+  "id": "9bt93ukszRciuu5D",
+  "name": "Datamobil - Reader Web + BI - Produção",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1QQSmwbXjo0-jTDq2a0_TrhvPruhROeON",
+          "mode": "list",
+          "cachedResultName": "ReaderWeb.json",
+          "cachedResultUrl": "https://drive.google.com/file/d/1QQSmwbXjo0-jTDq2a0_TrhvPruhROeON/view?usp=drivesdk"
+        },
+        "options": {
+          "binaryPropertyName": "json"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2704,
+        -128
+      ],
+      "id": "84ee14f6-c107-48fb-8c74-d34ac53fc775",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "A7dItjE7OWcTVPSQ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "5f3b3c30-78e9-4ed0-b520-9153664540ec",
+              "leftValue": "={{ $json.query }}",
+              "rightValue": "SELECT",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "46b1dd62-2b29-409b-81ed-590c3703721f",
+              "leftValue": "={{ $json.query }}",
+              "rightValue": "Olá",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ee982748-ed21-451c-b544-8ec62d992c3a",
+      "name": "Check if query exists",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1664,
+        48
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebbe194a-4b8b-44c9-ac19-03cf69d353bf",
+              "name": "query",
+              "type": "string",
+              "value": "={{ ($json.output) }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "e5717a01-76ec-4192-a29b-220dcbe51a36",
+      "name": "Extract SQL query",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1888,
+        -112
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f78c57d9-df13-43c7-89a7-5387e528107e",
+              "name": "chatinput",
+              "type": "string",
+              "value": "={{ $('When chat message received').item.json.chatInput }}"
+            },
+            {
+              "id": "e42b39eb-dfbd-48d9-94ed-d658bdd41454",
+              "name": "schema",
+              "type": "string",
+              "value": "={{ $json.json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "10f01f32-663d-417e-8daf-a2acf9137c1a",
+      "name": "Combine schema data and chat input",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -2368,
+        -128
+      ],
+      "executeOnce": true,
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "=Here is the database schema: {{ $json.schema }}\nHere is the user request: {{ $json.chatinput }}",
+        "options": {
+          "humanMessage": "TOOLS\n------\nAssistant can ask the user to use tools to look up information that may be helpful in answering the users original question. The tools the human can use are:\n\n{tools}\n\n{format_instructions}\n\nUSER'S INPUT\n--------------------\nHere is the user's input (remember to respond with a markdown code snippet of a json blob with a single action, and NOTHING else):\n\n{{input}}",
+          "systemMessage": "=Você é um gerador de SQL para MySQL 8.0+, guiado por um JSON chamado SCHEMA.\nSeu objetivo é gerar apenas consultas SELECT 100% válidas e coerentes com o SCHEMA.\nNunca produza instruções que criem, alterem, excluam ou modifiquem dados.\n\n⚙️ CONFIGURAÇÕES DE DIALETO E FORMATAÇÃO\n\nDialeto: MySQL 8.0+\n\nIdentificadores (tabelas e colunas): sempre entre crases → `...`\n\nStrings: entre aspas simples → 'texto'\n\nProibido:\n\nAspas duplas (\"...\")\n\nPrefixos de schema (ex.: public.)\n\nPonto e vírgula (;) ao final da query\n\nCase: respeitar exatamente o case do SCHEMA\n\nSeparador decimal: ponto .\n\nPalavras reservadas só podem ser usadas se estiverem entre crases.\n\n\n🔒 POLÍTICA DE SEGURANÇA\nSomente SELECT é permitido.\nNão posso criar, alterar, inserir ou deletar.\nReescreva seu pedido como um SELECT.\n\nComandos proibidos:\nINSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, TRUNCATE,\nGRANT, REVOKE, COMMENT, VACUUM, COPY, REFRESH, CALL, DO, BEGIN,\nCOMMIT, ROLLBACK, SET, LOCK, CLUSTER, REINDEX, DISCARD.\n\n\nSe o usuário pedir algo que envolva qualquer comando acima, responda somente com:\n\n❌ Somente SELECT é permitido. Não posso criar, alterar, inserir ou deletar. Reescreva seu pedido como um SELECT.\n\n\n\n🧩 REGRAS DE USO DO SCHEMA\n\nSó use colunas e tabelas que existem no SCHEMA JSON.\n\nRespeite os tipos, nomes e cases definidos.\n\nSe o campo solicitado não existir, responda:\n\n❌ Não é possível gerar a consulta porque o campo não existe no SCHEMA.\n\n\n🔁 USO DE METADADOS DO SCHEMA\n\nO SCHEMA JSON contém informações adicionais sobre cada tabela e coluna, incluindo:\n\nPolíticas de deduplicação (meta.deduplication)\n\nReferências mensais (meta.month_reference)\n\nEstrutura de pivot (meta.pivot)\n\nFunções de coluna (meta.role)\n\nSempre que esses metadados estiverem presentes:\n\nAplique automaticamente as regras de deduplicação:\nselecione apenas a linha mais recente por combinação de campos definidos em partition_by (geralmente CodigoMatriculaCliente + MesAnoReferência),\nusando ROW_NUMBER() e Sequencia DESC, sem usar agregações numéricas.\n\nQuando o pedido envolver duas ou mais referências de mês/ano,\nuse as definições de meta.pivot para gerar um PIVOT:\n\níndice: pivot.index\n\ncolunas: pivot.columns\n\nvalores: os campos solicitados que existam em pivot.value_fields\n\nformato: long_format se nenhum campo solicitado estiver na lista.\n\nNunca use SUM, AVG ou COUNT para eliminar duplicatas; respeite allow_numeric_aggregation=false.\n\nUse as expressões de data definidas em month_reference.to_date_expr para comparar ou ordenar períodos.\n\nSe o SCHEMA informar \"meta_class\": \"analytical_view\",\ninterprete essa tabela como visão de análise temporal, aplicando as regras acima automaticamente.\n\nMySQL 8 NÃO possui PIVOT: nunca use a palavra-chave PIVOT/UNPIVOT. Emule o pivot criando uma CTE por referência com ROW_NUMBER() (rn=1) e faça JOIN entre as CTEs por CodigoMatriculaCliente (ou LEFT+RIGHT+UNION quando precisar).”\n\n“Quando 2+ referências forem detectadas: proíbe SUM/AVG/COUNT/MAX/MIN e GROUP BY para deduplicar; use apenas janela + JOIN.”\n\n\n🧭 SAÍDA EM PIVOT (obrigatória para 2+ referências)\n- Se o pedido envolver `vhistóricodeleitura` e forem detectadas 2+ referências mensais:\n  • Gere PIVOT com índice `CodigoMatriculaCliente`, colunas `MesAnoReferência`\n  • Use como valores APENAS os campos solicitados que existam em `meta.pivot.value_fields`\n  • Sem agregação numérica; deduplique com ROW_NUMBER() por cliente/mês (Sequencia DESC)\n- Nome das colunas do PIVOT: <Campo>_<MM>_<YYYY> (ex.: ConsumoFaturado_06_2022).\n- ✅ CHECK DE CONFORMIDADE (obrigatório — não imprimir):\n  1) Existem pelo menos duas colunas cujo nome termina em _MM_YYYY?\n  2) Cada coluna de valor solicitada está replicada por mês? (ex.: ConsumoFaturado_06_2022 e ConsumoFaturado_07_2022)\n  3) A consulta contém a deduplicação por Sequencia (janela ou subconsulta)?\n  4) Não há SUM/AVG/COUNT para remover duplicidade.\nSe qualquer item falhar, regenere a consulta até atender aos quatro itens.\n\n\n\n\n🧮 COMPORTAMENTO GERAL\n\nGere apenas SELECTs legíveis e válidos.\n\nO foco é montar a query-base corretamente (sem regras de referência ou coorte).\n\nNão precisa aplicar as travas avançadas do modo anterior.\n\nPode usar agregações (SUM, AVG, COUNT, etc.) e WHERE, GROUP BY, ORDER BY, LIMIT.\n\n🔁 REGRAS ESPECÍFICAS PARA vhistóricodeleitura\n\nQuando a consulta mencionar “análise”, “comparar”, “referência”, “mês” ou “período”, e envolver a tabela vhistóricodeleitura,\nnão retorne linhas duplicadas por cliente e mês.\n\nNesse caso, retorne apenas uma linha por (CodigoMatriculaCliente, MesAnoReferência).\n\nNunca utilize funções de soma (SUM, COUNT, AVG, etc.) para eliminar duplicidades.\n\nUse o campo Sequencia como critério: selecione a linha de maior Sequencia (ou a última disponível) para cada combinação de cliente e referência.\n\nA query deve conter:\n\ncláusula PARTITION BY CodigoMatriculaCliente, MesAnoReferência\n\ne ROW_NUMBER() OVER (...) ou subconsulta equivalente,\n\nsem agregações matemáticas.\n\nExemplo de comportamento esperado:\n\nPedido: “Analise os consumos de 06 e 07/2022.”\nGeração correta: uma linha por cliente/mês, usando WHERE MesAnoReferência IN ('06/2022','07/2022') e lógica de deduplicação via Sequencia.\n\n\n📤 SAÍDA\n\nRetorne apenas o SQL final, sem explicações, sem comentários, e sem ponto e vírgula no fim.\n\n\n\n"
+        }
+      },
+      "id": "129ade7b-5bef-4cba-8167-d87bfcf2d901",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -2208,
+        64
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "binaryPropertyName": "json",
+        "destinationKey": "json",
+        "options": {
+          "encoding": "utf8"
+        }
+      },
+      "id": "434bc544-ba1f-41f3-88a8-1c81998d6d82",
+      "name": "Extract data from file",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -2528,
+        16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {
+          "maxTokens": 1024,
+          "temperature": 0.2
+        }
+      },
+      "id": "0824d734-30af-4156-8ee1-b8d9cc212c15",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -2288,
+        256
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "H4HnbIJCN7JE8cR5",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "id": "28b601d1-35e0-4bd9-8c4d-f0d23a58a867",
+      "name": "Window Buffer Memory1",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        -2128,
+        288
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b86f4807-aff3-42fb-a110-f43653368396",
+              "name": "Solicitacao",
+              "value": "={{ $json.query.Solicitacao }}",
+              "type": "string"
+            },
+            {
+              "id": "66447438-499c-4ab3-88ee-e20835aa7618",
+              "name": "CodigoIManager",
+              "value": "={{ $json.query.CodigoIManager }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3104,
+        -144
+      ],
+      "id": "50a3bfb6-e8f5-45c6-bd4f-6a447db7f2d0",
+      "name": "Setar informações de Parâmetros"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        144,
+        96
+      ],
+      "id": "60de495f-54b5-451a-911a-9b9aafdba2b3",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f8f105fa-8e7c-4309-9cd9-9a5c987ed77f",
+              "leftValue": "={{ $json.allowed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1344,
+        -144
+      ],
+      "id": "f4160a6f-5e76-4842-9ae5-b17cd5262483",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Run Once for All Items\n\nconst items = $input.all();\n\n// --- Utils ------------------------------------------------------------------\n\nfunction hasMeaningfulContent(o, depth = 0) {\n  if (o == null) return false;\n  if (typeof o !== 'object') return String(o).trim() !== '';\n  if (depth > 6) return true;\n  if (Array.isArray(o)) return o.some(v => hasMeaningfulContent(v, depth + 1));\n  const keys = Object.keys(o);\n  if (keys.length === 0) return false;\n  return keys.some(k => hasMeaningfulContent(o[k], depth + 1));\n}\n\nfunction collectErrorsDeep(obj, found = []) {\n  if (obj == null) return found;\n\n  const pushErr = (val) => {\n    if (val == null) return;\n    const msg = typeof val === 'object' ? JSON.stringify(val) : String(val);\n    if (msg.trim()) found.push(msg.trim());\n  };\n\n  if (Array.isArray(obj)) {\n    for (const v of obj) collectErrorsDeep(v, found);\n    return found;\n  }\n\n  if (typeof obj === 'object') {\n    for (const [k, v] of Object.entries(obj)) {\n      const lower = k.toLowerCase();\n      if (lower === 'erro' || lower === 'error') pushErr(v);\n      else if (lower === 'message' && typeof v === 'string') pushErr(v);\n      collectErrorsDeep(v, found);\n    }\n    return found;\n  }\n\n  return found;\n}\n\nfunction dedupStrings(arr) {\n  const seen = new Set();\n  const out = [];\n  for (const s of arr) if (!seen.has(s)) { seen.add(s); out.push(s); }\n  return out;\n}\n\n// Preferência do Luis: $json.message.content.data\nfunction extractUsefulPayload(j) {\n  if (Array.isArray(j?.message?.content?.data)) return j.message.content.data.slice();\n  if (Array.isArray(j?.data)) return j.data.slice();\n  if (hasMeaningfulContent(j)) return [j];\n  return [];\n}\n\nfunction normalizeList(list) {\n  return list\n    .map(x => (x?.json ?? x))\n    .filter(o => hasMeaningfulContent(o))\n    .map(o => (typeof o === 'object' ? o : { value: o }));\n}\n\n// Captura a query de forma resiliente (suporta Set, Function e mesmo payload)\nfunction safeGetQuery() {\n  // 1) Se a query veio nos itens de entrada\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const q = j.query ?? j.sql ?? j.consulta;\n    if (typeof q === 'string' && q.trim()) return q.trim();\n  }\n\n  // 2) Caso a query esteja em outro nó do fluxo\n  try {\n    // Altere o nome abaixo para o nó onde a SQL é montada (ex: \"Extract SQL query\" ou \"Montar Query\")\n    const fromNode = $items('Extract SQL query', 0, 0);\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const q = j.query ?? j.sql ?? j.consulta;\n      if (typeof q === 'string' && q.trim()) return q.trim();\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null; // não encontrada\n}\n\n// --- Fluxo ------------------------------------------------------------------\n\n// 1) Sem entradas\nif (!items || items.length === 0) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 2) Procure erros em todo o payload bruto\nlet erros = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  collectErrorsDeep(j, erros);\n}\nerros = dedupStrings(erros);\n\n// 3) Se achou erro, retorna somente { Erro }\nif (erros.length > 0) {\n  return [{ json: { Erro: erros[0] } }];\n}\n\n// 4) Extrair dados dos formatos suportados\nlet all = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  all.push(...extractUsefulPayload(j));\n}\n\n// 5) Fallback: cada item.json\nif (all.length === 0) {\n  all = items.map(i => i?.json ?? {});\n}\n\n// 6) Checar erros dentro da lista\nlet innerErrors = [];\ncollectErrorsDeep(all, innerErrors);\ninnerErrors = dedupStrings(innerErrors);\nif (innerErrors.length > 0) {\n  return [{ json: { Erro: innerErrors[0] } }];\n}\n\n// 7) Limpeza de dados\nconst rows = normalizeList(all);\n\n// 8) Captura a query (sem quebrar se não existir)\nconst query = safeGetQuery();\n\n// 9) Sem dados → erro padrão\nif (rows.length === 0) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 10) OK: retorna SEMPRE { data, query }\nreturn [{ json: { data: rows, query } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -816,
+        112
+      ],
+      "id": "2000731a-df11-4906-86b6-4c1e876239e9",
+      "name": "Repassar dados"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Entrada: { sql: \"SELECT ...\", userPrompt: \"...\" }  (ajuste nomes se preciso)\nlet sql = ($('Extract SQL query').first().json.query || \"\").trim();\n\n// 1) Remove comentários (-- e /* */) e normaliza espaços\nconst stripComments = s => {\n  // remove /* ... */ (multilinha)\n  s = s.replace(/\\/\\*[\\s\\S]*?\\*\\//g, ' ');\n  // remove -- até o fim da linha\n  s = s.replace(/--.*$/gm, ' ');\n  return s;\n};\nconst cleaned = stripComments(sql).replace(/\\s+/g, ' ').trim();\n\nconst forbidden = /\\b(SOMENTE|INSERT|UPDATE|DELETE|MERGE|CREATE|ALTER|DROP|TRUNCATE|GRANT|REVOKE|COMMENT|VACUUM|COPY|REFRESH|CALL|DO|BEGIN|COMMIT|ROLLBACK|SET|LOCK|CLUSTER|REINDEX|DISCARD)\\b/i;\nif (forbidden.test(cleaned)) {\n  return [{ \n    allowed: false, \n    reason: \"Contém comando proibido.\", \n    erro: `Somente SELECT é permitido. Não posso executar DDL/DML.\n    Detalhes: ` + $input.first().json.output\n  }];\n}\n\nreturn [{ allowed: true, sql }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1504,
+        -144
+      ],
+      "id": "9ddd8e81-a7b4-4107-8721-cf14770fec51",
+      "name": "Extrair query"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Run Once for Each Item\n// devolve UM item por entrada (sem colchetes)\nconst msg = $json.output; \nreturn {\n  json: {\n      erro:msg ?? \"Por favor, forneça a consulta ou pergunta específica que deseja realizar com base no esquema fornecido.\"\n  }\n};\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1472,
+        112
+      ],
+      "id": "34344049-3904-449d-b931-4c918980223b",
+      "name": "Mensagem de query inválida"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Run Once for Each Item\n/**\n const msg = \"Solicitação contém comando proibido, somente SELECT é permitido. Não posso executar DDL/DML.\";\n */\nconst msg = $json.erro;\nreturn {\n  json: { erro: msg }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        -48
+      ],
+      "id": "0937bfd0-72e4-4a75-b081-90cb82bb4804",
+      "name": "Mensagem de query Proibida"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoPorCliente = {\n  \"0001\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"3738\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"0962\": {\n    host: \"teste1.imanager.inovamobil.com.br\",\n    database: \"readerweb_0962\",\n    user: \"teste\",\n    senha: \"teste.1234@\",\n    porta: 3306,\n  },\n};\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? \"0962\");\nconst selected = configuracaoPorCliente[codigoIManager];\nif (!selected) {\n  throw new Error(\n    `Cliente ` + codigoIManager + ` não informado, favor validar para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: selected.host,\n    database: selected.database,\n    user: selected.user,\n    password: selected.senha,\n    port: selected.porta,\n  };\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2880,
+        16
+      ],
+      "id": "7367c789-8468-4bf5-b795-7847df2a8caa",
+      "name": "Constantes"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $json.sql }}",
+        "options": {}
+      },
+      "id": "2f49c7c0-7854-4e25-95d4-74463c82715b",
+      "name": "Executar query",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        -1056,
+        -208
+      ],
+      "typeVersion": 2.4,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "w2ul7xQhpE4d1ssF",
+          "name": "MySQL account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Em que posso lhe ajudar hoje ???",
+        "options": {
+          "subtitle": "Transformando linguagem de negócio em dados ✅",
+          "title": "=Boa tarde !!! Sou o Datamobil 📈"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -3328,
+        -224
+      ],
+      "id": "1382a5b8-2665-4730-b294-32f331864dad",
+      "name": "When chat message received",
+      "webhookId": "a3ad4161-30cb-4fc7-bcd4-e77756610d23"
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "=Here is the json with data: {{ $json.data }}",
+        "options": {
+          "humanMessage": "",
+          "systemMessage": "=Você deve produzir UM documento HTML completo (tema escuro, responsivo), com CSS e JS inline e APENAS o CDN do Chart.js:\n<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>\n\nENTRADA: receberá no conteúdo do usuário um JSON com a forma &#123; \"data\": [ ... ] &#125;.\n\nREGRAS:\n- Gere um dashboard com: cabeçalho “Visualização de Dados”, subtítulo com o motivo da visualização escolhida, KPIs (linhas/colunas e soma, média, min, max para métricas numéricas), visualização principal (Chart.js ou tabela dinâmica com busca/ordenação/paginação), botões “Baixar CSV” e “Baixar PNG” (toBase64Image()).\n- Inclua SEMPRE: <script>window.__DATA__ = &#123; ...JSON recebido literalmente... &#125;;</script>\n- Heurísticas: série temporal→linha; 1 categoria+1 métrica→pizza (≤8), barras verticais (9–15), barras horizontais (>15, com Top-N+“Outros”); 1 categoria+2–4 métricas→barras agrupadas; muitas colunas (>8) ou linhas (>200)→tabela; fallback→tabela.\n- Privacidade: mascarar CPF/CNPJ/documentos na tabela; não usar códigos longos como label de gráfico.\n\nSAÍDA OBRIGATÓRIA:\n- **Retorne SOMENTE o HTML bruto**, iniciando com <html> e terminando com </html>.\n- **Não** use markdown, não use cercas de código, não envolva o HTML entre aspas, não retorne JSON, “Final Answer” ou qualquer estrutura de ação.\n- Se a entrada não contiver \"data\", ainda assim gere o HTML.\n\nSe você escrever qualquer coisa além do HTML bruto completo, a resposta será descartada. Portanto, responda apenas com o HTML.\n"
+        }
+      },
+      "id": "4a194475-b8ea-4851-ae9e-387fa9f33ed9",
+      "name": "AI Agent1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -544,
+        48
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {
+          "maxTokens": 1024,
+          "temperature": 0.2
+        }
+      },
+      "id": "d5ba42bd-7cee-468d-a747-67559b4be76f",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -624,
+        240
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "H4HnbIJCN7JE8cR5",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "id": "e88229df-58db-45c4-a3fb-975a75e5f6a2",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        -464,
+        272
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recebe o JSON original do webhook em $item(0).$node[\"Webhook Entrada\"].json\n// e gera um HTML dark com KPIs + gráfico (heurística simples) + tabela dinâmica.\n\nconst original = $item(0).$node[\"Webhook Entrada\"].json || {};\nconst rows = Array.isArray(original.data) ? original.data : [];\nconst title = \"Visualização de Dados (Fallback)\";\nconst dataJson = JSON.stringify({ data: rows });\n\nfunction escapeHtml(s){ return String(s).replace(/[&<>\"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[m])); }\n\n// Heurística mínima: 1 categoria + 1 métrica ⇒ barras/pizza; senão tabela.\nlet labelKey = null, valueKey = null;\nif (rows.length) {\n  const sample = rows[0];\n  const keys = Object.keys(sample);\n  const numericKeys = keys.filter(k => typeof sample[k] === 'number' && isFinite(sample[k]));\n  const catKeys = keys.filter(k => typeof sample[k] !== 'number');\n\n  if (numericKeys.length >= 1 && catKeys.length >= 1) {\n    valueKey = numericKeys[0];\n    labelKey = catKeys[0];\n  }\n}\n\nconst html = `\n<html lang=\"pt-br\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>${escapeHtml(title)}</title>\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  <script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>\n  <style>\n    :root { --bg:#0f111a; --card:#1a1c2b; --text:#e5e7ef; --muted:#a0a3b7; --line:#2a2d3e; }\n    *{ box-sizing:border-box }\n    body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter,system-ui,Arial,sans-serif; }\n    header{ padding:20px 24px 8px; border-bottom:1px solid #222538; }\n    h1{ margin:0; font-size:20px; font-weight:700 }\n    .sub{ margin:6px 0 0; color:var(--muted); font-size:13px }\n    main{ padding:20px 24px; display:flex; flex-direction:column; gap:20px }\n    .row{ display:flex; flex-wrap:wrap; gap:16px }\n    .card{ background:var(--card); border-radius:16px; box-shadow:0 2px 12px rgb(0 0 0 / .4) }\n    .kpi{ padding:16px 20px; min-width:180px; flex:1 1 180px }\n    .kpi h3{ margin:0 0 6px; font-size:12px; color:#9ca3ff; letter-spacing:.3px }\n    .kpi .v{ font-size:18px; font-weight:700 }\n    .chart{ padding:16px 20px; height:520px; }\n    .btns{ display:flex; gap:12px; padding:0 20px 16px }\n    button{ background:#2e2f48; color:var(--text); border:none; border-radius:14px; padding:10px 16px; font-weight:600; cursor:pointer }\n    button:hover{ background:#44475a }\n    .tblwrap{ padding:16px 20px; overflow:auto }\n    table{ width:100%; border-collapse:collapse; font-size:14px }\n    th,td{ padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap }\n    th{ position:sticky; top:0; background:var(--card); cursor:pointer; user-select:none }\n    th.sort-asc::after{ content:\" ▲\"; font-size:12px }\n    th.sort-desc::after{ content:\" ▼\"; font-size:12px }\n    .toolbar{ display:flex; gap:12px; padding:0 20px 12px }\n    .toolbar input{ background:#2e2f48; color:var(--text); border:none; border-radius:10px; padding:8px 12px; min-width:220px }\n    .muted{ color:var(--muted); font-size:12px; padding:0 4px 12px 20px }\n  </style>\n</head>\n<body>\n  <header>\n    <h1>${escapeHtml(title)}</h1>\n    <p class=\"sub\">Fallback automático: gera visualização mesmo sem o agente.</p>\n  </header>\n  <main>\n    <section class=\"row\">\n      <div class=\"card kpi\"><h3>Registros</h3><div class=\"v\" id=\"k-rows\">-</div></div>\n      <div class=\"card kpi\"><h3>Colunas</h3><div class=\"v\" id=\"k-cols\">-</div></div>\n      <div class=\"card kpi\"><h3>Métrica (soma)</h3><div class=\"v\" id=\"k-sum\">-</div></div>\n      <div class=\"card kpi\"><h3>Métrica (média)</h3><div class=\"v\" id=\"k-avg\">-</div></div>\n    </section>\n\n    <section class=\"card chart\" id=\"chartSection\" style=\"${labelKey && valueKey ? '' : 'display:none'}\">\n      <canvas id=\"chart\"></canvas>\n      <div class=\"btns\"><button id=\"dlpng\" type=\"button\">Baixar PNG</button></div>\n      <p class=\"muted\" id=\"reason\"></p>\n    </section>\n\n    <section class=\"card\">\n      <div class=\"toolbar\">\n        <input id=\"q\" placeholder=\"Buscar...\" />\n      </div>\n      <div class=\"tblwrap\">\n        <table id=\"tbl\"><thead></thead><tbody></tbody></table>\n      </div>\n    </section>\n  </main>\n\n  <script>window.__DATA__ = ${dataJson};</script>\n  <script>\n    const raw = window.__DATA__ || { data: [] };\n    const rows = Array.isArray(raw.data) ? raw.data : [];\n    const fmt = n => (typeof n === 'number' && isFinite(n)) ? n.toLocaleString('pt-BR') : '-';\n\n    // KPIs\n    const cols = rows.length ? Object.keys(rows[0]) : [];\n    const numKeys = rows.length ? Object.keys(rows[0]).filter(k => typeof rows[0][k] === 'number' && isFinite(rows[0][k])) : [];\n    const firstMetric = numKeys[0];\n    let sum = 0, avg = 0;\n    if (rows.length && firstMetric) {\n      const vals = rows.map(r => Number(r[firstMetric]) || 0);\n      sum = vals.reduce((a,b)=>a+b,0);\n      avg = vals.length ? sum/vals.length : 0;\n    }\n    document.getElementById('k-rows').textContent = fmt(rows.length);\n    document.getElementById('k-cols').textContent = fmt(cols.length);\n    document.getElementById('k-sum').textContent  = firstMetric ? fmt(sum) : '-';\n    document.getElementById('k-avg').textContent  = firstMetric ? fmt(avg) : '-';\n\n    // Tabela\n    const thead = document.querySelector('#tbl thead');\n    const tbody = document.querySelector('#tbl tbody');\n    function renderHead(keys){\n      const tr = document.createElement('tr');\n      keys.forEach(k=>{\n        const th = document.createElement('th'); th.textContent = k;\n        th.onclick = ()=> sortBy(k);\n        tr.appendChild(th);\n      });\n      thead.innerHTML=''; thead.appendChild(tr);\n    }\n    let current = rows.slice();\n    function renderBody(list){\n      const keys = cols;\n      tbody.innerHTML='';\n      list.forEach(r=>{\n        const tr = document.createElement('tr');\n        keys.forEach(k=>{\n          const td = document.createElement('td');\n          let v = r[k];\n          if (k.match(/cpf|cnpj|documento/i) && typeof v === 'string' && v.length >= 5) {\n            v = v.slice(0,3) + '***' + v.slice(-2);\n          }\n          if (typeof v === 'number' && isFinite(v)) td.textContent = v.toLocaleString('pt-BR'); else td.textContent = v ?? '';\n          tr.appendChild(td);\n        });\n        tbody.appendChild(tr);\n      });\n    }\n    let sortState = { key:null, dir:1 };\n    function sortBy(k){\n      const keys = cols;\n      const ths = thead.querySelectorAll('th'); ths.forEach(th=>th.classList.remove('sort-asc','sort-desc'));\n      if (sortState.key === k) sortState.dir *= -1; else { sortState.key = k; sortState.dir = 1; }\n      current.sort((a,b)=>{\n        const va = a[k], vb = b[k];\n        if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sortState.dir;\n        return String(va ?? '').localeCompare(String(vb ?? ''), 'pt-BR') * sortState.dir;\n      });\n      const idx = keys.indexOf(k);\n      if (idx >= 0) ths[idx].classList.add(sortState.dir>0 ? 'sort-asc' : 'sort-desc');\n      renderBody(current);\n    }\n    renderHead(cols);\n    renderBody(current);\n\n    // Busca\n    const q = document.getElementById('q');\n    q.addEventListener('input', ()=>{\n      const s = q.value.toLowerCase();\n      current = rows.filter(r => cols.some(k => String(r[k] ?? '').toLowerCase().includes(s)));\n      renderBody(current);\n    });\n\n    // Gráfico simples (se labelKey/valueKey existirem)\n    ${labelKey && valueKey ? `\n      const reason = \"Comparativo 1×1: ${labelKey} × ${valueKey}\";\n      document.getElementById('reason').textContent = reason;\n      const ctx = document.getElementById('chart').getContext('2d');\n      const labels = rows.map(r => String(r['${labelKey}']));\n      const data = rows.map(r => Number(r['${valueKey}']) || 0);\n      const chart = new Chart(ctx, {\n        type: labels.length > 15 ? 'bar' : (labels.length <= 8 ? 'pie' : 'bar'),\n        data: {\n          labels,\n          datasets: [{ label: '${valueKey}', data }]\n        },\n        options: {\n          responsive: true,\n          plugins: { legend: { position: 'top' }, title: { display: true, text: '${valueKey}' } },\n          scales: { y: { beginAtZero: true } }\n        }\n      });\n      document.getElementById('dlpng').onclick = () => {\n        const a = document.createElement('a');\n        a.href = chart.toBase64Image(); a.download = 'grafico.png'; a.click();\n      };\n    ` : `\n      // Sem par (categoria, métrica) claro: gráfico oculto, apenas tabela/KPIs\n    `}\n  </script>\n</body>\n</html>\n`;\n\nreturn [{ json: { html, fromFallback: true } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        48
+      ],
+      "id": "88525609-7678-40c5-a3ff-f7a5303e85a9",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract data from file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if query exists": {
+      "main": [
+        [
+          {
+            "node": "Extrair query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem de query inválida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract SQL query": {
+      "main": [
+        [
+          {
+            "node": "Check if query exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine schema data and chat input": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract data from file": {
+      "main": [
+        [
+          {
+            "node": "Combine schema data and chat input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setar informações de Parâmetros": {
+      "main": [
+        [
+          {
+            "node": "Constantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Executar query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem de query Proibida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repassar dados": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair query": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de query inválida": {
+      "main": [
+        [
+          {
+            "node": "Repassar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de query Proibida": {
+      "main": [
+        [
+          {
+            "node": "Repassar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Constantes": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executar query": {
+      "main": [
+        [
+          {
+            "node": "Repassar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Setar informações de Parâmetros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "51a9a44f-ef66-4049-9cb6-47b0cef43fab",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "createdAt": "2025-11-04T17:07:38.311Z",
+      "updatedAt": "2025-11-04T17:07:38.311Z",
+      "role": "workflow:owner",
+      "workflowId": "9bt93ukszRciuu5D",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": [],
+  "hasBackup": false,
+  "backupData": null,
+  "backupUpdatedAt": null,
+  "parseError": "The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined",
+  "workflowId": "9bt93ukszRciuu5D",
+  "workflowName": "Datamobil - Reader Web + BI - Produção",
+  "filePath": "backups/workflows/9bt93ukszRciuu5D.json",
+  "workflowUpdatedAt": "2025-11-05T18:19:22.000Z",
+  "status": "CRIAR"
+}
