@@ -2,7 +2,7 @@
   "id": "48s0HC916sOlb6kW",
   "name": "Datamobil - Reader Web + Análise - Produção",
   "createdAt": "2025-09-01T14:36:59.509Z",
-  "updatedAt": "2025-11-14T18:48:28.000Z",
+  "updatedAt": "2025-11-17T20:19:21.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -85,7 +85,7 @@
               "id": "ebbe194a-4b8b-44c9-ac19-03cf69d353bf",
               "name": "query",
               "type": "string",
-              "value": "={{ ($json.output) }}"
+              "value": "={{ \n  ($json.output || [])\n    .find(o => o.type === 'message')\n    .content\n    .find(c => c.type === 'output_text')\n    .text \n}}"
             }
           ]
         },
@@ -96,7 +96,7 @@
       "name": "Extract SQL query",
       "type": "n8n-nodes-base.set",
       "position": [
-        -1648,
+        -1696,
         -16
       ],
       "typeVersion": 3.4
@@ -214,7 +214,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Run Once for All Items\n\nconst items = $input.all();\n\n// --- Utils ------------------------------------------------------------------\n\nfunction hasMeaningfulContent(o, depth = 0) {\n  if (o == null) return false;\n  if (typeof o !== 'object') return String(o).trim() !== '';\n  if (depth > 6) return true;\n  if (Array.isArray(o)) return o.some(v => hasMeaningfulContent(v, depth + 1));\n  const keys = Object.keys(o);\n  if (keys.length === 0) return false;\n  return keys.some(k => hasMeaningfulContent(o[k], depth + 1));\n}\n\nfunction collectErrorsDeep(obj, found = []) {\n  if (obj == null) return found;\n\n  const pushErr = (val) => {\n    if (val == null) return;\n    const msg = typeof val === 'object' ? JSON.stringify(val) : String(val);\n    if (msg.trim()) found.push(msg.trim());\n  };\n\n  if (Array.isArray(obj)) {\n    for (const v of obj) collectErrorsDeep(v, found);\n    return found;\n  }\n\n  if (typeof obj === 'object') {\n    for (const [k, v] of Object.entries(obj)) {\n      const lower = k.toLowerCase();\n      if (lower === 'erro' || lower === 'error') pushErr(v);\n      else if (lower === 'message' && typeof v === 'string') pushErr(v);\n      collectErrorsDeep(v, found);\n    }\n    return found;\n  }\n\n  return found;\n}\n\nfunction dedupStrings(arr) {\n  const seen = new Set();\n  const out = [];\n  for (const s of arr) if (!seen.has(s)) { seen.add(s); out.push(s); }\n  return out;\n}\n\n// Preferência do Luis: $json.message.content.data\nfunction extractUsefulPayload(j) {\n  if (Array.isArray(j?.message?.content?.data)) return j.message.content.data.slice();\n  if (Array.isArray(j?.data)) return j.data.slice();\n\n  // >>> AJUSTE 1: ignorar payload que é só { success: true }\n  if (j && typeof j === 'object') {\n    const keys = Object.keys(j);\n    if (keys.length === 1 && keys[0] === 'success') {\n      return [];\n    }\n  }\n\n  if (hasMeaningfulContent(j)) return [j];\n  return [];\n}\n\nfunction normalizeList(list) {\n  return list\n    .map(x => (x?.json ?? x))\n    .filter(o => hasMeaningfulContent(o))\n    .map(o => (typeof o === 'object' ? o : { value: o }));\n}\n\n// Captura a query de forma resiliente (suporta Set, Function e mesmo payload)\nfunction safeGetQuery() {\n  // 1) Se a query veio nos itens de entrada\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const q = j.query ?? j.sql ?? j.consulta;\n    if (typeof q === 'string' && q.trim()) return q.trim();\n  }\n\n  // 2) Caso a query esteja em outro nó do fluxo\n  try {\n    // Altere o nome abaixo para o nó onde a SQL é montada (ex: \"Extract SQL query\" ou \"Montar Query\")\n    const fromNode = $items('Extract SQL query', 0, 0);\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const q = j.query ?? j.sql ?? j.consulta;\n      if (typeof q === 'string' && q.trim()) return q.trim();\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null; // não encontrada\n}\n\nfunction safeGetPedidoCliente() {\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const q = j.query ?? j.sql ?? j.consulta;\n    if (typeof q === 'string' && q.trim()) return q.trim();\n  }\n\n  try {\n    const fromNode = $('Combine schema data and chat input').first().json.chatinput;\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const q = j.query ?? j.sql ?? j.consulta;\n      if (typeof q === 'string' && q.trim()) return q.trim();\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null; // não encontrada\n}\n\n\n// --- Fluxo ------------------------------------------------------------------\n\n// 1) Sem entradas\nif (!items || items.length === 0) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 2) Procure erros em todo o payload bruto\nlet erros = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  collectErrorsDeep(j, erros);\n}\nerros = dedupStrings(erros);\n\n// 3) Se achou erro, retorna somente { Erro }\nif (erros.length > 0) {\n  return [{ json: { Erro: erros[0] } }];\n}\n\n// 4) Extrair dados dos formatos suportados\nlet all = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  all.push(...extractUsefulPayload(j));\n}\n\n// 5) Fallback: cada item.json\nif (all.length === 0) {\n  all = items.map(i => i?.json ?? {});\n}\n\n// 6) Checar erros dentro da lista\nlet innerErrors = [];\ncollectErrorsDeep(all, innerErrors);\ninnerErrors = dedupStrings(innerErrors);\nif (innerErrors.length > 0) {\n  return [{ json: { Erro: innerErrors[0] } }];\n}\n\n// 7) Limpeza de dados\nconst rows = normalizeList(all);\n\n// 8) Captura a query (sem quebrar se não existir)\nconst query = safeGetQuery();\n\n// 9) Sem dados OU apenas um marcador de sucesso → erro padrão\n// >>> AJUSTE 2: tratar { success: true } como \"sem dados\"\nconst isOnlySuccess =\n  rows.length === 1 &&\n  rows[0] &&\n  typeof rows[0] === 'object' &&\n  Object.keys(rows[0]).length === 1 &&\n  Object.prototype.hasOwnProperty.call(rows[0], 'success');\n\nif (rows.length === 0 || isOnlySuccess) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 10) OK: retorna SEMPRE { data, query }\nreturn [{ json: { data: rows, query } }];\n"
+        "jsCode": "// Run Once for All Items\n\nconst items = $input.all();\n\n// --- Utils ------------------------------------------------------------------\n\nfunction hasMeaningfulContent(o, depth = 0) {\n  if (o == null) return false;\n  if (typeof o !== 'object') return String(o).trim() !== '';\n  if (depth > 6) return true;\n  if (Array.isArray(o)) return o.some(v => hasMeaningfulContent(v, depth + 1));\n  const keys = Object.keys(o);\n  if (keys.length === 0) return false;\n  return keys.some(k => hasMeaningfulContent(o[k], depth + 1));\n}\n\nfunction collectErrorsDeep(obj, found = []) {\n  if (obj == null) return found;\n\n  const pushErr = (val) => {\n    if (val == null) return;\n    const msg = typeof val === 'object' ? JSON.stringify(val) : String(val);\n    if (msg.trim()) found.push(msg.trim());\n  };\n\n  if (Array.isArray(obj)) {\n    for (const v of obj) collectErrorsDeep(v, found);\n    return found;\n  }\n\n  if (typeof obj === 'object') {\n    for (const [k, v] of Object.entries(obj)) {\n      const lower = k.toLowerCase();\n      if (lower === 'erro' || lower === 'error') pushErr(v);\n      else if (lower === 'message' && typeof v === 'string') pushErr(v);\n      collectErrorsDeep(v, found);\n    }\n    return found;\n  }\n\n  return found;\n}\n\nfunction dedupStrings(arr) {\n  const seen = new Set();\n  const out = [];\n  for (const s of arr) if (!seen.has(s)) { seen.add(s); out.push(s); }\n  return out;\n}\n\n// Preferência do Luis: $json.message.content.data\nfunction extractUsefulPayload(j) {\n  if (Array.isArray(j?.message?.content?.data)) return j.message.content.data.slice();\n  if (Array.isArray(j?.data)) return j.data.slice();\n  if (hasMeaningfulContent(j)) return [j];\n  return [];\n}\n\nfunction normalizeList(list) {\n  return list\n    .map(x => (x?.json ?? x))\n    .filter(o => hasMeaningfulContent(o))\n    .map(o => (typeof o === 'object' ? o : { value: o }));\n}\n\n// Captura a query de forma resiliente (suporta Set, Function e mesmo payload)\nfunction safeGetQuery() {\n  // 1) Se a query veio nos itens de entrada\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const q = j.query ?? j.sql ?? j.consulta;\n    if (typeof q === 'string' && q.trim()) return q.trim();\n  }\n\n  // 2) Caso a query esteja em outro nó do fluxo\n  try {\n    // Altere o nome abaixo para o nó onde a SQL é montada (ex: \"Extract SQL query\" ou \"Montar Query\")\n    const fromNode = $items('Extract SQL query', 0, 0);\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const q = j.query ?? j.sql ?? j.consulta;\n      if (typeof q === 'string' && q.trim()) return q.trim();\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null; // não encontrada\n}\n\n// ----------------------- USAGE (tokens) -------------------------------------\n\nfunction findUsageIn(obj) {\n  if (obj == null) return null;\n\n  if (Array.isArray(obj)) {\n    for (const el of obj) {\n      const found = findUsageIn(el);\n      if (found) return found;\n    }\n    return null;\n  }\n\n  if (typeof obj === 'object') {\n    if (obj.usage && typeof obj.usage === 'object') {\n      const u = obj.usage;\n      const total =\n        typeof u.total_tokens === 'number'\n          ? u.total_tokens\n          : (typeof u.input_tokens === 'number' && typeof u.output_tokens === 'number'\n              ? u.input_tokens + u.output_tokens\n              : undefined);\n\n      return {\n        input_tokens: typeof u.input_tokens === 'number' ? u.input_tokens : undefined,\n        output_tokens: typeof u.output_tokens === 'number' ? u.output_tokens : undefined,\n        total_tokens: typeof total === 'number' ? total : undefined,\n      };\n    }\n\n    for (const v of Object.values(obj)) {\n      const found = findUsageIn(v);\n      if (found) return found;\n    }\n  }\n\n  return null;\n}\n\nfunction safeGetUsage() {\n  // 1) Tenta achar usage nos próprios itens de entrada\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const usage = findUsageIn(j);\n    if (usage) return usage;\n  }\n\n  // 2) Tenta achar usage no nó \"GPT gerar query\"\n  try {\n    const fromNode = $items('GPT gerar query'); // <<--- AQUI entra o seu nó\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const usage = findUsageIn(j);\n      if (usage) return usage;\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null;\n}\n\n// --- Fluxo ------------------------------------------------------------------\n\n// 1) Sem entradas\nif (!items || items.length === 0) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 2) Procure erros em todo o payload bruto\nlet erros = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  collectErrorsDeep(j, erros);\n}\nerros = dedupStrings(erros);\n\n// 3) Se achou erro, retorna somente { Erro }\nif (erros.length > 0) {\n  return [{ json: { Erro: erros[0] } }];\n}\n\n// 4) Extrair dados dos formatos suportados\nlet all = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  all.push(...extractUsefulPayload(j));\n}\n\n// 5) Fallback: cada item.json\nif (all.length === 0) {\n  all = items.map(i => i?.json ?? {});\n}\n\n// 6) Checar erros dentro da lista\nlet innerErrors = [];\ncollectErrorsDeep(all, innerErrors);\ninnerErrors = dedupStrings(innerErrors);\nif (innerErrors.length > 0) {\n  return [{ json: { Erro: innerErrors[0] } }];\n}\n\n// 7) Limpeza de dados\nconst rows = normalizeList(all);\n\n// 8) Captura a query (sem quebrar se não existir)\nconst query = safeGetQuery();\n\n// 9) Captura usage da resposta do modelo (input_tokens, output_tokens, total_tokens)\nconst usage_GPT = safeGetUsage();\n\n// 10) Sem dados → erro padrão\nif (rows.length === 0) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 11) OK: retorna SEMPRE { data, query } + usage_GTP quando disponível\nconst payload = { data: rows, query };\n\nif (usage_GPT && Object.values(usage_GPT).some(v => v !== undefined && v !== null)) {\n  payload.usage_GPT_Query = usage_GPT;\n}\n\nreturn [{ json: payload }];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -323,8 +323,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1072,
-        48
+        1136,
+        80
       ],
       "id": "f9e5bb69-6886-4c20-b64a-2ad21ebd17ad",
       "name": "Unificar Resultado",
@@ -379,8 +379,8 @@
       "name": "Gerador de Query",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "position": [
-        -2000,
-        -16
+        -3120,
+        528
       ],
       "typeVersion": 1.6
     },
@@ -398,8 +398,8 @@
       "name": "Analista de Dados",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "position": [
-        144,
-        112
+        -2640,
+        544
       ],
       "typeVersion": 1.6
     },
@@ -415,8 +415,8 @@
       "name": "OpenAI Chat Model gerador de Query",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "position": [
-        -2112,
-        192
+        -3168,
+        784
       ],
       "typeVersion": 1,
       "credentials": {
@@ -436,8 +436,8 @@
       "name": "Window Buffer Memory Analista de dados",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "position": [
-        192,
-        352
+        -2480,
+        768
       ],
       "typeVersion": 1.2
     },
@@ -453,8 +453,8 @@
       "name": "OpenAI Chat Model Analista de dados",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "position": [
-        48,
-        352
+        -2672,
+        752
       ],
       "typeVersion": 1,
       "credentials": {
@@ -470,8 +470,8 @@
       "name": "Memória gerador de query",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "position": [
-        -1936,
-        192
+        -2928,
+        800
       ],
       "typeVersion": 1.2
     },
@@ -484,8 +484,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        672,
-        -64
+        752,
+        0
       ],
       "id": "cfd2c79a-f8a0-4c57-81ac-f967f386de88",
       "name": "Unificar saidas"
@@ -517,8 +517,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        864,
-        -64
+        976,
+        0
       ],
       "id": "de07ec64-29f3-43a1-989e-9e6fa8f3c3e0",
       "name": "Gerou algum erro ?1"
@@ -530,24 +530,11 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        1104,
-        -240
+        1184,
+        -192
       ],
       "id": "61889611-6081-4d92-af92-3b1bfcb583f5",
       "name": "Respond to Webhook1"
-    },
-    {
-      "parameters": {
-        "jsCode": "// === 1. CAPTURA DO BRUTO VINDO DO AGENT ===\nconst steps = $json.intermediateSteps ?? [];\n\nlet raw =\n  (steps.length\n    ? (\n        steps[steps.length - 1].output\n        ?? steps[steps.length - 1].toolOutput\n        ?? steps[steps.length - 1].result\n      )\n    : null\n  )\n  ?? $json.output\n  ?? $json.text\n  ?? $json.response\n  ?? \"\";\n\n// Se já vier objeto, ótimo, não precisa parsear string\nlet obj;\nif (raw && typeof raw === \"object\") {\n  obj = raw;\n} else {\n  // força string\n  raw = String(raw).trim()\n    // remove ```json ... ``` se vier\n    .replace(/^```(?:json)?\\s*/i, \"\")\n    .replace(/\\s*```$/i, \"\");\n\n  // se for string JSON dentro de string (aspas por fora), tenta desserializar uma vez\n  if (\n    (raw.startsWith('\"') && raw.endsWith('\"')) ||\n    (raw.startsWith(\"'\") && raw.endsWith(\"'\"))\n  ) {\n    try { raw = JSON.parse(raw); } catch {}\n  }\n\n  // se ainda for string, tenta extrair o primeiro bloco { ... }\n  if (typeof raw === \"string\") {\n    const m = raw.match(/\\{[\\s\\S]*\\}/m);\n    if (m) raw = m[0];\n  }\n\n  // === 2. FUNÇÃO DE PARSE COM HEURÍSTICA + NORMALIZAÇÃO ===\n  function tryParseWithBraceHeuristic(str) {\n    if (typeof str !== \"string\") return str;\n\n    // 2.1 normalizar escapes comuns gerados pelo modelo (\\n, \\t)\n    str = str.replace(/\\\\n/g, '\\n').replace(/\\\\t/g, '\\t');\n\n    // 2.2 normalizar números com separador de milhar do tipo \": 2,570\"\n    // Ex.: \"total_leituras\\\": 2,570,\"  =>  \"total_leituras\\\": 2570,\"\n    // Padrão: \":\" + espaços + até 3 dígitos + \",\" + 3 dígitos + (\",\" ou \"}\")\n    str = str.replace(\n      /(:\\s*)(-?\\d{1,3}),(\\d{3})(\\s*[,\\}])/g,\n      (_, prefixo, milhar, centena, sufixo) => `${prefixo}${milhar}${centena}${sufixo}`\n    );\n\n    // 2.3 tenta JSON.parse direto\n    try {\n      return JSON.parse(str);\n    } catch (e1) {\n      // 2.4 heurística de balanceamento de chaves\n      let depth = 0;\n      let inString = false;\n      let escape = false;\n      let lastCompleteIndex = -1;\n\n      for (let i = 0; i < str.length; i++) {\n        const ch = str[i];\n\n        if (escape) {\n          escape = false;\n          continue;\n        }\n        if (ch === '\\\\') {\n          escape = true;\n          continue;\n        }\n        if (ch === '\"' && !escape) {\n          inString = !inString;\n          continue;\n        }\n        if (inString) continue;\n\n        if (ch === '{') {\n          depth++;\n        } else if (ch === '}') {\n          depth--;\n          if (depth === 0) {\n            lastCompleteIndex = i;\n          }\n        }\n      }\n\n      if (lastCompleteIndex > -1) {\n        const candidate = str.slice(0, lastCompleteIndex + 1);\n        return JSON.parse(candidate);\n      } else {\n        throw e1;\n      }\n    }\n  }\n\n  let parsed;\n  try {\n    parsed = tryParseWithBraceHeuristic(raw);\n  } catch (eFinal) {\n    // se der ruim, devolve erro explicando\n    return [{\n      json: {\n        Diagnóstico: {\n          erro: \"Falha ao parsear JSON do Agent (mesmo após tentativa de reparo por chaves balanceadas e normalização de números)\",\n          detalhe: String(eFinal),\n          amostra: String(raw).slice(0, 500)\n        }\n      }\n    }];\n  }\n\n  obj = parsed;\n}\n\n// === 3. MAPA DE RENOMEAÇÃO (sem emoji -> com emoji) ===\n\nconst map = {\n   \"🧭contexto\": \"🧭 contexto\",\n  \"contexto\": \"contexto\",\n  \"📈 indicadores\": \"📈 indicadores\",\n  \"indicadores\": \"📈 indicadores\",\n  \"📝 descrição\": \"📝 descrição\",\n  \"descricao\": \"🧾 descrição\",\n  \"descrição\": \"🧾 descrição\",\n  \"🧾 descricao\": \"🧾 descrição\",\n  \"valores\": \"🔢 valores\",\n  \"🔢 valores\": \"🔢 valores\",\n    \"acoes\": \"⚙️ ações\",\n  \"ações\": \"⚙️ ações\",\n  \"⚙️ acoes\": \"⚙️ ações\",\n  \"resumo_consultivo\": \"🧷 resumo_consultivo\"\n};\n\nfunction renameKeys(o) {\n  if (o == null || typeof o !== \"object\") return o;\n\n  const out = {};\n  for (const [k, v] of Object.entries(o)) {\n    const nk = map[k] ?? k;\n    out[nk] = v;\n  }\n\n  // Ajusta sub-bloco de indicadores\n  if (out[\"📈 indicadores\"] && typeof out[\"📈 indicadores\"] === \"object\") {\n    const ind = out[\"📈 indicadores\"];\n    const indOut = {};\n    for (const [k, v] of Object.entries(ind)) {\n      const nk = map[k] ?? k;\n      indOut[nk] = v;\n    }\n    out[\"📈 indicadores\"] = indOut;\n  }\n\n  return out;\n}\n\nconst withEmoji = renameKeys(obj);\n\n// === 4. RETORNO FINAL ENVELOPADO ===\nreturn [{\n  json: {\n    Diagnóstico: withEmoji\n  }\n}];\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        480,
-        128
-      ],
-      "id": "5224de56-763e-4279-b199-9e5945ea5a58",
-      "name": "Formatar retorno GPT"
     },
     {
       "parameters": {
@@ -577,8 +564,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1280,
-        48
+        1360,
+        80
       ],
       "id": "db825670-9977-4a86-91e5-32c92d66488b",
       "name": "Formatar visualização",
@@ -618,17 +605,85 @@
         },
         "sendBody": true,
         "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4.1-mini\",\n  \"temperature\": 0.2,\n  \"input\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Você é BILL, consultor técnico e estratégico em saneamento. Analise pedido_cliente e resultado.data e produza somente um JSON válido, sem texto fora dele. Use exclusivamente resultado.data; não invente números.\\n\\nSe houver até 3 valores relevantes, seja direto; se houver mais, detalhe. Percentuais usam \\\"%\\\" e valores \\\"R$xx.xx\\\". Não use separador de milhar.\\n\\nEstrutura obrigatória (nomes das chaves devem ser exatamente estes):\\n- 🧭 contexto\\n- 📈 indicadores\\n  - 📝 descrição\\n  - 🔢 valores\\n    - principais_métricas\\n    - resumo_quantitativo\\n- 📋 análise_interpretativa\\n- 🧾 descrição\\n- ⚙️ ações (array de strings)\\n- 🧷 resumo_consultivo\\n\\nRegras numéricas:\\n- Use apenas valores de resultado.data.\\n- Em resumo_quantitativo, nunca contradiga principais_métricas.\\n- Se um total não puder ser consolidado, diga que a consolidação não é segura.\\n- Sempre use \\\"%\\\" para percentuais e \\\"R$\\\" para valores.\\n\\nCasos de leitura e ocorrência:\\n- Se houver leituristas: calcular total de leituras, leituras com ocorrência e percentual (duas casas, %).\\n- Se houver tipos de ocorrência: identificar as 2 ou 3 mais frequentes e citá-las.\\n- Garantir coerência entre totais e percentuais.\\n\\nSe resultado.data estiver vazio, retorne exatamente:\\n{\\n\\\"🧭 contexto\\\": \\\"—\\\",\\n\\\"📈 indicadores\\\": \\\"—\\\",\\n\\\"🧾 descrição\\\": \\\"—\\\",\\n\\\"📋 análise_interpretativa\\\": \\\"-\\\",\\n\\\"⚙️ ações\\\": [],\\n\\\"🧷 resumo_consultivo\\\": \\\"Não há dados suficientes para análise.\\\"\\n}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"PEDIDO DO CLIENTE:\\n{{ $json.envelope.pedido_cliente }}\\n\\nDADOS:\\n{{ JSON.stringify($json.envelope.resultado.data) }}\"\n    }\n  ],\n  \"max_output_tokens\": 2000\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        176
+      ],
+      "id": "2816c899-e1b2-4d80-96d5-5dc2dc58a61b",
+      "name": "GPT analisar dados"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***MASKED_SECRET***"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
         "jsonBody": "={\n  \"model\": \"gpt-4.1-mini\",\n  \"temperature\": 0.2,\n  \"input\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Você é um gerador de SQL para MySQL 8.0+, guiado por um JSON chamado SCHEMA.\\nSeu objetivo é gerar apenas consultas SELECT 100% válidas e coerentes com o SCHEMA.\\nNunca produza instruções que criem, alterem, excluam ou modifiquem dados.\\n\\n⚙️ CONFIGURAÇÕES DE DIALETO E FORMATAÇÃO\\n\\nDialeto: MySQL 8.0+\\n\\nIdentificadores (tabelas e colunas): sempre entre crases → `...`\\nStrings: entre aspas simples → 'texto'\\n\\nProibido:\\n- Aspas duplas (\\\"...\\\")\\n- Prefixes de schema (ex.: public.)\\n- Ponto e vírgula (;) ao final da query\\n\\nCase: respeitar exatamente o case do SCHEMA.\\nSeparador decimal: ponto .\\nPalavras reservadas só podem ser usadas se estiverem entre crases.\\n\\n🔒 POLÍTICA DE SEGURANÇA\\nSomente SELECT é permitido.\\nNão posso criar, alterar, inserir ou deletar.\\nReescreva seu pedido como um SELECT.\\n\\nComandos proibidos:\\nINSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, TRUNCATE,\\nGRANT, REVOKE, COMMENT, VACUUM, COPY, REFRESH, CALL, DO, BEGIN,\\nCOMMIT, ROLLBACK, SET, LOCK, CLUSTER, REINDEX, DISCARD.\\n\\nSe o usuário pedir algo que envolva qualquer comando acima, responda somente com:\\n\\\"❌ Somente SELECT é permitido. Não posso criar, alterar, inserir ou deletar. Reescreva seu pedido como um SELECT.\\\"\\n\\n🧩 REGRAS DE USO DO SCHEMA\\n\\nSó use colunas e tabelas que existem no SCHEMA JSON.\\nRespeite os tipos, nomes e cases definidos.\\nSe o campo solicitado não existir, responda:\\n\\\"❌ Não é possível gerar a consulta porque o campo não existe no SCHEMA.\\\"\\n\\n🔁 USO DE METADADOS DO SCHEMA\\n\\nO SCHEMA JSON contém informações adicionais sobre cada tabela e coluna, incluindo:\\n- Políticas de deduplicação (meta.deduplication)\\n- Referências mensais (meta.month_reference)\\n- Estrutura de pivot (meta.pivot)\\n- Funções de coluna (meta.role)\\n\\nSempre que esses metadados estiverem presentes:\\n- Aplique automaticamente as regras de deduplicação: selecione apenas a linha mais recente por combinação de campos definidos em partition_by (geralmente CodigoMatriculaCliente + MesAnoReferência), usando ROW_NUMBER() e Ordenacão DESC, sem usar agregações numéricas.\\n- Quando o pedido envolver duas ou mais referências de mês/ano, use as definições de meta.pivot para gerar um PIVOT:\\n  • índice: pivot.index\\n  • colunas: pivot.columns\\n  • valores: os campos solicitados que existam em pivot.value_fields\\n  • formato: long_format se nenhum campo solicitado estiver na lista.\\n- Nunca use SUM, AVG ou COUNT para eliminar duplicatas; respeite allow_numeric_aggregation=false.\\n- Use as expressões de data definidas em month_reference.to_date_expr para comparar ou ordenar períodos.\\n- Se o SCHEMA informar \\\"meta_class\\\": \\\"analytical_view\\\", interprete essa tabela como visão de análise temporal, aplicando as regras acima automaticamente.\\n\\nMySQL 8 NÃO possui PIVOT: nunca use a palavra-chave PIVOT/UNPIVOT. Emule o pivot criando uma CTE por referência com ROW_NUMBER() (rn=1) e faça JOIN entre as CTEs por CodigoMatriculaCliente (ou LEFT+RIGHT+UNION quando precisar).\\nQuando 2+ referências forem detectadas: proíba SUM/AVG/COUNT/MAX/MIN e GROUP BY para deduplicar; use apenas janela + JOIN.\\n\\n🧭 SAÍDA EM PIVOT (obrigatória para 2+ referências)\\n- Se o pedido envolver `vCliente` e forem detectadas 2+ referências mensais:\\n  • Gere PIVOT com índice `CodigoMatriculaCliente`, colunas `MesAnoReferência`.\\n  • Use como valores APENAS os campos solicitados que existam em `meta.pivot.value_fields`.\\n  • Sem agregação numérica; deduplique com ROW_NUMBER() por cliente/mês (Ordenacão DESC).\\n- Nome das colunas do PIVOT: <Campo>_<MM>_<YYYY> (ex.: ConsumoFaturado_06_2022).\\n- CHECK DE CONFORMIDADE (obrigatório — não imprimir em texto):\\n  1) Existem pelo menos duas colunas cujo nome termina em _MM_YYYY?\\n  2) Cada coluna de valor solicitada está replicada por mês? (ex.: ConsumoFaturado_06_2022 e ConsumoFaturado_07_2022)\\n  3) A consulta contém a deduplicação por Ordenacão (janela ou subconsulta)?\\n  4) Não há SUM/AVG/COUNT para remover duplicidade.\\n  Se qualquer item falhar, regenere a consulta até atender aos quatro itens.\\n\\n🧮 COMPORTAMENTO GERAL\\n\\nGere apenas SELECTs legíveis e válidos.\\nO foco é montar a query-base corretamente.\\nPode usar agregações (SUM, AVG, COUNT, etc.) e WHERE, GROUP BY, ORDER BY, LIMIT.\\n\\n📤 SAÍDA\\nRetorne apenas o SQL final, sem explicações, sem comentários, e sem ponto e vírgula no fim.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.chatinput }}\"\n    }\n  ],\n  \"tools\": [\n    {\n      \"type\": \"file_search\",\n      \"vector_store_ids\": [\n        \"vs_691735074a1081918f761d1dd6115160\"\n      ]\n    }\n  ],\n  \"max_output_tokens\": 5000\n}\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        640,
-        640
+        -1952,
+        -16
       ],
-      "id": "2816c899-e1b2-4d80-96d5-5dc2dc58a61b",
-      "name": "GPT analisar dados"
+      "id": "4b1a8398-009d-4333-a9db-bf397c7de2ec",
+      "name": "GPT gerar query"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebbe194a-4b8b-44c9-ac19-03cf69d353bf",
+              "name": "analise",
+              "type": "string",
+              "value": "={{ \n  ($json.output || [])\n    .find(o => o.type === 'message')\n    .content\n    .find(c => c.type === 'output_text')\n    .text \n}}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "4b9f74f3-c0d4-4980-a768-aa9cc5b1f11e",
+      "name": "Formatar retorno GTP analista",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        368,
+        176
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "jsCode": "// Run Once for All Items\n\nconst items = $input.all();\n\nfunction findUsageIn(obj) {\n  if (obj == null) return null;\n\n  if (Array.isArray(obj)) {\n    for (const el of obj) {\n      const found = findUsageIn(el);\n      if (found) return found;\n    }\n    return null;\n  }\n\n  if (typeof obj === 'object') {\n    if (obj.usage && typeof obj.usage === 'object') {\n      const u = obj.usage;\n      const total =\n        typeof u.total_tokens === 'number'\n          ? u.total_tokens\n          : (typeof u.input_tokens === 'number' && typeof u.output_tokens === 'number'\n              ? u.input_tokens + u.output_tokens\n              : undefined);\n\n      return {\n        input_tokens: typeof u.input_tokens === 'number' ? u.input_tokens : undefined,\n        output_tokens: typeof u.output_tokens === 'number' ? u.output_tokens : undefined,\n        total_tokens: typeof total === 'number' ? total : undefined,\n      };\n    }\n\n    for (const v of Object.values(obj)) {\n      const found = findUsageIn(v);\n      if (found) return found;\n    }\n  }\n\n  return null;\n}\n\nfunction safeGetUsage() {\n  // 1) Tenta achar usage nos próprios itens de entrada\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const usage = findUsageIn(j);\n    if (usage) return usage;\n  }\n\n  // 2) Tenta achar usage no nó \"GPT gerar query\"\n  try {\n    const fromNode = $items('GPT analisar dados'); // <<--- AQUI entra o seu nó\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const usage = findUsageIn(j);\n      if (usage) return usage;$input.first().json.output[1].content[0].text\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null;\n}\n\n\n// 8) Captura a query (sem quebrar se não existir)\nconst Analise = $input.first().json.output[1].content[0].text;\n\n// 9) Captura usage da resposta do modelo (input_tokens, output_tokens, total_tokens)\nconst usage_GPT = safeGetUsage();\n\n\n// 11) OK: retorna SEMPRE { data, query } + usage_GTP quando disponível\nconst payload = { Analise };\n\nif (usage_GPT && Object.values(usage_GPT).some(v => v !== undefined && v !== null)) {\n  payload.usage_GPT_Analista = usage_GPT;\n}\n\nreturn [{ json: payload }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        176
+      ],
+      "id": "5224de56-763e-4279-b199-9e5945ea5a58",
+      "name": "Gerar dados do GTP Analista"
     }
   ],
   "connections": {
@@ -676,7 +731,7 @@
       "main": [
         [
           {
-            "node": "Gerador de Query",
+            "node": "GPT gerar query",
             "type": "main",
             "index": 0
           }
@@ -798,7 +853,7 @@
       "main": [
         [
           {
-            "node": "Analista de Dados",
+            "node": "GPT analisar dados",
             "type": "main",
             "index": 0
           }
@@ -836,24 +891,12 @@
     },
     "Gerador de Query": {
       "main": [
-        [
-          {
-            "node": "Extract SQL query",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Analista de Dados": {
       "main": [
-        [
-          {
-            "node": "Formatar retorno GPT",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "OpenAI Chat Model gerador de Query": {
@@ -929,17 +972,6 @@
         ]
       ]
     },
-    "Formatar retorno GPT": {
-      "main": [
-        [
-          {
-            "node": "Unificar saidas",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
     "When chat message received": {
       "main": [
         [
@@ -961,6 +993,50 @@
           }
         ]
       ]
+    },
+    "GPT analisar dados": {
+      "main": [
+        [
+          {
+            "node": "Formatar retorno GTP analista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT gerar query": {
+      "main": [
+        [
+          {
+            "node": "Extract SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar retorno GTP analista": {
+      "main": [
+        [
+          {
+            "node": "Gerar dados do GTP Analista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar dados do GTP Analista": {
+      "main": [
+        [
+          {
+            "node": "Unificar saidas",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -971,7 +1047,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "780ff91e-81b8-4440-9ae2-6999b74b8daf",
+  "versionId": "fa714207-c80a-4109-8fcc-d58be75cf431",
   "triggerCount": 1,
   "shared": [
     {
