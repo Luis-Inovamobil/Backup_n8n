@@ -1,0 +1,584 @@
+{
+  "id": "AUOQnmMSojavOkaz",
+  "name": "Datamobil - Reader Web - Homologação",
+  "createdAt": "2025-09-19T11:57:06.859Z",
+  "updatedAt": "2025-11-17T12:07:03.000Z",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "5f3b3c30-78e9-4ed0-b520-9153664540ec",
+              "leftValue": "={{ $json.query }}",
+              "rightValue": "SELECT",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "46b1dd62-2b29-409b-81ed-590c3703721f",
+              "leftValue": "={{ $json.query }}",
+              "rightValue": "Olá",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5c66fb25-ca59-4fca-a0d5-7e12162ff53b",
+      "name": "Check if query exists",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -224,
+        224
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebbe194a-4b8b-44c9-ac19-03cf69d353bf",
+              "name": "query",
+              "type": "string",
+              "value": "={{ \n  ($json.output || [])\n    .find(o => o.type === 'message')\n    .content\n    .find(c => c.type === 'output_text')\n    .text \n}}\n"
+            },
+            {
+              "id": "07a07725-b8c8-4de4-8728-507776b4631d",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "4700e28e-2fcc-4073-9916-f53bff7ce3a6",
+      "name": "Extract SQL query",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -432,
+        224
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f78c57d9-df13-43c7-89a7-5387e528107e",
+              "name": "chatinput",
+              "type": "string",
+              "value": "={{ $('When chat message received').item.json.chatInput }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4ecd91d8-8f5f-46dd-9c88-c2a2b6bac0a4",
+      "name": "Combine schema data and chat input",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -880,
+        224
+      ],
+      "executeOnce": true,
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the database schema: {{ $json.schema }}\nHere is the user request: {{ $json.chatinput }}",
+        "options": {
+          "systemMessage": "Você é um gerador de SQL para MySQL 8.0+, guiado por um JSON chamado SCHEMA.\nSeu objetivo é gerar apenas consultas SELECT 100% válidas e coerentes com o SCHEMA.\nNunca produza instruções que criem, alterem, excluam ou modifiquem dados.\n\n⚙️ CONFIGURAÇÕES DE DIALETO E FORMATAÇÃO\n\nDialeto: MySQL 8.0+\n\nIdentificadores (tabelas e colunas): sempre entre crases → `...`\n\nStrings: entre aspas simples → 'texto'\n\nProibido:\n\nAspas duplas (\"...\")\n\nPrefixos de schema (ex.: public.)\n\nPonto e vírgula (;) ao final da query\n\nCase: respeitar exatamente o case do SCHEMA\n\nSeparador decimal: ponto .\n\nPalavras reservadas só podem ser usadas se estiverem entre crases.\n\n\n🔒 POLÍTICA DE SEGURANÇA\nSomente SELECT é permitido.\nNão posso criar, alterar, inserir ou deletar.\nReescreva seu pedido como um SELECT.\n\nComandos proibidos:\nINSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, TRUNCATE,\nGRANT, REVOKE, COMMENT, VACUUM, COPY, REFRESH, CALL, DO, BEGIN,\nCOMMIT, ROLLBACK, SET, LOCK, CLUSTER, REINDEX, DISCARD.\n\n\nSe o usuário pedir algo que envolva qualquer comando acima, responda somente com:\n\n❌ Somente SELECT é permitido. Não posso criar, alterar, inserir ou deletar. Reescreva seu pedido como um SELECT.\n\n\n\n🧩 REGRAS DE USO DO SCHEMA\n\nSó use colunas e tabelas que existem no SCHEMA JSON.\n\nRespeite os tipos, nomes e cases definidos.\n\nSe o campo solicitado não existir, responda:\n\n❌ Não é possível gerar a consulta porque o campo não existe no SCHEMA.\n\n\n🔁 USO DE METADADOS DO SCHEMA\n\nO SCHEMA JSON contém informações adicionais sobre cada tabela e coluna, incluindo:\n\nPolíticas de deduplicação (meta.deduplication)\n\nReferências mensais (meta.month_reference)\n\nEstrutura de pivot (meta.pivot)\n\nFunções de coluna (meta.role)\n\nSempre que esses metadados estiverem presentes:\n\nAplique automaticamente as regras de deduplicação:\nselecione apenas a linha mais recente por combinação de campos definidos em partition_by (geralmente CodigoMatriculaCliente + MesAnoReferência),\nusando ROW_NUMBER() e Sequencia DESC, sem usar agregações numéricas.\n\nQuando o pedido envolver duas ou mais referências de mês/ano,\nuse as definições de meta.pivot para gerar um PIVOT:\n\níndice: pivot.index\n\ncolunas: pivot.columns\n\nvalores: os campos solicitados que existam em pivot.value_fields\n\nformato: long_format se nenhum campo solicitado estiver na lista.\n\nNunca use SUM, AVG ou COUNT para eliminar duplicatas; respeite allow_numeric_aggregation=false.\n\nUse as expressões de data definidas em month_reference.to_date_expr para comparar ou ordenar períodos.\n\nSe o SCHEMA informar \"meta_class\": \"analytical_view\",\ninterprete essa tabela como visão de análise temporal, aplicando as regras acima automaticamente.\n\nMySQL 8 NÃO possui PIVOT: nunca use a palavra-chave PIVOT/UNPIVOT. Emule o pivot criando uma CTE por referência com ROW_NUMBER() (rn=1) e faça JOIN entre as CTEs por CodigoMatriculaCliente (ou LEFT+RIGHT+UNION quando precisar).”\n\n“Quando 2+ referências forem detectadas: proíbe SUM/AVG/COUNT/MAX/MIN e GROUP BY para deduplicar; use apenas janela + JOIN.”\n\n\n🧭 SAÍDA EM PIVOT (obrigatória para 2+ referências)\n- Se o pedido envolver `vhistóricodeleitura` e forem detectadas 2+ referências mensais:\n  • Gere PIVOT com índice `CodigoMatriculaCliente`, colunas `MesAnoReferência`\n  • Use como valores APENAS os campos solicitados que existam em `meta.pivot.value_fields`\n  • Sem agregação numérica; deduplique com ROW_NUMBER() por cliente/mês (Sequencia DESC)\n- Nome das colunas do PIVOT: <Campo>_<MM>_<YYYY> (ex.: ConsumoFaturado_06_2022).\n- ✅ CHECK DE CONFORMIDADE (obrigatório — não imprimir):\n  1) Existem pelo menos duas colunas cujo nome termina em _MM_YYYY?\n  2) Cada coluna de valor solicitada está replicada por mês? (ex.: ConsumoFaturado_06_2022 e ConsumoFaturado_07_2022)\n  3) A consulta contém a deduplicação por Sequencia (janela ou subconsulta)?\n  4) Não há SUM/AVG/COUNT para remover duplicidade.\nSe qualquer item falhar, regenere a consulta até atender aos quatro itens.\n\n\n\n\n🧮 COMPORTAMENTO GERAL\n\nGere apenas SELECTs legíveis e válidos.\n\nO foco é montar a query-base corretamente (sem regras de referência ou coorte).\n\nNão precisa aplicar as travas avançadas do modo anterior.\n\nPode usar agregações (SUM, AVG, COUNT, etc.) e WHERE, GROUP BY, ORDER BY, LIMIT.\n\n🔁 REGRAS ESPECÍFICAS PARA vhistóricodeleitura\n\nQuando a consulta mencionar “análise”, “comparar”, “referência”, “mês” ou “período”, e envolver a tabela vhistóricodeleitura,\nnão retorne linhas duplicadas por cliente e mês.\n\nNesse caso, retorne apenas uma linha por (CodigoMatriculaCliente, MesAnoReferência).\n\nNunca utilize funções de soma (SUM, COUNT, AVG, etc.) para eliminar duplicidades.\n\nUse o campo Sequencia como critério: selecione a linha de maior Sequencia (ou a última disponível) para cada combinação de cliente e referência.\n\nA query deve conter:\n\ncláusula PARTITION BY CodigoMatriculaCliente, MesAnoReferência\n\ne ROW_NUMBER() OVER (...) ou subconsulta equivalente,\n\nsem agregações matemáticas.\n\nExemplo de comportamento esperado:\n\nPedido: “Analise os consumos de 06 e 07/2022.”\nGeração correta: uma linha por cliente/mês, usando WHERE MesAnoReferência IN ('06/2022','07/2022') e lógica de deduplicação via Sequencia.\n\n\n📤 SAÍDA\n\nRetorne apenas o SQL final, sem explicações, sem comentários, e sem ponto e vírgula no fim.\n",
+          "returnIntermediateSteps": true
+        }
+      },
+      "id": "8474706d-616e-4755-8e97-54a21025c574",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -1504,
+        480
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "6aa2b068-0f1c-421b-a736-6d7cce55e282",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -1600,
+        688
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "H4HnbIJCN7JE8cR5",
+          "name": "OpenAi datamobil_Reader"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "27848bbf-58bd-47e4-b291-6050669cd103",
+      "name": "Window Buffer Memory1",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        -1360,
+        672
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b86f4807-aff3-42fb-a110-f43653368396",
+              "name": "Solicitacao",
+              "value": "={{ $json.query.Solicitacao }}",
+              "type": "string"
+            },
+            {
+              "id": "66447438-499c-4ab3-88ee-e20835aa7618",
+              "name": "CodigoIManager",
+              "value": "={{ $json.query.CodigoIManager }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1328,
+        224
+      ],
+      "id": "d8c23f77-a966-4bf3-bcf9-710691fe683e",
+      "name": "Setar informações de Parâmetros"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f8f105fa-8e7c-4309-9cd9-9a5c987ed77f",
+              "leftValue": "={{ $json.allowed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        80
+      ],
+      "id": "628eac20-6381-4156-9e33-433d3c96a33e",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Run Once for All Items\n\nconst items = $input.all();\n\n// --- Utils ------------------------------------------------------------------\n\nfunction hasMeaningfulContent(o, depth = 0) {\n  if (o == null) return false;\n  if (typeof o !== 'object') return String(o).trim() !== '';\n  if (depth > 6) return true;\n  if (Array.isArray(o)) return o.some(v => hasMeaningfulContent(v, depth + 1));\n  const keys = Object.keys(o);\n  if (keys.length === 0) return false;\n  return keys.some(k => hasMeaningfulContent(o[k], depth + 1));\n}\n\nfunction collectErrorsDeep(obj, found = []) {\n  if (obj == null) return found;\n\n  const pushErr = (val) => {\n    if (val == null) return;\n    const msg = typeof val === 'object' ? JSON.stringify(val) : String(val);\n    if (msg.trim()) found.push(msg.trim());\n  };\n\n  if (Array.isArray(obj)) {\n    for (const v of obj) collectErrorsDeep(v, found);\n    return found;\n  }\n\n  if (typeof obj === 'object') {\n    for (const [k, v] of Object.entries(obj)) {\n      const lower = k.toLowerCase();\n      if (lower === 'erro' || lower === 'error') pushErr(v);\n      else if (lower === 'message' && typeof v === 'string') pushErr(v);\n      collectErrorsDeep(v, found);\n    }\n    return found;\n  }\n\n  return found;\n}\n\nfunction dedupStrings(arr) {\n  const seen = new Set();\n  const out = [];\n  for (const s of arr) if (!seen.has(s)) { seen.add(s); out.push(s); }\n  return out;\n}\n\n// Preferência do Luis: $json.message.content.data\nfunction extractUsefulPayload(j) {\n  if (Array.isArray(j?.message?.content?.data)) return j.message.content.data.slice();\n  if (Array.isArray(j?.data)) return j.data.slice();\n  if (hasMeaningfulContent(j)) return [j];\n  return [];\n}\n\nfunction normalizeList(list) {\n  return list\n    .map(x => (x?.json ?? x))\n    .filter(o => hasMeaningfulContent(o))\n    .map(o => (typeof o === 'object' ? o : { value: o }));\n}\n\n// Captura a query de forma resiliente (suporta Set, Function e mesmo payload)\nfunction safeGetQuery() {\n  // 1) Se a query veio nos itens de entrada\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const q = j.query ?? j.sql ?? j.consulta;\n    if (typeof q === 'string' && q.trim()) return q.trim();\n  }\n\n  // 2) Caso a query esteja em outro nó do fluxo\n  try {\n    // Altere o nome abaixo para o nó onde a SQL é montada (ex: \"Extract SQL query\" ou \"Montar Query\")\n    const fromNode = $items('Extract SQL query', 0, 0);\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const q = j.query ?? j.sql ?? j.consulta;\n      if (typeof q === 'string' && q.trim()) return q.trim();\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null; // não encontrada\n}\n\n// ----------------------- USAGE (tokens) -------------------------------------\n\nfunction findUsageIn(obj) {\n  if (obj == null) return null;\n\n  if (Array.isArray(obj)) {\n    for (const el of obj) {\n      const found = findUsageIn(el);\n      if (found) return found;\n    }\n    return null;\n  }\n\n  if (typeof obj === 'object') {\n    if (obj.usage && typeof obj.usage === 'object') {\n      const u = obj.usage;\n      const total =\n        typeof u.total_tokens === 'number'\n          ? u.total_tokens\n          : (typeof u.input_tokens === 'number' && typeof u.output_tokens === 'number'\n              ? u.input_tokens + u.output_tokens\n              : undefined);\n\n      return {\n        input_tokens: typeof u.input_tokens === 'number' ? u.input_tokens : undefined,\n        output_tokens: typeof u.output_tokens === 'number' ? u.output_tokens : undefined,\n        total_tokens: typeof total === 'number' ? total : undefined,\n      };\n    }\n\n    for (const v of Object.values(obj)) {\n      const found = findUsageIn(v);\n      if (found) return found;\n    }\n  }\n\n  return null;\n}\n\nfunction safeGetUsage() {\n  // 1) Tenta achar usage nos próprios itens de entrada\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const usage = findUsageIn(j);\n    if (usage) return usage;\n  }\n\n  // 2) Tenta achar usage no nó \"GPT gerar query\"\n  try {\n    const fromNode = $items('GPT gerar query'); // <<--- AQUI entra o seu nó\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const usage = findUsageIn(j);\n      if (usage) return usage;\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null;\n}\n\n// --- Fluxo ------------------------------------------------------------------\n\n// 1) Sem entradas\nif (!items || items.length === 0) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 2) Procure erros em todo o payload bruto\nlet erros = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  collectErrorsDeep(j, erros);\n}\nerros = dedupStrings(erros);\n\n// 3) Se achou erro, retorna somente { Erro }\nif (erros.length > 0) {\n  return [{ json: { Erro: erros[0] } }];\n}\n\n// 4) Extrair dados dos formatos suportados\nlet all = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  all.push(...extractUsefulPayload(j));\n}\n\n// 5) Fallback: cada item.json\nif (all.length === 0) {\n  all = items.map(i => i?.json ?? {});\n}\n\n// 6) Checar erros dentro da lista\nlet innerErrors = [];\ncollectErrorsDeep(all, innerErrors);\ninnerErrors = dedupStrings(innerErrors);\nif (innerErrors.length > 0) {\n  return [{ json: { Erro: innerErrors[0] } }];\n}\n\n// 7) Limpeza de dados\nconst rows = normalizeList(all);\n\n// 8) Captura a query (sem quebrar se não existir)\nconst query = safeGetQuery();\n\n// 9) Captura usage da resposta do modelo (input_tokens, output_tokens, total_tokens)\nconst usage_GPT = safeGetUsage();\n\n// 10) Sem dados → erro padrão\nif (rows.length === 0) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 11) OK: retorna SEMPRE { data, query } + usage_GTP quando disponível\nconst payload = { data: rows, query };\n\nif (usage_GPT && Object.values(usage_GPT).some(v => v !== undefined && v !== null)) {\n  payload.usage_GPT = usage_GPT;\n}\n\nreturn [{ json: payload }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        352
+      ],
+      "id": "57042fd7-3382-465a-9276-7437b1edec59",
+      "name": "Repassar dados"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Entrada: { sql: \"SELECT ...\", userPrompt: \"...\" }  (ajuste nomes se preciso)\nlet sql = ($('Extract SQL query').first().json.query || \"\").trim();\n\n// 1) Remove comentários (-- e /* */) e normaliza espaços\nconst stripComments = s => {\n  // remove /* ... */ (multilinha)\n  s = s.replace(/\\/\\*[\\s\\S]*?\\*\\//g, ' ');\n  // remove -- até o fim da linha\n  s = s.replace(/--.*$/gm, ' ');\n  return s;\n};\nconst cleaned = stripComments(sql).replace(/\\s+/g, ' ').trim();\n\nconst forbidden = /\\b(SOMENTE|INSERT|UPDATE|DELETE|MERGE|CREATE|ALTER|DROP|TRUNCATE|GRANT|REVOKE|COMMENT|VACUUM|COPY|REFRESH|CALL|DO|BEGIN|COMMIT|ROLLBACK|SET|LOCK|CLUSTER|REINDEX|DISCARD)\\b/i;\nif (forbidden.test(cleaned)) {\n  return [{ \n    allowed: false, \n    reason: \"Contém comando proibido.\", \n    erro: `Somente SELECT é permitido. Não posso executar DDL/DML.\n    Detalhes: ` + $input.first().json.output\n  }];\n}\n\nreturn [{ allowed: true, sql }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        80
+      ],
+      "id": "6ec05876-d10b-45e8-a524-1e38d4c33f5f",
+      "name": "Extrair query"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Run Once for Each Item\n// devolve UM item por entrada (sem colchetes)\nconst msg = $json.output; \nreturn {\n  json: {\n      erro:msg ?? \"Por favor, forneça a consulta ou pergunta específica que deseja realizar com base no esquema fornecido.\"\n  }\n};\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        240
+      ],
+      "id": "aac5de68-a36d-4edb-9b80-a084205b678f",
+      "name": "Mensagem de query inválida"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Run Once for Each Item\n/**\n const msg = \"Solicitação contém comando proibido, somente SELECT é permitido. Não posso executar DDL/DML.\";\n */\nconst msg = $json.erro;\nreturn {\n  json: { erro: msg }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        144
+      ],
+      "id": "7cb73cc4-5a1c-4472-8959-6203039ab855",
+      "name": "Mensagem de query Proibida"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoPorCliente = {\n  \"0001\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"0001_teste1\": {\n    host: \"aws.reader.linux.homologacao001.inovamobil.com.br\",\n    database: \"readerweb_0001_teste1\",\n    user: \"root\",\n    senha: \"Idb#Inov@19#\",\n    porta: 3306,\n  },\n  \"3738\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"0962\": {\n    host: \"teste1.imanager.inovamobil.com.br\",\n    database: \"readerweb_0962\",\n    user: \"teste\",\n    senha: \"teste.1234@\",\n    porta: 3306,\n  },\n};\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? \"0962\");\nconst selected = configuracaoPorCliente[codigoIManager];\nif (!selected) {\n  throw new Error(\n    `Cliente ` + codigoIManager + ` não informado, favor validar para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: selected.host,\n    database: selected.database,\n    user: selected.user,\n    password: selected.senha,\n    port: selected.porta,\n  };\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        224
+      ],
+      "id": "06f8f45a-bed2-4e0c-bc51-f05e704d5334",
+      "name": "Constantes"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $json.sql }}",
+        "options": {}
+      },
+      "id": "4eec9f8b-9d1e-4241-975c-11b5b5c3110f",
+      "name": "Executar query",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        432,
+        -16
+      ],
+      "typeVersion": 2.4,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "w2ul7xQhpE4d1ssF",
+          "name": "MySQL account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "message": "={{ JSON.stringify($json.data, null, 2) }}",
+        "waitUserReply": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        928,
+        352
+      ],
+      "id": "861edd6f-2e7a-4ad7-afc3-31ba6278d08c",
+      "name": "Respond to Chat"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Em que posso lhe ajudar hoje ???",
+        "options": {
+          "subtitle": "",
+          "title": "Boa tarde !!! Sou o Datamobil 📈✅",
+          "customCss": ":root {\n  /* Paleta no estilo Datamobil */\n  --chat--color-primary: #00a0e3;              /* azul do botão/bolha do usuário */\n  --chat--color-primary-shade-50: #008fd0;\n  --chat--color-primary-shade-100: #0073ad;\n  --chat--color-secondary: #20b69e;\n  --chat--color-secondary-shade-50: #1ca08a;\n\n  /* Evitando branco puro: off-white e cinzas */\n  --chat--color-white: #fdfdfd;                /* quase branco para bolhas/cartões */\n  --chat--color-light: #f3f4f7;                /* FUNDO do chat – cinza da tela */\n  --chat--color-light-shade-50: #e3e7f0;\n  --chat--color-light-shade-100: #c7cedd;\n  --chat--color-medium: #d3d8e4;\n  --chat--color-dark: #101330;\n  --chat--color-disabled: #9aa0b5;\n  --chat--color-typing: #555555;\n\n  /* Base Layout */\n  --chat--spacing: 1rem;\n  --chat--border-radius: 1.5rem;              /* bolhas arredondadas como na imagem */\n  --chat--transition-duration: 0.15s;\n  --chat--font-family: (\n    -apple-system,\n    BlinkMacSystemFont,\n    'Segoe UI',\n    Roboto,\n    Oxygen-Sans,\n    Ubuntu,\n    Cantarell,\n    'Helvetica Neue',\n    sans-serif\n  );\n\n  /* Janela do chat */\n  --chat--window--width: 420px;\n  --chat--window--height: 620px;\n  --chat--window--bottom: var(--chat--spacing);\n  --chat--window--right: var(--chat--spacing);\n  --chat--window--z-index: 9999;\n  --chat--window--border: 1px solid var(--chat--color-light-shade-50);\n  --chat--window--border-radius: 0;           /* retinho, como o container da tela */\n  --chat--window--margin-bottom: var(--chat--spacing);\n\n  /* Header – faixa clara, texto escuro */\n  --chat--header-height: auto;\n  --chat--header--padding: 0.75rem 1.5rem;\n  --chat--header--background: #f7f8fb;        /* quase branco, mas levemente cinza */\n  --chat--header--color: var(--chat--color-dark);\n  --chat--header--border-top: none;\n  --chat--header--border-bottom: 1px solid var(--chat--color-light-shade-50);\n  --chat--header--border-left: none;\n  --chat--header--border-right: none;\n  --chat--heading--font-size: 1.6em;\n  --chat--subtitle--font-size: 0.9em;\n  --chat--subtitle--line-height: 1.4;\n\n  /* Mensagens */\n  --chat--message--font-size: 0.95rem;\n  --chat--message--padding: 0.75rem 1.2rem;\n  --chat--message--border-radius: var(--chat--border-radius);\n  --chat--message-line-height: 1.5;\n  --chat--message--margin-bottom: calc(var(--chat--spacing) * 0.75);\n\n  /* Bot: cartão off-white no fundo cinza */\n  --chat--message--bot--background: var(--chat--color-white);\n  --chat--message--bot--color: var(--chat--color-dark);\n  --chat--message--bot--border: 1px solid var(--chat--color-light-shade-50);\n\n  /* User: bolha azul como na captura */\n  --chat--message--user--background: var(--chat--color-primary);\n  --chat--message--user--color: #fefefe;\n  --chat--message--user--border: none;\n\n  --chat--message--pre--background: rgba(0, 0, 0, 0.03);\n  --chat--messages-list--padding: 1.5rem 2rem;\n\n  /* Botão flutuante */\n  --chat--toggle--size: 64px;\n  --chat--toggle--width: var(--chat--toggle--size);\n  --chat--toggle--height: var(--chat--toggle--size);\n  --chat--toggle--border-radius: 50%;\n  --chat--toggle--background: var(--chat--color-primary);\n  --chat--toggle--hover--background: var(--chat--color-primary-shade-50);\n  --chat--toggle--active--background: var(--chat--color-primary-shade-100);\n  --chat--toggle--color: #ffffff;\n\n  /* Input – barra clara, borda azul, como na imagem */\n  --chat--textarea--height: 52px;\n  --chat--textarea--max-height: 30rem;\n  --chat--input--font-size: 0.95rem;\n  --chat--input--border: 1px solid #b9d9f2;\n  --chat--input--border-radius: 999px;\n  --chat--input--padding: 0.75rem 1rem;\n  --chat--input--background: #f7f8fb;\n  --chat--input--text-color: var(--chat--color-dark);\n  --chat--input--line-height: 1.4;\n  --chat--input--placeholder--font-size: var(--chat--input--font-size);\n  --chat--input--border-active: 1px solid var(--chat--color-primary);\n  --chat--input--left--panel--width: 2rem;\n\n  /* Botões internos */\n  --chat--button--color: #fefefe;\n  --chat--button--background: var(--chat--color-primary);\n  --chat--button--padding: calc(var(--chat--spacing) * 0.5) var(--chat--spacing);\n  --chat--button--border-radius: 999px;\n  --chat--button--hover--color: #fefefe;\n  --chat--button--hover--background: var(--chat--color-primary-shade-50);\n  --chat--close--button--color-hover: var(--chat--color-primary);\n\n  /* Botões de enviar/anexo (cores) */\n  --chat--input--send--button--background: var(--chat--color-primary);\n  --chat--input--send--button--color: #fefefe;\n  --chat--input--send--button--background-hover: var(--chat--color-primary-shade-50);\n  --chat--input--send--button--color-hover: #fefefe;\n  --chat--input--file--button--background: transparent;\n  --chat--input--file--button--color: var(--chat--color-secondary);\n  --chat--input--file--button--background-hover: transparent;\n  --chat--input--file--button--color-hover: var(--chat--color-secondary-shade-50);\n  --chat--files-spacing: 0.25rem;\n\n  /* Body e footer – FUNDO CINZA como na imagem */\n  --chat--body--background: var(--chat--color-light);\n  --chat--footer--background: var(--chat--color-light);\n  --chat--footer--color: var(--chat--color-dark);\n}\n\n/* Bolhas no estilo Datamobil */\n.chat-message {\n  max-width: 50%;\n  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);\n}\n\n/* Alinhamento: usuário à direita, bot à esquerda */\n.chat-message--user {\n  margin-left: auto;\n}\n\n.chat-message--bot {\n  margin-right: auto;\n}\n\n/* Centraliza apenas a PRIMEIRA mensagem do bot\n   (ex: \"Boa tarde !!! Sou o Datamobil 📈\") */\n.chat-messages-list .chat-message--bot:first-child {\n  display: flex;\n  justify-content: center;\n  text-align: center;\n}\n\n/* === BOTÃO DE ENVIAR MAIS ARREDONDADO (ESTILO FAB) === */\n/* Ajuste o seletor abaixo para a classe real do botão de enviar, se for diferente */\n.chat-input__send-button {\n  width: 44px;\n  height: 44px;\n  border-radius: 50%;\n  padding: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-shadow: 0 4px 10px rgba(0, 160, 227, 0.45);\n}\n\n/* Deixa o ícone um pouco menor e bem centralizado */\n.chat-input__send-button svg,\n.chat-input__send-button i {\n  width: 18px;\n  height: 18px;\n}\n",
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1552,
+        224
+      ],
+      "id": "e60fff06-7877-4f5b-a417-331915cd0e81",
+      "name": "When chat message received",
+      "webhookId": "f4164d04-0dc2-42da-b3b1-6424eb085bd9"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***MASKED_SECRET***"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4.1-mini\",\n  \"temperature\": 0.2,\n  \"input\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Você é um gerador de SQL para MySQL 8.0+, guiado por um JSON chamado SCHEMA.\\nSeu objetivo é gerar apenas consultas SELECT 100% válidas e coerentes com o SCHEMA.\\nNunca produza instruções que criem, alterem, excluam ou modifiquem dados.\\n\\n⚙️ CONFIGURAÇÕES DE DIALETO E FORMATAÇÃO\\n\\nDialeto: MySQL 8.0+\\n\\nIdentificadores (tabelas e colunas): sempre entre crases → `...`\\nStrings: entre aspas simples → 'texto'\\n\\nProibido:\\n- Aspas duplas (\\\"...\\\")\\n- Prefixes de schema (ex.: public.)\\n- Ponto e vírgula (;) ao final da query\\n\\nCase: respeitar exatamente o case do SCHEMA.\\nSeparador decimal: ponto .\\nPalavras reservadas só podem ser usadas se estiverem entre crases.\\n\\n🔒 POLÍTICA DE SEGURANÇA\\nSomente SELECT é permitido.\\nNão posso criar, alterar, inserir ou deletar.\\nReescreva seu pedido como um SELECT.\\n\\nComandos proibidos:\\nINSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, TRUNCATE,\\nGRANT, REVOKE, COMMENT, VACUUM, COPY, REFRESH, CALL, DO, BEGIN,\\nCOMMIT, ROLLBACK, SET, LOCK, CLUSTER, REINDEX, DISCARD.\\n\\nSe o usuário pedir algo que envolva qualquer comando acima, responda somente com:\\n\\\"❌ Somente SELECT é permitido. Não posso criar, alterar, inserir ou deletar. Reescreva seu pedido como um SELECT.\\\"\\n\\n🧩 REGRAS DE USO DO SCHEMA\\n\\nSó use colunas e tabelas que existem no SCHEMA JSON.\\nRespeite os tipos, nomes e cases definidos.\\nSe o campo solicitado não existir, responda:\\n\\\"❌ Não é possível gerar a consulta porque o campo não existe no SCHEMA.\\\"\\n\\n🔁 USO DE METADADOS DO SCHEMA\\n\\nO SCHEMA JSON contém informações adicionais sobre cada tabela e coluna, incluindo:\\n- Políticas de deduplicação (meta.deduplication)\\n- Referências mensais (meta.month_reference)\\n- Estrutura de pivot (meta.pivot)\\n- Funções de coluna (meta.role)\\n\\nSempre que esses metadados estiverem presentes:\\n- Aplique automaticamente as regras de deduplicação: selecione apenas a linha mais recente por combinação de campos definidos em partition_by (geralmente CodigoMatriculaCliente + MesAnoReferência), usando ROW_NUMBER() e Ordenacão DESC, sem usar agregações numéricas.\\n- Quando o pedido envolver duas ou mais referências de mês/ano, use as definições de meta.pivot para gerar um PIVOT:\\n  • índice: pivot.index\\n  • colunas: pivot.columns\\n  • valores: os campos solicitados que existam em pivot.value_fields\\n  • formato: long_format se nenhum campo solicitado estiver na lista.\\n- Nunca use SUM, AVG ou COUNT para eliminar duplicatas; respeite allow_numeric_aggregation=false.\\n- Use as expressões de data definidas em month_reference.to_date_expr para comparar ou ordenar períodos.\\n- Se o SCHEMA informar \\\"meta_class\\\": \\\"analytical_view\\\", interprete essa tabela como visão de análise temporal, aplicando as regras acima automaticamente.\\n\\nMySQL 8 NÃO possui PIVOT: nunca use a palavra-chave PIVOT/UNPIVOT. Emule o pivot criando uma CTE por referência com ROW_NUMBER() (rn=1) e faça JOIN entre as CTEs por CodigoMatriculaCliente (ou LEFT+RIGHT+UNION quando precisar).\\nQuando 2+ referências forem detectadas: proíba SUM/AVG/COUNT/MAX/MIN e GROUP BY para deduplicar; use apenas janela + JOIN.\\n\\n🧭 SAÍDA EM PIVOT (obrigatória para 2+ referências)\\n- Se o pedido envolver `vCliente` e forem detectadas 2+ referências mensais:\\n  • Gere PIVOT com índice `CodigoMatriculaCliente`, colunas `MesAnoReferência`.\\n  • Use como valores APENAS os campos solicitados que existam em `meta.pivot.value_fields`.\\n  • Sem agregação numérica; deduplique com ROW_NUMBER() por cliente/mês (Ordenacão DESC).\\n- Nome das colunas do PIVOT: <Campo>_<MM>_<YYYY> (ex.: ConsumoFaturado_06_2022).\\n- CHECK DE CONFORMIDADE (obrigatório — não imprimir em texto):\\n  1) Existem pelo menos duas colunas cujo nome termina em _MM_YYYY?\\n  2) Cada coluna de valor solicitada está replicada por mês? (ex.: ConsumoFaturado_06_2022 e ConsumoFaturado_07_2022)\\n  3) A consulta contém a deduplicação por Ordenacão (janela ou subconsulta)?\\n  4) Não há SUM/AVG/COUNT para remover duplicidade.\\n  Se qualquer item falhar, regenere a consulta até atender aos quatro itens.\\n\\n🧮 COMPORTAMENTO GERAL\\n\\nGere apenas SELECTs legíveis e válidos.\\nO foco é montar a query-base corretamente.\\nPode usar agregações (SUM, AVG, COUNT, etc.) e WHERE, GROUP BY, ORDER BY, LIMIT.\\n\\n📤 SAÍDA\\nRetorne apenas o SQL final, sem explicações, sem comentários, e sem ponto e vírgula no fim.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.chatinput }}\"\n    }\n  ],\n  \"tools\": [\n    {\n      \"type\": \"file_search\",\n      \"vector_store_ids\": [\n        \"vs_691735074a1081918f761d1dd6115160\"\n      ]\n    }\n  ],\n  \"max_output_tokens\": 5000\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -640,
+        224
+      ],
+      "id": "4b9b4b92-5eba-4109-a988-649dc7d16731",
+      "name": "GPT gerar query"
+    }
+  ],
+  "connections": {
+    "Check if query exists": {
+      "main": [
+        [
+          {
+            "node": "Extrair query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem de query inválida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract SQL query": {
+      "main": [
+        [
+          {
+            "node": "Check if query exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine schema data and chat input": {
+      "main": [
+        [
+          {
+            "node": "GPT gerar query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setar informações de Parâmetros": {
+      "main": [
+        [
+          {
+            "node": "Constantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Executar query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem de query Proibida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repassar dados": {
+      "main": [
+        [
+          {
+            "node": "Respond to Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair query": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de query inválida": {
+      "main": [
+        [
+          {
+            "node": "Repassar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de query Proibida": {
+      "main": [
+        [
+          {
+            "node": "Repassar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Constantes": {
+      "main": [
+        [
+          {
+            "node": "Combine schema data and chat input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executar query": {
+      "main": [
+        [
+          {
+            "node": "Repassar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Setar informações de Parâmetros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT gerar query": {
+      "main": [
+        [
+          {
+            "node": "Extract SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "bb4dfad0-71b5-42a1-a2df-7d66b58d9cf7",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "createdAt": "2025-09-19T11:57:06.865Z",
+      "updatedAt": "2025-09-19T11:57:06.865Z",
+      "role": "workflow:owner",
+      "workflowId": "AUOQnmMSojavOkaz",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
