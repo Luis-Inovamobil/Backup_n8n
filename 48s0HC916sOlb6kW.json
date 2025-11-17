@@ -1,1 +1,986 @@
-{"createdAt":"2025-09-01T14:36:59.509Z","updatedAt":"2025-11-13T11:46:54.000Z","id":"48s0HC916sOlb6kW","name":"Datamobil - Reader Web + Análise - Produção","active":true,"isArchived":false,"nodes":[{"parameters":{"operation":"download","fileId":{"__rl":true,"value":"1QQSmwbXjo0-jTDq2a0_TrhvPruhROeON","mode":"list","cachedResultName":"ReaderWeb.json","cachedResultUrl":"https://drive.google.com/file/d/1QQSmwbXjo0-jTDq2a0_TrhvPruhROeON/view?usp=drivesdk"},"options":{"binaryPropertyName":"json"}},"type":"n8n-nodes-base.googleDrive","typeVersion":3,"position":[-2672,-16],"id":"449329df-841f-449f-8de6-ce12b73772ca","name":"Download file","credentials":{"googleDriveOAuth2Api":{"id":"A7dItjE7OWcTVPSQ","name":"Google Drive account"}}},{"parameters":{"conditions":{"options":{"version":2,"leftValue":"","caseSensitive":true,"typeValidation":"strict"},"conditions":[{"id":"5f3b3c30-78e9-4ed0-b520-9153664540ec","leftValue":"={{ $json.query }}","rightValue":"SELECT","operator":{"type":"string","operation":"contains"}},{"id":"46b1dd62-2b29-409b-81ed-590c3703721f","leftValue":"={{ $json.query }}","rightValue":"Olá","operator":{"type":"string","operation":"notContains"}}],"combinator":"and"},"options":{}},"id":"a27d39c6-21ae-4112-98bf-2b69f3999375","name":"Check if query exists","type":"n8n-nodes-base.if","position":[-1424,-16],"typeVersion":2.2},{"parameters":{"assignments":{"assignments":[{"id":"ebbe194a-4b8b-44c9-ac19-03cf69d353bf","name":"query","type":"string","value":"={{ ($json.output) }}"}]},"includeOtherFields":true,"options":{}},"id":"eb657184-2698-4e45-a7ef-17ca53f8c8f2","name":"Extract SQL query","type":"n8n-nodes-base.set","position":[-1648,-16],"typeVersion":3.4},{"parameters":{"assignments":{"assignments":[{"id":"f78c57d9-df13-43c7-89a7-5387e528107e","name":"chatinput","type":"string","value":"={{ $('When chat message received').item.json.chatInput }}"},{"id":"e42b39eb-dfbd-48d9-94ed-d658bdd41454","name":"schema","type":"string","value":"={{ $json.json }}"}]},"options":{}},"id":"a2d68852-2113-4cdf-8378-a4355b49ab4d","name":"Combine schema data and chat input","type":"n8n-nodes-base.set","position":[-2224,-16],"executeOnce":true,"typeVersion":3.4},{"parameters":{"operation":"fromJson","binaryPropertyName":"json","destinationKey":"json","options":{"encoding":"utf8"}},"id":"04fb0465-3b26-4929-87d5-9982f4ed7688","name":"Extract data from file","type":"n8n-nodes-base.extractFromFile","position":[-2448,-16],"typeVersion":1},{"parameters":{"assignments":{"assignments":[{"id":"b86f4807-aff3-42fb-a110-f43653368396","name":"Solicitacao","value":"={{ $json.query.Solicitacao }}","type":"string"},{"id":"66447438-499c-4ab3-88ee-e20835aa7618","name":"CodigoIManager","value":"={{ $json.query.CodigoIManager }}","type":"string"}]},"options":{}},"type":"n8n-nodes-base.set","typeVersion":3.4,"position":[-3120,-16],"id":"9a44d9cb-1220-44ed-867e-4afaeb629023","name":"Setar informações de Parâmetros"},{"parameters":{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"f8f105fa-8e7c-4309-9cd9-9a5c987ed77f","leftValue":"={{ $json.allowed }}","rightValue":"","operator":{"type":"boolean","operation":"true","singleValue":true}}],"combinator":"and"},"options":{}},"type":"n8n-nodes-base.if","typeVersion":2.2,"position":[-976,-112],"id":"03e17d6e-a6e4-448b-83b5-f8316cedad3c","name":"If1"},{"parameters":{"jsCode":"// Run Once for All Items\n\nconst items = $input.all();\n\n// --- Utils ------------------------------------------------------------------\n\nfunction hasMeaningfulContent(o, depth = 0) {\n  if (o == null) return false;\n  if (typeof o !== 'object') return String(o).trim() !== '';\n  if (depth > 6) return true;\n  if (Array.isArray(o)) return o.some(v => hasMeaningfulContent(v, depth + 1));\n  const keys = Object.keys(o);\n  if (keys.length === 0) return false;\n  return keys.some(k => hasMeaningfulContent(o[k], depth + 1));\n}\n\nfunction collectErrorsDeep(obj, found = []) {\n  if (obj == null) return found;\n\n  const pushErr = (val) => {\n    if (val == null) return;\n    const msg = typeof val === 'object' ? JSON.stringify(val) : String(val);\n    if (msg.trim()) found.push(msg.trim());\n  };\n\n  if (Array.isArray(obj)) {\n    for (const v of obj) collectErrorsDeep(v, found);\n    return found;\n  }\n\n  if (typeof obj === 'object') {\n    for (const [k, v] of Object.entries(obj)) {\n      const lower = k.toLowerCase();\n      if (lower === 'erro' || lower === 'error') pushErr(v);\n      else if (lower === 'message' && typeof v === 'string') pushErr(v);\n      collectErrorsDeep(v, found);\n    }\n    return found;\n  }\n\n  return found;\n}\n\nfunction dedupStrings(arr) {\n  const seen = new Set();\n  const out = [];\n  for (const s of arr) if (!seen.has(s)) { seen.add(s); out.push(s); }\n  return out;\n}\n\n// Preferência do Luis: $json.message.content.data\nfunction extractUsefulPayload(j) {\n  if (Array.isArray(j?.message?.content?.data)) return j.message.content.data.slice();\n  if (Array.isArray(j?.data)) return j.data.slice();\n\n  // >>> AJUSTE 1: ignorar payload que é só { success: true }\n  if (j && typeof j === 'object') {\n    const keys = Object.keys(j);\n    if (keys.length === 1 && keys[0] === 'success') {\n      return [];\n    }\n  }\n\n  if (hasMeaningfulContent(j)) return [j];\n  return [];\n}\n\nfunction normalizeList(list) {\n  return list\n    .map(x => (x?.json ?? x))\n    .filter(o => hasMeaningfulContent(o))\n    .map(o => (typeof o === 'object' ? o : { value: o }));\n}\n\n// Captura a query de forma resiliente (suporta Set, Function e mesmo payload)\nfunction safeGetQuery() {\n  // 1) Se a query veio nos itens de entrada\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const q = j.query ?? j.sql ?? j.consulta;\n    if (typeof q === 'string' && q.trim()) return q.trim();\n  }\n\n  // 2) Caso a query esteja em outro nó do fluxo\n  try {\n    // Altere o nome abaixo para o nó onde a SQL é montada (ex: \"Extract SQL query\" ou \"Montar Query\")\n    const fromNode = $items('Extract SQL query', 0, 0);\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const q = j.query ?? j.sql ?? j.consulta;\n      if (typeof q === 'string' && q.trim()) return q.trim();\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null; // não encontrada\n}\n\nfunction safeGetPedidoCliente() {\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const q = j.query ?? j.sql ?? j.consulta;\n    if (typeof q === 'string' && q.trim()) return q.trim();\n  }\n\n  try {\n    const fromNode = $('Combine schema data and chat input').first().json.chatinput;\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const q = j.query ?? j.sql ?? j.consulta;\n      if (typeof q === 'string' && q.trim()) return q.trim();\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null; // não encontrada\n}\n\n\n// --- Fluxo ------------------------------------------------------------------\n\n// 1) Sem entradas\nif (!items || items.length === 0) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 2) Procure erros em todo o payload bruto\nlet erros = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  collectErrorsDeep(j, erros);\n}\nerros = dedupStrings(erros);\n\n// 3) Se achou erro, retorna somente { Erro }\nif (erros.length > 0) {\n  return [{ json: { Erro: erros[0] } }];\n}\n\n// 4) Extrair dados dos formatos suportados\nlet all = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  all.push(...extractUsefulPayload(j));\n}\n\n// 5) Fallback: cada item.json\nif (all.length === 0) {\n  all = items.map(i => i?.json ?? {});\n}\n\n// 6) Checar erros dentro da lista\nlet innerErrors = [];\ncollectErrorsDeep(all, innerErrors);\ninnerErrors = dedupStrings(innerErrors);\nif (innerErrors.length > 0) {\n  return [{ json: { Erro: innerErrors[0] } }];\n}\n\n// 7) Limpeza de dados\nconst rows = normalizeList(all);\n\n// 8) Captura a query (sem quebrar se não existir)\nconst query = safeGetQuery();\n\n// 9) Sem dados OU apenas um marcador de sucesso → erro padrão\n// >>> AJUSTE 2: tratar { success: true } como \"sem dados\"\nconst isOnlySuccess =\n  rows.length === 1 &&\n  rows[0] &&\n  typeof rows[0] === 'object' &&\n  Object.keys(rows[0]).length === 1 &&\n  Object.prototype.hasOwnProperty.call(rows[0], 'success');\n\nif (rows.length === 0 || isOnlySuccess) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 10) OK: retorna SEMPRE { data, query }\nreturn [{ json: { data: rows, query } }];\n"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[-528,-16],"id":"039ca5bd-ff1f-4a03-9f02-ff98030a859e","name":"Repassar dados"},{"parameters":{"jsCode":"// Entrada: { sql: \"SELECT ...\", userPrompt: \"...\" }  (ajuste nomes se preciso)\nlet sql = ($('Extract SQL query').first().json.query || \"\").trim();\n\n// 1) Remove comentários (-- e /* */) e normaliza espaços\nconst stripComments = s => {\n  // remove /* ... */ (multilinha)\n  s = s.replace(/\\/\\*[\\s\\S]*?\\*\\//g, ' ');\n  // remove -- até o fim da linha\n  s = s.replace(/--.*$/gm, ' ');\n  return s;\n};\nconst cleaned = stripComments(sql).replace(/\\s+/g, ' ').trim();\n\nconst forbidden = /\\b(SOMENTE|INSERT|UPDATE|DELETE|MERGE|CREATE|ALTER|DROP|TRUNCATE|GRANT|REVOKE|COMMENT|VACUUM|COPY|REFRESH|CALL|DO|BEGIN|COMMIT|ROLLBACK|SET|LOCK|CLUSTER|REINDEX|DISCARD)\\b/i;\nif (forbidden.test(cleaned)) {\n  return [{ \n    allowed: false, \n    reason: \"Contém comando proibido.\", \n    erro: `Somente SELECT é permitido. Não posso executar DDL/DML.\n    Detalhes: ` + $input.first().json.output\n  }];\n}\n\nreturn [{ allowed: true, sql }];\n"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[-1200,-112],"id":"95d09280-0d68-40be-8e77-9c398291de2b","name":"Extrair query"},{"parameters":{"mode":"runOnceForEachItem","jsCode":"// Run Once for Each Item\n// devolve UM item por entrada (sem colchetes)\nconst msg = $json.output; \nreturn {\n  json: {\n      erro:msg ?? \"Por favor, forneça a consulta ou pergunta específica que deseja realizar com base no esquema fornecido.\"\n  }\n};\n\n\n\n"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[-752,176],"id":"e929fa12-fa86-4046-96af-562840faefc2","name":"Mensagem de query inválida"},{"parameters":{"mode":"runOnceForEachItem","jsCode":"// Run Once for Each Item\n/**\n const msg = \"Solicitação contém comando proibido, somente SELECT é permitido. Não posso executar DDL/DML.\";\n */\nconst msg = $json.erro;\nreturn {\n  json: { erro: msg }\n};\n"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[-752,-16],"id":"e8bb5448-b868-4c8e-a4f5-3f84b32340a5","name":"Mensagem de query Proibida"},{"parameters":{"mode":"runOnceForEachItem","jsCode":"const item = $input.item;\nconst j = item.json;\n\nconst configuracaoPorCliente = {\n  \"0001\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"3738\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"0962\": {\n    host: \"teste1.imanager.inovamobil.com.br\",\n    database: \"readerweb_0962\",\n    user: \"teste\",\n    senha: \"teste.1234@\",\n    porta: 3306,\n  },\n};\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? \"0962\");\nconst selected = configuracaoPorCliente[codigoIManager];\nif (!selected) {\n  throw new Error(\n    `Cliente ` + codigoIManager + ` não informado, favor validar para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: selected.host,\n    database: selected.database,\n    user: selected.user,\n    password: selected.senha,\n    port: selected.porta,\n  };\n\nreturn item;\n"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[-2896,-16],"id":"10dff0e9-6967-41bf-b519-57e707e508c0","name":"Constantes"},{"parameters":{"operation":"executeQuery","query":"{{ $json.sql }}","options":{}},"id":"bccd3e43-0669-4800-91b0-5035034b73d9","name":"Executar query","type":"n8n-nodes-base.mySql","position":[-752,-208],"typeVersion":2.4,"alwaysOutputData":true,"credentials":{"mySql":{"id":"w2ul7xQhpE4d1ssF","name":"MySQL account"}},"onError":"continueRegularOutput"},{"parameters":{"jsCode":"// Captura o node \"Combine schema data and chat input\"\nconst combineNode = $('Combine schema data and chat input').first();\nconst pedido = combineNode?.json?.chatinput || '';\n\n// Captura o dataset atual\nconst src = $json.envelope ?? $json;\nconst dataIn = Array.isArray(src?.resultado?.data)\n  ? src.resultado.data\n  : Array.isArray(src?.data)\n  ? src.data\n  : [];\n\n// Normaliza chaves e converte valores numéricos\nconst normalizeKey = (k) =>\n  k\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/\\s+/g, '_')\n    .replace(/[^\\w]/g, '_')\n    .replace(/_+/g, '_')\n    .replace(/^_|_$/g, '')\n    .toLowerCase();\n\nconst toNumber = (v) =>\n  typeof v === 'string' && /^\\s*\\d+(?:[.,]\\d+)?\\s*$/.test(v)\n    ? Number(v.replace(',', '.'))\n    : v;\n\nconst dataNorm = (dataIn || []).map((row) => {\n  const out = {};\n  for (const [k, v] of Object.entries(row)) {\n    const nk = normalizeKey(k);\n    const nv = toNumber(v);\n    out[nk] = nv;\n    if (!(k in out)) out[k] = nv; // mantém original também\n  }\n  return out;\n});\n\n// Monta o envelope final para o BILL\nreturn [\n  {\n    json: {\n      envelope: {\n        pedido_cliente: pedido || src.pedido_cliente || '—',\n        resultado: {\n          data: dataNorm,\n          query: src?.resultado?.query || src?.query || '',\n        },\n        metadados: src.metadados || {\n          origem: 'n8n',\n          unidade: 'clientes',\n          moeda: 'BRL',\n        },\n      },\n    },\n  },\n];\n"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[-64,176],"id":"35456242-c5a4-4444-bfb7-641b7fe148df","name":"Gerar envelope de dados e solicitação"},{"parameters":{"jsCode":"// Agora o Merge já trouxe os dois lados num único item (json único)\nconst M = $json || {};\n\nconst pedido_cliente =$('Combine schema data and chat input').first().json.chatinput;\n  \nconst data =\n  M.data ??\n  M.envelope?.resultado?.data ??\n  null;\n\nconst query =\n  M.query ??\n  M.envelope?.resultado?.query ??\n  null;\n\n// Erros podem ter vindo de Repassar dados\nconst erro  = M.erro ?? M.error ?? null;\nconst erros = Array.isArray(M.Erros) ? M.Erros\n           : Array.isArray(M.erros) ? M.erros\n           : Array.isArray(M.errors) ? M.errors\n           : [];\n\n// A análise pode ter vindo do Analista em várias chaves\nconst diagnostico =$input.first().json[\"Diagnóstico\"];\n\nconst hasError = !!erro || (Array.isArray(erros) && erros.length > 0);\n\nreturn [{\n  json: {\n    pedido_cliente,\n    data,\n    query,\n    erro,\n    erros,\n    diagnostico: hasError ? null : diagnostico,\n  }\n}];\n"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[1072,48],"id":"f9e5bb69-6886-4c20-b64a-2ad21ebd17ad","name":"Unificar Resultado","onError":"continueRegularOutput"},{"parameters":{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"loose","version":2},"conditions":[{"id":"5787e004-2bc5-4530-8e20-cea5b52f05ef","leftValue":"={{ !!(\n  $json.Erro\n    ? (Array.isArray($json.Erro)\n        ? $json.Erro.length > 0\n        : String($json.Erro).trim() !== '')\n    : false\n) }}","rightValue":0,"operator":{"type":"boolean","operation":"true","singleValue":true}}],"combinator":"and"},"looseTypeValidation":true,"options":{}},"type":"n8n-nodes-base.if","typeVersion":2.2,"position":[-304,112],"id":"4f401b86-a15d-4404-a6c7-a18d1b8b4803","name":"Gerou algum erro ?"},{"parameters":{"promptType":"define","text":"=Here is the database schema: {{ $json.schema }}\nHere is the user request: {{ $json.chatinput }}","options":{"systemMessage":"Você é um gerador de SQL para MySQL 8.0+, guiado por um JSON chamado SCHEMA.\nSeu objetivo é gerar apenas consultas SELECT 100% válidas e coerentes com o SCHEMA.\nNunca produza instruções que criem, alterem, excluam ou modifiquem dados.\n\nO SCHEMA é fornecido em formato JSON nesta conversa e contém:\n\ntabelas, colunas, tipos, chaves e relacionamentos;\n\nmetadados (meta.deduplication, meta.month_reference, meta.pivot, meta.role, meta_class);\n\npolíticas de geração (generator_policies) e normalização de termos de negócio.\n\nSempre que houver conflito entre uma regra genérica e algo explícito no SCHEMA, siga o SCHEMA.\n\n⚙️ CONFIGURAÇÕES DE DIALETO E FORMATAÇÃO\n\nDialeto: MySQL 8.0+\n\nIdentificadores (tabelas e colunas): sempre entre crases → ...\nStrings: entre aspas simples → 'texto'\n\nProibido:\n\nAspas duplas (\"...\")\n\nPrefixos de schema (ex.: public.)\n\nPonto e vírgula (;) ao final da query\n\nCase: respeitar exatamente o case do SCHEMA.\nSeparador decimal: ponto “.”.\nPalavras reservadas só podem ser usadas como identificadores se estiverem entre crases.\n\nMySQL 8 NÃO possui o operador ILIKE.\nNunca use ILIKE em nenhuma situação.\nSe em qualquer momento você gerar ILIKE, considere a query inválida e regenere a SQL substituindo por LIKE com COLLATE ou usando LOWER(coluna) LIKE padrão.\nSe precisar de comparação case-insensitive, use:\n\nLOWER(coluna) LIKE 'padrão', ou\n\ncoluna COLLATE <collation> LIKE 'padrão', se o SCHEMA indicar a collation.\n\n🔒 POLÍTICA DE SEGURANÇA\n\nSomente SELECT é permitido.\nNão posso criar, alterar, inserir ou deletar.\nReescreva qualquer pedido como um SELECT.\n\nComandos proibidos:\nINSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, TRUNCATE,\nGRANT, REVOKE, COMMENT, VACUUM, COPY, REFRESH, CALL, DO, BEGIN,\nCOMMIT, ROLLBACK, SET, LOCK, CLUSTER, REINDEX, DISCARD.\n\nSe o usuário pedir algo que envolva qualquer comando acima, responda somente com:\n\n❌ Somente SELECT é permitido. Não posso criar, alterar, inserir ou deletar. Reescreva seu pedido como um SELECT.\n\n🧩 REGRAS DE USO DO SCHEMA\n\nSó use colunas e tabelas que existem no SCHEMA JSON.\n\nRespeite os tipos, nomes e cases definidos.\n\nUse apenas relacionamentos descritos no SCHEMA (relacionamentos, meta.join_hint, meta.lookup).\n\nSe o campo solicitado não existir e não houver nenhum alias configurado para ele, responda:\n\n❌ Não é possível gerar a consulta porque o campo não existe no SCHEMA.\n\n🧠 INTERPRETAÇÃO EM LINGUAGEM DE NEGÓCIO\n\nO usuário sempre fala em linguagem de negócio, por exemplo:\n“leiturista”, “ocorrência”, “referência 09/2025”, “clientes com corte”, “consumo”, “hidrometro”, “nível”, “categoria”, “UC”, “unidade consumidora”, “matrícula”, “ligação”, etc.\n\nAntes de montar o SQL, faça internamente (sem imprimir) este fluxo:\n\nNormalize os termos de negócio usando, nesta ordem:\n\nSCHEMA.policy.terminology_normalization\n(ex.: “medidor” → “hidrometro”; “nível/nivel” → “categoria”;\n“UC”, “unidade consumidora”, “matrícula/matricula”, “ligação/ligacao” → “cliente”)\n\nSCHEMA.generator_policies.column_aliases\nExemplos típicos (dependem do SCHEMA real):\n\n“matrícula”, “código da ligação” → CodigoMatriculaCliente\n\n“ocorrência”, “código da ocorrência” → coluna de ocorrência configurada (por exemplo CodigoOcorrenciaAtual em vcliente)\n\n“descrição da ocorrência” → coluna de descrição de ocorrência (ex.: DescricaoOcorrência)\n\n“tipo de serviço”, “serviço” → campo de tipo de serviço na tabela de serviços\n\n“localização do hidrômetro” → campo de localização do hidrômetro\n\ndescrições das colunas em tabelas[colunas].descricao, quando necessário.\n\nIdentifique a intenção:\n\nentidade principal: cliente, leiturista, ocorrência, serviço, categoria, setor, rota, etc.\n\nmétrica: contagem de ocorrências, soma de consumo, média de valor, quantidade de serviços, ranking, comparação entre meses, etc.\n\nperíodo/referência: por exemplo “09/2025”, “10/2025”, “últimos 3 meses”.\n\nfiltros adicionais: tipo de ocorrência, tipo de serviço, bairro, rota, categoria, situação de corte/retenção, localização do hidrômetro, etc.\n\nReferência / MesAnoReferência (campo string MM/YYYY)\n\nMesAnoReferência é uma string no formato MM/YYYY.\n\nSempre que precisar comparar por tempo ou identificar a referência mais recente, converta para data usando a expressão definida em month_reference.to_date_expr, por exemplo:\n\nSTR_TO_DATE(CONCAT('01/', MesAnoReferência), '%d/%m/%Y')\n\n\nSe o usuário informar explicitamente a referência (ex.: “na referência 10/2025”), use exatamente essa string no filtro:\n\nWHERE c.`MesAnoReferência` = '10/2025'\n\n\nSe o usuário NÃO informar nenhuma referência, mês ou período e a consulta envolver vcliente (dados por referência):\n\nUse sempre a última referência disponível na base, utilizando a expressão configurada em generator_policies.default_reference.sql_expr, equivalente a:\n\n(\n  SELECT vc.`MesAnoReferência`\n  FROM `vcliente` vc\n  WHERE vc.`MesAnoReferência` IS NOT NULL\n    AND vc.`MesAnoReferência` <> ''\n  ORDER BY STR_TO_DATE(CONCAT('01/', vc.`MesAnoReferência`), '%d/%m/%Y') DESC\n  LIMIT 1\n)\n\n\nExemplo de uso:\n\nWHERE c.`MesAnoReferência` = (\n  SELECT vc.`MesAnoReferência`\n  FROM `vcliente` vc\n  WHERE vc.`MesAnoReferência` IS NOT NULL\n    AND vc.`MesAnoReferência` <> ''\n  ORDER BY STR_TO_DATE(CONCAT('01/', vc.`MesAnoReferência`), '%d/%m/%Y') DESC\n  LIMIT 1\n)\n\n\nNunca gere consultas em vcliente sem filtro de referência quando for possível restringir à última referência, a menos que o usuário peça explicitamente “todas as referências” ou um intervalo claro.\n\nEscolha as tabelas de origem de acordo com o SCHEMA:\n\nUse vcliente como visão principal de dados por referência (cliente, consumo, valores, ocorrência atual, rota, setor, categoria, economias, status de retenção, etc.).\n\nUse a(s) tabela(s) de serviços (por exemplo vserviços) quando o foco for serviços executados/lançados, ligando à vcliente pelos campos configurados (geralmente CodigoMatriculaCliente e NomeArquivo, e quando aplicável MesAnoReferência).\n\nUse int_leiturista e/ou tabelas de log (ex.: mob_log) para detalhes adicionais de leituristas.\n\nUse tabelas de domínio (tipos de cálculo, tipos de cobrança, status de retenção, localização de hidrômetro, tipos de serviço, categorias, etc.) quando o usuário falar em descrições.\n\nSó depois disso monte o SELECT, com:\n\nFROM e JOIN baseados em relacionamentos, meta.lookup, meta.join_hints.\n\nWHERE com filtros de referência/período, usando:\n\no valor informado pelo usuário, ou\n\na expressão da última referência quando o usuário não informar nada.\n\nGROUP BY e ORDER BY compatíveis com a métrica desejada.\n\n🔁 USO DE METADADOS DO SCHEMA\n\nO SCHEMA JSON pode conter:\n\nmeta.deduplication\n\nmeta.month_reference\n\nmeta.pivot\n\nmeta.role\n\nmeta_class (por exemplo \"analytical_view\")\n\nSempre que esses metadados estiverem presentes e forem relevantes:\n\nDeduplicação\n\nSe meta.deduplication estiver definido (por exemplo, em vcliente ou vhistóricodeleitura):\n\nselecione apenas a linha mais recente por combinação de campos em partition_by\n(geralmente algo como CodigoMatriculaCliente + MesAnoReferência),\n\nusando ROW_NUMBER() ou janela equivalente, com ORDER BY definido (por exemplo Sequencia ou Ordenacão DESC),\n\nsem usar agregações numéricas (SUM/AVG/COUNT) para eliminar duplicidade.\n\nPivot / comparações multi-mês\n\nQuando o pedido envolver duas ou mais referências de mês/ano e o SCHEMA tiver meta.pivot, use essa definição para montar um pivot emulado:\n\níndice: pivot.index (ex.: CodigoMatriculaCliente)\n\ncolunas: pivot.columns (ex.: MesAnoReferência)\n\nvalores: apenas campos em pivot.value_fields, quando aplicável\n\nNunca use a palavra-chave PIVOT/UNPIVOT (MySQL 8 não possui).\n\nEm vez disso, use CTE + JOIN entre CTEs por código do cliente, garantindo deduplicação por mês antes da junção.\n\nViews analíticas\n\nSe meta_class = \"analytical_view\", trate a tabela como visão de análise temporal, aplicando deduplicação e regras de referência de forma consistente.\n\n🧭 OCORRÊNCIAS (REGRAS ESPECÍFICAS)\n\nSó use campos de ocorrência (`CodigoOcorrenciaAtual`, tabelas de ocorrência como `mis_ocorrencia`, descrições de ocorrência)\nquando a pergunta falar explicitamente em ocorrência/ocorrências, códigos de ocorrência ou análise de ocorrência.\n\nSe a pergunta NÃO citar ocorrência (por exemplo, perguntas sobre “leituras realizadas”, “clientes visitados”, “produtividade de leitura”\nou “quem leu mais em determinada referência”), NÃO use `CodigoOcorrenciaAtual` nem faça JOIN ou subconsulta em `mis_ocorrencia`.\nNesses casos, baseie-se apenas em `Visitado = 'S'` e nos demais campos de leitura definidos no SCHEMA.\n\nQuando a consulta envolver claramente “ocorrências” e for necessário desconsiderar “Leitura normal” e “sem ocorrência”, utilize a política de exclusão\nde ocorrência definida no SCHEMA (policy.occurrence_exclusion e filters.occurrence_exclusions), sem transformar isso em regra padrão para todas as consultas.\nInterprete essas políticas como um recurso OPCIONAL, aplicado somente em queries cujo objetivo seja analisar ocorrências.\nNão copie cegamente blocos de SQL prontos de exemplos: construa a condição de exclusão de acordo com o SCHEMA e com a intenção explícita da pergunta.\n\nAntes de usar qualquer campo de ocorrência (como `CodigoOcorrenciaAtual` ou a tabela `mis_ocorrencia`), verifique se o usuário\nfalou explicitamente em “ocorrência”, “ocorrências”, “código de ocorrência” ou análise de ocorrência.\nSe a pergunta for sobre “leituras realizadas”, “leituras executadas”, “clientes visitados”, “produtividade de leitura”, “quantidade de leituras”\nou temas semelhantes, é PROIBIDO usar `CodigoOcorrenciaAtual` ou `mis_ocorrencia`. Nesses casos, use apenas `Visitado = 'S'` ou outros campos de leitura definidos no SCHEMA.\n\n\n🧮 COMPORTAMENTO GERAL\n\nGere apenas SELECTs legíveis e válidos para MySQL 8.0+.\n\nRespeite o SCHEMA, seus metadados e políticas de geração.\n\nPode usar agregações (SUM, AVG, COUNT, MAX, MIN, etc.) e WHERE, GROUP BY, ORDER BY, LIMIT, desde que:\n\nnão sejam usadas para mascarar duplicidade que deveria ser resolvida por deduplicação (ROW_NUMBER / subconsulta)\n\nnão violem allow_numeric_aggregation=false quando definido no SCHEMA.\n\nQuando a consulta envolver duas ou mais referências na mesma entidade (por exemplo, comparação de leituras entre 08/2025 e 09/2025 na própria vcliente), use apenas as chaves de join recomendadas (por exemplo, CodigoMatriculaCliente), evitando colunas que variam de mês a mês, como NomeArquivo, salvo se o SCHEMA indicar explicitamente o contrário.\n\n📤 SAÍDA\n\nRetorne apenas o SQL final, sem explicações, sem comentários e sem ponto e vírgula no fim.","maxIterations":1,"returnIntermediateSteps":true}},"id":"8036a9bf-017d-45bc-8c5e-0618c8b99b35","name":"Gerador de Query","type":"@n8n/n8n-nodes-langchain.agent","position":[-2000,-16],"typeVersion":1.6},{"parameters":{"promptType":"define","text":"={\n  \"pedido_cliente\": \"{{$json.envelope.pedido_cliente}}\",\n  \"resultado\": {\n    \"data\": {{ JSON.stringify($json.envelope.resultado.data) }},\n    \"query\": \"{{$json.envelope.resultado.query}}\"\n  },\n  \"metadados\": {{ JSON.stringify($json.envelope.metadados) }}\n}","options":{"systemMessage":"⦃\nVocê é BILL, consultor técnico e estratégico em saneamento. Analise pedido_cliente e resultado.data e produza somente um JSON válido, sem texto fora dele. Use exclusivamente resultado.data; não invente números.\n\nSe houver até 3 valores relevantes, seja direto; se houver mais, detalhe. Percentuais usam “%” e valores “R$xx.xx”. Não use separador de milhar.\n\nEstrutura obrigatória:\n⦃\n\"🧭 contexto\": \"Compare com benchmarks do setor (SNIS 2023, ANA, Trata Brasil, reguladoras). Indique se está melhor, pior ou similar.\",\n\n\"📈 indicadores\": ⦃\n\"📝 descrição\": \"Explique o formato do dataset (linha única ou múltiplos registros por leiturista, categoria, mês, ocorrência etc.). Use todos os números disponíveis, identificando variações quando houver datas (_MM_AAAA).\",\n\"🔢 valores\": ⦃\n\"principais_métricas\": \"Liste totais, médias, variações, percentuais e rankings com nomes reais dos campos, detalhando por leiturista, ocorrência, rota, bairro ou categoria quando existirem.\",\n\"resumo_quantitativo\": \"Resuma valores e percentuais (duas casas), classificando %: até 10 baixa; 10–20 moderada; 20–30 elevada; acima de 30 crítica. Reutilize exatamente os mesmos números de principais_métricas.\"\n⦄\n⦄,\n\n\"📋 análise_interpretativa\": \"Interprete os números: melhora, piora, estabilidade, concentração de problemas ou ganhos; compare grupos e explique o significado técnico (ex.: maior percentual de ocorrência ou maior faturamento).\",\n\n\"🧾 descrição\": \"Diagnóstico técnico direto, baseado nos números, relacionando causas/efeitos típicos (micromedição, perdas, leitura, faturamento, cadastro).\",\n\n\"⚙️ ações\": [\"Ações objetivas ligadas aos dados: auditorias, revisões cadastrais, vistorias, troca de hidrômetros, ajustes de rotas, melhorias de leitura ou comunicação.\"],\n\n\"🧷 resumo_consultivo\": \"Conclusão executiva (até 5 linhas) integrando números e recomendações; destaque gravidade (%) e impacto potencial (R$).\"\n⦄\n\nRegras numéricas:\n\nUse apenas valores de resultado.data.\n\nEm resumo_quantitativo, nunca contradiga principais_métricas.\n\nSe um total não puder ser consolidado, diga que a consolidação não é segura.\n\nSempre use “%” para percentuais e “R$” para valores.\n\nCasos de leitura e ocorrência:\n• Se houver leituristas: calcular total de leituras, leituras com ocorrência e percentual (duas casas, %).\n• Se houver tipos de ocorrência: identificar as 2 ou 3 mais frequentes e citá-las.\n• Garantir coerência entre totais e percentuais.\n\nSe resultado.data estiver vazio, retorne exatamente:\n⦃\n\"🧭 contexto\": \"—\",\n\"📈 indicadores\": \"—\",\n\"🧾 descrição\": \"—\",\n\"📋 análise_interpretativa\": \"-\",\n\"⚙️ ações\": [],\n\"🧷 resumo_consultivo\": \"Não há dados suficientes para análise.\"\n⦄\n⦄","maxIterations":5,"returnIntermediateSteps":true}},"id":"dc67cd37-dfbb-47e6-80da-75b55d363cf3","name":"Analista de Dados","type":"@n8n/n8n-nodes-langchain.agent","position":[144,112],"typeVersion":1.6},{"parameters":{"model":"gpt-5-mini","options":{"maxTokens":10000,"maxRetries":3}},"id":"f7a5864e-770b-4346-a3b5-89585601e6eb","name":"OpenAI Chat Model gerador de Query","type":"@n8n/n8n-nodes-langchain.lmChatOpenAi","position":[-2112,192],"typeVersion":1,"credentials":{"openAiApi":{"id":"H4HnbIJCN7JE8cR5","name":"OpenAi datamobil_Reader"}}},{"parameters":{"sessionIdType":"customKey","sessionKey":"04225153","contextWindowLength":1},"id":"6d2a647a-9f8b-4351-86fc-a8ecbcbbc1bd","name":"Window Buffer Memory Analista de dados","type":"@n8n/n8n-nodes-langchain.memoryBufferWindow","position":[192,352],"typeVersion":1.2},{"parameters":{"model":"gpt-5-mini","options":{"maxTokens":25000,"maxRetries":2}},"id":"ad1bed0e-0359-4a50-b5ae-e74d4ba2795e","name":"OpenAI Chat Model Analista de dados","type":"@n8n/n8n-nodes-langchain.lmChatOpenAi","position":[48,352],"typeVersion":1,"credentials":{"openAiApi":{"id":"H4HnbIJCN7JE8cR5","name":"OpenAi datamobil_Reader"}}},{"parameters":{},"id":"92509306-8e2c-4b9b-85de-daeaffe92145","name":"Memória gerador de query","type":"@n8n/n8n-nodes-langchain.memoryBufferWindow","position":[-1936,192],"typeVersion":1.2},{"parameters":{"mode":"combine","combineBy":"combineAll","options":{}},"type":"n8n-nodes-base.merge","typeVersion":3.2,"position":[672,-64],"id":"cfd2c79a-f8a0-4c57-81ac-f967f386de88","name":"Unificar saidas"},{"parameters":{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"5787e004-2bc5-4530-8e20-cea5b52f05ef","leftValue":"={{ $json.Erro.length }}","rightValue":0,"operator":{"type":"number","operation":"gt"}}],"combinator":"and"},"options":{}},"type":"n8n-nodes-base.if","typeVersion":2.2,"position":[864,-64],"id":"de07ec64-29f3-43a1-989e-9e6fa8f3c3e0","name":"Gerou algum erro ?1"},{"parameters":{"options":{}},"type":"n8n-nodes-base.respondToWebhook","typeVersion":1.4,"position":[1104,-240],"id":"61889611-6081-4d92-af92-3b1bfcb583f5","name":"Respond to Webhook1"},{"parameters":{"jsCode":"// === 1. CAPTURA DO BRUTO VINDO DO AGENT ===\nconst steps = $json.intermediateSteps ?? [];\n\nlet raw =\n  (steps.length\n    ? (\n        steps[steps.length - 1].output\n        ?? steps[steps.length - 1].toolOutput\n        ?? steps[steps.length - 1].result\n      )\n    : null\n  )\n  ?? $json.output\n  ?? $json.text\n  ?? $json.response\n  ?? \"\";\n\n// Se já vier objeto, ótimo, não precisa parsear string\nlet obj;\nif (raw && typeof raw === \"object\") {\n  obj = raw;\n} else {\n  // força string\n  raw = String(raw).trim()\n    // remove ```json ... ``` se vier\n    .replace(/^```(?:json)?\\s*/i, \"\")\n    .replace(/\\s*```$/i, \"\");\n\n  // se for string JSON dentro de string (aspas por fora), tenta desserializar uma vez\n  if (\n    (raw.startsWith('\"') && raw.endsWith('\"')) ||\n    (raw.startsWith(\"'\") && raw.endsWith(\"'\"))\n  ) {\n    try { raw = JSON.parse(raw); } catch {}\n  }\n\n  // se ainda for string, tenta extrair o primeiro bloco { ... }\n  if (typeof raw === \"string\") {\n    const m = raw.match(/\\{[\\s\\S]*\\}/m);\n    if (m) raw = m[0];\n  }\n\n  // === 2. FUNÇÃO DE PARSE COM HEURÍSTICA + NORMALIZAÇÃO ===\n  function tryParseWithBraceHeuristic(str) {\n    if (typeof str !== \"string\") return str;\n\n    // 2.1 normalizar escapes comuns gerados pelo modelo (\\n, \\t)\n    str = str.replace(/\\\\n/g, '\\n').replace(/\\\\t/g, '\\t');\n\n    // 2.2 normalizar números com separador de milhar do tipo \": 2,570\"\n    // Ex.: \"total_leituras\\\": 2,570,\"  =>  \"total_leituras\\\": 2570,\"\n    // Padrão: \":\" + espaços + até 3 dígitos + \",\" + 3 dígitos + (\",\" ou \"}\")\n    str = str.replace(\n      /(:\\s*)(-?\\d{1,3}),(\\d{3})(\\s*[,\\}])/g,\n      (_, prefixo, milhar, centena, sufixo) => `${prefixo}${milhar}${centena}${sufixo}`\n    );\n\n    // 2.3 tenta JSON.parse direto\n    try {\n      return JSON.parse(str);\n    } catch (e1) {\n      // 2.4 heurística de balanceamento de chaves\n      let depth = 0;\n      let inString = false;\n      let escape = false;\n      let lastCompleteIndex = -1;\n\n      for (let i = 0; i < str.length; i++) {\n        const ch = str[i];\n\n        if (escape) {\n          escape = false;\n          continue;\n        }\n        if (ch === '\\\\') {\n          escape = true;\n          continue;\n        }\n        if (ch === '\"' && !escape) {\n          inString = !inString;\n          continue;\n        }\n        if (inString) continue;\n\n        if (ch === '{') {\n          depth++;\n        } else if (ch === '}') {\n          depth--;\n          if (depth === 0) {\n            lastCompleteIndex = i;\n          }\n        }\n      }\n\n      if (lastCompleteIndex > -1) {\n        const candidate = str.slice(0, lastCompleteIndex + 1);\n        return JSON.parse(candidate);\n      } else {\n        throw e1;\n      }\n    }\n  }\n\n  let parsed;\n  try {\n    parsed = tryParseWithBraceHeuristic(raw);\n  } catch (eFinal) {\n    // se der ruim, devolve erro explicando\n    return [{\n      json: {\n        Diagnóstico: {\n          erro: \"Falha ao parsear JSON do Agent (mesmo após tentativa de reparo por chaves balanceadas e normalização de números)\",\n          detalhe: String(eFinal),\n          amostra: String(raw).slice(0, 500)\n        }\n      }\n    }];\n  }\n\n  obj = parsed;\n}\n\n// === 3. MAPA DE RENOMEAÇÃO (sem emoji -> com emoji) ===\n\nconst map = {\n   \"🧭contexto\": \"🧭 contexto\",\n  \"contexto\": \"contexto\",\n  \"📈 indicadores\": \"📈 indicadores\",\n  \"indicadores\": \"📈 indicadores\",\n  \"📝 descrição\": \"📝 descrição\",\n  \"descricao\": \"🧾 descrição\",\n  \"descrição\": \"🧾 descrição\",\n  \"🧾 descricao\": \"🧾 descrição\",\n  \"valores\": \"🔢 valores\",\n  \"🔢 valores\": \"🔢 valores\",\n    \"acoes\": \"⚙️ ações\",\n  \"ações\": \"⚙️ ações\",\n  \"⚙️ acoes\": \"⚙️ ações\",\n  \"resumo_consultivo\": \"🧷 resumo_consultivo\"\n};\n\nfunction renameKeys(o) {\n  if (o == null || typeof o !== \"object\") return o;\n\n  const out = {};\n  for (const [k, v] of Object.entries(o)) {\n    const nk = map[k] ?? k;\n    out[nk] = v;\n  }\n\n  // Ajusta sub-bloco de indicadores\n  if (out[\"📈 indicadores\"] && typeof out[\"📈 indicadores\"] === \"object\") {\n    const ind = out[\"📈 indicadores\"];\n    const indOut = {};\n    for (const [k, v] of Object.entries(ind)) {\n      const nk = map[k] ?? k;\n      indOut[nk] = v;\n    }\n    out[\"📈 indicadores\"] = indOut;\n  }\n\n  return out;\n}\n\nconst withEmoji = renameKeys(obj);\n\n// === 4. RETORNO FINAL ENVELOPADO ===\nreturn [{\n  json: {\n    Diagnóstico: withEmoji\n  }\n}];\n"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[480,128],"id":"5224de56-763e-4279-b199-9e5945ea5a58","name":"Formatar retorno GPT"},{"parameters":{"public":true,"initialMessages":"Em que posso lhe ajudar hoje ???","options":{"subtitle":"","title":"Olá, sou o Datamobil 📈 ✅","customCss":":root {\n  /* Paleta no estilo Datamobil */\n  --chat--color-primary: #00a0e3;              /* azul do botão/bolha do usuário */\n  --chat--color-primary-shade-50: #008fd0;\n  --chat--color-primary-shade-100: #0073ad;\n  --chat--color-secondary: #20b69e;\n  --chat--color-secondary-shade-50: #1ca08a;\n\n  /* Evitando branco puro: off-white e cinzas */\n  --chat--color-white: #fdfdfd;                /* quase branco para bolhas/cartões */\n  --chat--color-light: #f3f4f7;                /* FUNDO do chat – cinza da tela */\n  --chat--color-light-shade-50: #e3e7f0;\n  --chat--color-light-shade-100: #c7cedd;\n  --chat--color-medium: #d3d8e4;\n  --chat--color-dark: #101330;\n  --chat--color-disabled: #9aa0b5;\n  --chat--color-typing: #555555;\n\n  /* Base Layout */\n  --chat--spacing: 1rem;\n  --chat--border-radius: 1.5rem;              /* bolhas arredondadas como na imagem */\n  --chat--transition-duration: 0.15s;\n  --chat--font-family: (\n    -apple-system,\n    BlinkMacSystemFont,\n    'Segoe UI',\n    Roboto,\n    Oxygen-Sans,\n    Ubuntu,\n    Cantarell,\n    'Helvetica Neue',\n    sans-serif\n  );\n\n  /* Janela do chat */\n  --chat--window--width: 420px;\n  --chat--window--height: 620px;\n  --chat--window--bottom: var(--chat--spacing);\n  --chat--window--right: var(--chat--spacing);\n  --chat--window--z-index: 9999;\n  --chat--window--border: 1px solid var(--chat--color-light-shade-50);\n  --chat--window--border-radius: 0;           /* retinho, como o container da tela */\n  --chat--window--margin-bottom: var(--chat--spacing);\n\n  /* Header – faixa clara, texto escuro */\n  --chat--header-height: auto;\n  --chat--header--padding: 0.75rem 1.5rem;\n  --chat--header--background: #f7f8fb;        /* quase branco, mas levemente cinza */\n  --chat--header--color: var(--chat--color-dark);\n  --chat--header--border-top: none;\n  --chat--header--border-bottom: 1px solid var(--chat--color-light-shade-50);\n  --chat--header--border-left: none;\n  --chat--header--border-right: none;\n  --chat--heading--font-size: 1.6em;\n  --chat--subtitle--font-size: 0.9em;\n  --chat--subtitle--line-height: 1.4;\n\n  /* Mensagens */\n  --chat--message--font-size: 0.95rem;\n  --chat--message--padding: 0.75rem 1.2rem;\n  --chat--message--border-radius: var(--chat--border-radius);\n  --chat--message-line-height: 1.5;\n  --chat--message--margin-bottom: calc(var(--chat--spacing) * 0.75);\n\n  /* Bot: cartão off-white no fundo cinza */\n  --chat--message--bot--background: var(--chat--color-white);\n  --chat--message--bot--color: var(--chat--color-dark);\n  --chat--message--bot--border: 1px solid var(--chat--color-light-shade-50);\n\n  /* User: bolha azul como na captura */\n  --chat--message--user--background: var(--chat--color-primary);\n  --chat--message--user--color: #fefefe;\n  --chat--message--user--border: none;\n\n  --chat--message--pre--background: rgba(0, 0, 0, 0.03);\n  --chat--messages-list--padding: 1.5rem 2rem;\n\n  /* Botão flutuante */\n  --chat--toggle--size: 64px;\n  --chat--toggle--width: var(--chat--toggle--size);\n  --chat--toggle--height: var(--chat--toggle--size);\n  --chat--toggle--border-radius: 50%;\n  --chat--toggle--background: var(--chat--color-primary);\n  --chat--toggle--hover--background: var(--chat--color-primary-shade-50);\n  --chat--toggle--active--background: var(--chat--color-primary-shade-100);\n  --chat--toggle--color: #ffffff;\n\n  /* Input – barra clara, borda azul, como na imagem */\n  --chat--textarea--height: 52px;\n  --chat--textarea--max-height: 30rem;\n  --chat--input--font-size: 0.95rem;\n  --chat--input--border: 1px solid #b9d9f2;\n  --chat--input--border-radius: 999px;\n  --chat--input--padding: 0.75rem 1rem;\n  --chat--input--background: #f7f8fb;\n  --chat--input--text-color: var(--chat--color-dark);\n  --chat--input--line-height: 1.4;\n  --chat--input--placeholder--font-size: var(--chat--input--font-size);\n  --chat--input--border-active: 1px solid var(--chat--color-primary);\n  --chat--input--left--panel--width: 2rem;\n\n  /* Botões internos */\n  --chat--button--color: #fefefe;\n  --chat--button--background: var(--chat--color-primary);\n  --chat--button--padding: calc(var(--chat--spacing) * 0.5) var(--chat--spacing);\n  --chat--button--border-radius: 999px;\n  --chat--button--hover--color: #fefefe;\n  --chat--button--hover--background: var(--chat--color-primary-shade-50);\n  --chat--close--button--color-hover: var(--chat--color-primary);\n\n  /* Botões de enviar/anexo (cores) */\n  --chat--input--send--button--background: var(--chat--color-primary);\n  --chat--input--send--button--color: #fefefe;\n  --chat--input--send--button--background-hover: var(--chat--color-primary-shade-50);\n  --chat--input--send--button--color-hover: #fefefe;\n  --chat--input--file--button--background: transparent;\n  --chat--input--file--button--color: var(--chat--color-secondary);\n  --chat--input--file--button--background-hover: transparent;\n  --chat--input--file--button--color-hover: var(--chat--color-secondary-shade-50);\n  --chat--files-spacing: 0.25rem;\n\n  /* Body e footer – FUNDO CINZA como na imagem */\n  --chat--body--background: var(--chat--color-light);\n  --chat--footer--background: var(--chat--color-light);\n  --chat--footer--color: var(--chat--color-dark);\n}\n\n/* Bolhas no estilo Datamobil */\n.chat-message {\n  max-width: 50%;\n  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);\n}\n\n/* Alinhamento: usuário à direita, bot à esquerda */\n.chat-message--user {\n  margin-left: auto;\n}\n\n.chat-message--bot {\n  margin-right: auto;\n}\n\n/* Centraliza apenas a PRIMEIRA mensagem do bot\n   (ex: \"Boa tarde !!! Sou o Datamobil 📈\") */\n.chat-messages-list .chat-message--bot:first-child {\n  display: flex;\n  justify-content: center;\n  text-align: center;\n}\n\n/* === BOTÃO DE ENVIAR MAIS ARREDONDADO (ESTILO FAB) === */\n/* Ajuste o seletor abaixo para a classe real do botão de enviar, se for diferente */\n.chat-input__send-button {\n  width: 44px;\n  height: 44px;\n  border-radius: 50%;\n  padding: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-shadow: 0 4px 10px rgba(0, 160, 227, 0.45);\n}\n\n/* Deixa o ícone um pouco menor e bem centralizado */\n.chat-input__send-button svg,\n.chat-input__send-button i {\n  width: 18px;\n  height: 18px;\n}\n","responseMode":"responseNodes"}},"type":"@n8n/n8n-nodes-langchain.chatTrigger","typeVersion":1.3,"position":[-3456,0],"id":"d6ca1c79-329f-491e-816f-e9a2e30b9979","name":"When chat message received","webhookId":"d90fd405-b2e9-487b-b316-61bce6f6b61f"},{"parameters":{"jsCode":"// ==============================\n// 1. ENTRADAS BÁSICAS\n// ==============================\nconst pedido = $json.pedido_cliente;\nconst data = $json.data || [];\nconst query = $json.query || \"\";\n\n// diagnostico pode vir como \"diagnostico\" ou \"Diagnóstico\"\nconst d = $json.Diagnóstico || $json.diagnostico || {};\n\n// ==============================\n// 2. HELPERS GERAIS\n// ==============================\nfunction toArraySafe(val) {\n  if (val == null) return [];\n  if (Array.isArray(val)) return val;\n  if (typeof val === \"object\") return [JSON.stringify(val, null, 2)];\n  return [String(val)];\n}\n\nfunction toTextSafe(val, fallback = \"—\") {\n  if (val == null) return fallback;\n  if (typeof val === \"string\") return val;\n  if (typeof val === \"number\" || typeof val === \"boolean\") return String(val);\n  return JSON.stringify(val, null, 2);\n}\n\n// ==============================\n// 3. FORMATAÇÃO NUMÉRICA POR CONTEXTO\n// ==============================\nfunction formatMoneyBr(num) {\n  if (num == null || isNaN(num)) return \"R$ 0,00\";\n  return (\n    \"R$ \" +\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    })\n  );\n}\n\nfunction formatPercentBr(num) {\n  if (num == null || isNaN(num)) return \"0%\";\n  return (\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    }) + \"%\"\n  );\n}\n\nfunction formatIntegerBr(num) {\n  if (num == null || isNaN(num)) return \"0\";\n  return Number(num).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 0,\n  });\n}\n\n// decide como formatar de acordo com o nome do campo / contexto pai\nfunction formatNumberWithContext(chave, parentKey, value) {\n  const k = (chave || \"\").toLowerCase();\n  const p = (parentKey || \"\").toLowerCase();\n\n  // 1) VALOR MONETÁRIO\n  if (\n    k.includes(\"valor\") ||\n    k.includes(\"fatura\") ||\n    k.includes(\"faturado\") ||\n    k.includes(\"receita\") ||\n    p.includes(\"valor_faturado\") ||\n    p.includes(\"faturado\") ||\n    p.includes(\"faturas\")\n  ) {\n    return formatMoneyBr(value);\n  }\n\n  // 2) PERCENTUAL\n  if (\n    k.includes(\"percent\") ||\n    k.includes(\"perc\") ||\n    k.endsWith(\"_pct\") ||\n    k.endsWith(\"_percentual\") ||\n    k.includes(\"taxa\") ||\n    k.includes(\"indice\") ||\n    k.includes(\"índice\")\n  ) {\n    return formatPercentBr(value);\n  }\n\n  // 3) CONSUMO / VOLUME (m³)\n  if (\n    k.includes(\"consumo\") ||\n    k.includes(\"volume\") ||\n    k.includes(\"m3\") ||\n    k.includes(\"m³\")\n  ) {\n    return `${formatIntegerBr(value)} m³`;\n  }\n\n  // 4) LEITURAS / QUANTIDADES / REGISTROS (inteiro com milhar)\n  if (\n    k.includes(\"leitura\") ||\n    k.includes(\"leituras\") ||\n    k.includes(\"qtd\") ||\n    k.includes(\"quantidade\") ||\n    k.includes(\"total\") ||\n    k.includes(\"economias\") ||\n    k.includes(\"registros\")\n  ) {\n    return formatIntegerBr(value);\n  }\n\n  // 5) DEFAULT: número \"cru\", mas em pt-BR\n  return Number(value).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 2,\n  });\n}\n\n// ==============================\n// 4. AMOSTRA DE DADOS (JSON COMPLETO)\n// ==============================\nlet amostraDados;\nif (data.length === 0) {\n  amostraDados = \"Nenhum registro retornado.\";\n} else {\n  amostraDados = JSON.stringify(data, null, 2);\n}\n\n// ==============================\n// 5. ACESSO AOS BLOCOS DO DIAGNÓSTICO\n// ==============================\nconst contexto =\n  d[\"🧭 contexto\"] ||\n  d[\"🧭 contexto_setorial\"] ||\n  d[\"contexto\"] ||\n  d[\"contexto_setorial\"] ||\n  \"—\";\n\nconst indicadoresRaw = d[\"📈 indicadores\"] || d[\"indicadores\"] || \"—\";\n\nlet indicadoresDescricao = \"—\";\nlet valores = {};\n\nif (typeof indicadoresRaw === \"string\") {\n  indicadoresDescricao = indicadoresRaw;\n} else if (indicadoresRaw && typeof indicadoresRaw === \"object\") {\n  indicadoresDescricao = toTextSafe(\n    indicadoresRaw[\"📝 descrição\"] || indicadoresRaw[\"📝 descricao\"] || indicadoresRaw.descricao\n  );\n  valores =\n    indicadoresRaw[\"🔢 valores\"] ||\n    indicadoresRaw[\"valores\"] ||\n    {};\n}\n\n// ==============================\n// 5.1 CAPTURA ROBUSTA DA ANÁLISE INTERPRETATIVA\n// ==============================\nfunction extrairAnaliseInterpretativa(...objs) {\n  for (const obj of objs) {\n    if (!obj || typeof obj !== \"object\") continue;\n    for (const [k, v] of Object.entries(obj)) {\n      const kl = k.toLowerCase();\n      if (\n        kl.includes(\"análise_interpretativa\") ||\n        kl.includes(\"analise_interpretativa\")\n      ) {\n        if (typeof v === \"string\") return v;\n      }\n    }\n  }\n  return \"-\";\n}\n\nconst analiseInterpretativa =\n  d[\"📋análise_interpretativa\"] ||\n  d[\"📋 análise_interpretativa\"] ||\n  extrairAnaliseInterpretativa(d, valores);\n\n// ações (lista simples)\nconst acoes = toArraySafe(d[\"⚙️ ações\"] || d[\"acoes\"] || d[\"ações\"]);\n\n// descrição técnica\nconst descricaoTecnica = toTextSafe(d[\"🧾 descrição\"] || d[\"descricao\"]);\n\n// resumo consultivo\nconst resumoConsultivo = toTextSafe(\n  d[\"🧷 resumo_consultivo\"] || d[\"resumo_consultivo\"]\n);\n\n// ==============================\n// 6. FORMATADOR GENÉRICO DE \"🔢 valores\"\n// ==============================\nfunction formatValores(obj, parentKey = \"\") {\n  if (obj == null) return \"—\";\n\n  // PRIMITIVO\n  if (\n    typeof obj === \"string\" ||\n    typeof obj === \"number\" ||\n    typeof obj === \"boolean\"\n  ) {\n    if (typeof obj === \"number\") {\n      return formatNumberWithContext(\"\", parentKey, obj);\n    }\n    return String(obj);\n  }\n\n  // ARRAY\n  if (Array.isArray(obj)) {\n    return obj\n      .map((item, idx) => {\n        if (item && typeof item === \"object\") {\n          const partes = [];\n          for (const [k, v] of Object.entries(item)) {\n            if (typeof v === \"number\") {\n              partes.push(\n                `${k}: ${formatNumberWithContext(k, parentKey, v)}`\n              );\n            } else {\n              partes.push(`${k}: ${toTextSafe(v)}`);\n            }\n          }\n          return `• item ${idx + 1}: ${partes.join(\" | \")}`;\n        }\n        if (typeof item === \"number\") {\n          return `• ${formatNumberWithContext(\"\", parentKey, item)}`;\n        }\n        return `• ${toTextSafe(item)}`;\n      })\n      .join(\"\\n\");\n  }\n\n  // OBJETO\n  if (typeof obj === \"object\") {\n    const linhas = [];\n\n    for (const [chave, val] of Object.entries(obj)) {\n      const chaveLower = chave.toLowerCase();\n\n      // não renderizar análise_interpretativa dentro de valores\n      if (\n        chaveLower.includes(\"análise_interpretativa\") ||\n        chaveLower.includes(\"analise_interpretativa\")\n      ) {\n        continue;\n      }\n\n      // primitivo\n      if (\n        val == null ||\n        typeof val === \"string\" ||\n        typeof val === \"number\" ||\n        typeof val === \"boolean\"\n      ) {\n        if (typeof val === \"number\") {\n          linhas.push(\n            `- ${chave}: ${formatNumberWithContext(chave, parentKey, val)}`\n          );\n        } else {\n          linhas.push(`- ${chave}: ${toTextSafe(val)}`);\n        }\n        continue;\n      }\n\n      // array\n      if (Array.isArray(val)) {\n        if (\n          val.length > 0 &&\n          val.every(\n            (item) => item && typeof item === \"object\" && !Array.isArray(item)\n          )\n        ) {\n          const itensFormatados = val\n            .map((item) => {\n              const partes = [];\n\n              const categoria =\n                item.categoria ||\n                item.Categoria ||\n                item.tipo ||\n                item.Tipo ||\n                item.nome ||\n                item.Nome;\n              const rota = item.rota || item.Rota;\n              const bairro = item.bairro || item.Bairro;\n\n              if (rota != null) partes.push(`rota: ${rota}`);\n              if (bairro != null) partes.push(`bairro: ${bairro}`);\n              if (categoria != null) partes.push(`categoria: ${categoria}`);\n\n              for (const [k2, v2] of Object.entries(item)) {\n                if (\n                  k2 === \"categoria\" ||\n                  k2 === \"Categoria\" ||\n                  k2 === \"tipo\" ||\n                  k2 === \"Tipo\" ||\n                  k2 === \"nome\" ||\n                  k2 === \"Nome\" ||\n                  k2 === \"rota\" ||\n                  k2 === \"Rota\" ||\n                  k2 === \"bairro\" ||\n                  k2 === \"Bairro\"\n                ) {\n                  continue;\n                }\n\n                if (typeof v2 === \"number\") {\n                  partes.push(\n                    `${k2}: ${formatNumberWithContext(k2, chave, v2)}`\n                  );\n                } else {\n                  partes.push(`${k2}: ${toTextSafe(v2)}`);\n                }\n              }\n\n              return `  • ${partes.join(\" | \")}`;\n            })\n            .join(\"\\n\");\n\n          linhas.push(`${chave}:\\n${itensFormatados}`);\n        } else {\n          const itens = val\n            .map((v) =>\n              typeof v === \"number\"\n                ? `  • ${formatNumberWithContext(chave, parentKey, v)}`\n                : `  • ${toTextSafe(v)}`\n            )\n            .join(\"\\n\");\n          linhas.push(`${chave}:\\n${itens}`);\n        }\n\n        continue;\n      }\n\n      // objeto aninhado\n      const sub = formatValores(val, chave)\n        .split(\"\\n\")\n        .map((ln) => \"  \" + ln)\n        .join(\"\\n\");\n      linhas.push(`${chave}:\\n${sub}`);\n    }\n\n    return linhas.length ? linhas.join(\"\\n\") : toTextSafe(obj);\n  }\n\n  return toTextSafe(obj);\n}\n\n// ==============================\n// 7. TEXTO FINAL\n// ==============================\nconst texto =\n  `**📌 PEDIDO DO CLIENTE**\\n` +\n  `${pedido || \"—\"}\\n\\n` +\n  `**📊 DADOS UTILIZADOS (amostra)**\\n\\n` +\n  `${amostraDados}\\n\\n` +\n  `**🧮 QUERY SQL**\\n\\n` +\n  `${query || \"—\"}\\n\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n` +\n  `**🔎 DIAGNÓSTICO BILL**\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n\\n` +\n  `**🧭 CONTEXTO**\\n\\n` +\n  `${toTextSafe(contexto)}\\n\\n` +\n  `**📈 INDICADORES**\\n\\n` +\n  `${indicadoresDescricao}\\n\\n` +\n  `**🔢 VALORES (detalhado)**\\n\\n` +\n  `${formatValores(valores, \"🔢 valores\")}\\n\\n` +\n  `**📋 ANÁLISE INTERPRETATIVA**\\n\\n` +\n  `${toTextSafe(analiseInterpretativa)}\\n\\n` +\n  `**🧾 DESCRIÇÃO TÉCNICA**\\n\\n` +\n  `${descricaoTecnica}\\n\\n` +\n  `**⚙️ AÇÕES**\\n\\n` +\n  `${\n    acoes.length\n      ? acoes.map((s) => \"- \" + s).join(\"\\n\")\n      : \"—\"\n  }\\n\\n` +\n  `**🧷 RESUMO CONSULTIVO**\\n\\n` +\n  `${resumoConsultivo}`;\n\n// ==============================\n// 8. RETORNO PARA O CHAT\n// ==============================\nreturn [\n  {\n    json: {\n      resposta_chat: texto,\n    },\n  },\n];\n"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[1280,48],"id":"db825670-9977-4a86-91e5-32c92d66488b","name":"Formatar visualização","onError":"continueRegularOutput"},{"parameters":{"message":"={{$json.resposta_chat}}","waitUserReply":false,"options":{}},"type":"@n8n/n8n-nodes-langchain.chat","typeVersion":1,"position":[1616,0],"id":"6ab34923-c94c-4ac7-a679-22fa838c4a1b","name":"Respond to Chat"}],"connections":{"Download file":{"main":[[{"node":"Extract data from file","type":"main","index":0}]]},"Check if query exists":{"main":[[{"node":"Extrair query","type":"main","index":0}],[{"node":"Mensagem de query inválida","type":"main","index":0}]]},"Extract SQL query":{"main":[[{"node":"Check if query exists","type":"main","index":0}]]},"Combine schema data and chat input":{"main":[[{"node":"Gerador de Query","type":"main","index":0}]]},"Extract data from file":{"main":[[{"node":"Combine schema data and chat input","type":"main","index":0}]]},"Setar informações de Parâmetros":{"main":[[{"node":"Constantes","type":"main","index":0}]]},"If1":{"main":[[{"node":"Executar query","type":"main","index":0}],[{"node":"Mensagem de query Proibida","type":"main","index":0}]]},"Repassar dados":{"main":[[{"node":"Gerou algum erro ?","type":"main","index":0},{"node":"Unificar saidas","type":"main","index":0}]]},"Extrair query":{"main":[[{"node":"If1","type":"main","index":0}]]},"Mensagem de query inválida":{"main":[[{"node":"Repassar dados","type":"main","index":0}]]},"Mensagem de query Proibida":{"main":[[{"node":"Repassar dados","type":"main","index":0}]]},"Constantes":{"main":[[{"node":"Download file","type":"main","index":0}]]},"Executar query":{"main":[[{"node":"Repassar dados","type":"main","index":0}]]},"Gerar envelope de dados e solicitação":{"main":[[{"node":"Analista de Dados","type":"main","index":0}]]},"Unificar Resultado":{"main":[[{"node":"Formatar visualização","type":"main","index":0}]]},"Gerou algum erro ?":{"main":[[{"node":"Unificar saidas","type":"main","index":1}],[{"node":"Gerar envelope de dados e solicitação","type":"main","index":0}]]},"Gerador de Query":{"main":[[{"node":"Extract SQL query","type":"main","index":0}]]},"Analista de Dados":{"main":[[{"node":"Formatar retorno GPT","type":"main","index":0}]]},"OpenAI Chat Model gerador de Query":{"ai_languageModel":[[{"node":"Gerador de Query","type":"ai_languageModel","index":0}]]},"Window Buffer Memory Analista de dados":{"ai_memory":[[{"node":"Analista de Dados","type":"ai_memory","index":0}]]},"OpenAI Chat Model Analista de dados":{"ai_languageModel":[[{"node":"Analista de Dados","type":"ai_languageModel","index":0}]]},"Memória gerador de query":{"ai_memory":[[{"node":"Gerador de Query","type":"ai_memory","index":0}]]},"Unificar saidas":{"main":[[{"node":"Gerou algum erro ?1","type":"main","index":0}]]},"Gerou algum erro ?1":{"main":[[{"node":"Respond to Webhook1","type":"main","index":0}],[{"node":"Unificar Resultado","type":"main","index":0}]]},"Formatar retorno GPT":{"main":[[{"node":"Unificar saidas","type":"main","index":1}]]},"When chat message received":{"main":[[{"node":"Setar informações de Parâmetros","type":"main","index":0}]]},"Formatar visualização":{"main":[[{"node":"Respond to Chat","type":"main","index":0}]]}},"settings":{"executionOrder":"v1"},"staticData":null,"meta":{"templateCredsSetupCompleted":true},"pinData":{},"versionId":"4d1038e2-8b5d-4c8c-baf1-40c6cee7cdab","triggerCount":1,"shared":[{"createdAt":"2025-09-01T14:36:59.523Z","updatedAt":"2025-09-01T14:36:59.523Z","role":"workflow:owner","workflowId":"48s0HC916sOlb6kW","projectId":"bDUBly1zU3yziLIn"}],"tags":[]}
+{
+  "id": "48s0HC916sOlb6kW",
+  "name": "Datamobil - Reader Web + Análise - Produção",
+  "createdAt": "2025-09-01T14:36:59.509Z",
+  "updatedAt": "2025-11-14T18:48:28.000Z",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1QQSmwbXjo0-jTDq2a0_TrhvPruhROeON",
+          "mode": "list",
+          "cachedResultName": "ReaderWeb.json",
+          "cachedResultUrl": "https://drive.google.com/file/d/1QQSmwbXjo0-jTDq2a0_TrhvPruhROeON/view?usp=drivesdk"
+        },
+        "options": {
+          "binaryPropertyName": "json"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2672,
+        -16
+      ],
+      "id": "449329df-841f-449f-8de6-ce12b73772ca",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "A7dItjE7OWcTVPSQ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "5f3b3c30-78e9-4ed0-b520-9153664540ec",
+              "leftValue": "={{ $json.query }}",
+              "rightValue": "SELECT",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "46b1dd62-2b29-409b-81ed-590c3703721f",
+              "leftValue": "={{ $json.query }}",
+              "rightValue": "Olá",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a27d39c6-21ae-4112-98bf-2b69f3999375",
+      "name": "Check if query exists",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1424,
+        -16
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebbe194a-4b8b-44c9-ac19-03cf69d353bf",
+              "name": "query",
+              "type": "string",
+              "value": "={{ ($json.output) }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "eb657184-2698-4e45-a7ef-17ca53f8c8f2",
+      "name": "Extract SQL query",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1648,
+        -16
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f78c57d9-df13-43c7-89a7-5387e528107e",
+              "name": "chatinput",
+              "type": "string",
+              "value": "={{ $('When chat message received').item.json.chatInput }}"
+            },
+            {
+              "id": "e42b39eb-dfbd-48d9-94ed-d658bdd41454",
+              "name": "schema",
+              "type": "string",
+              "value": "={{ $json.json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a2d68852-2113-4cdf-8378-a4355b49ab4d",
+      "name": "Combine schema data and chat input",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -2224,
+        -16
+      ],
+      "executeOnce": true,
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "binaryPropertyName": "json",
+        "destinationKey": "***MASKED_SECRET***",
+        "options": {
+          "encoding": "utf8"
+        }
+      },
+      "id": "04fb0465-3b26-4929-87d5-9982f4ed7688",
+      "name": "Extract data from file",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -2448,
+        -16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b86f4807-aff3-42fb-a110-f43653368396",
+              "name": "Solicitacao",
+              "value": "={{ $json.query.Solicitacao }}",
+              "type": "string"
+            },
+            {
+              "id": "66447438-499c-4ab3-88ee-e20835aa7618",
+              "name": "CodigoIManager",
+              "value": "={{ $json.query.CodigoIManager }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3120,
+        -16
+      ],
+      "id": "9a44d9cb-1220-44ed-867e-4afaeb629023",
+      "name": "Setar informações de Parâmetros"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f8f105fa-8e7c-4309-9cd9-9a5c987ed77f",
+              "leftValue": "={{ $json.allowed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -976,
+        -112
+      ],
+      "id": "03e17d6e-a6e4-448b-83b5-f8316cedad3c",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Run Once for All Items\n\nconst items = $input.all();\n\n// --- Utils ------------------------------------------------------------------\n\nfunction hasMeaningfulContent(o, depth = 0) {\n  if (o == null) return false;\n  if (typeof o !== 'object') return String(o).trim() !== '';\n  if (depth > 6) return true;\n  if (Array.isArray(o)) return o.some(v => hasMeaningfulContent(v, depth + 1));\n  const keys = Object.keys(o);\n  if (keys.length === 0) return false;\n  return keys.some(k => hasMeaningfulContent(o[k], depth + 1));\n}\n\nfunction collectErrorsDeep(obj, found = []) {\n  if (obj == null) return found;\n\n  const pushErr = (val) => {\n    if (val == null) return;\n    const msg = typeof val === 'object' ? JSON.stringify(val) : String(val);\n    if (msg.trim()) found.push(msg.trim());\n  };\n\n  if (Array.isArray(obj)) {\n    for (const v of obj) collectErrorsDeep(v, found);\n    return found;\n  }\n\n  if (typeof obj === 'object') {\n    for (const [k, v] of Object.entries(obj)) {\n      const lower = k.toLowerCase();\n      if (lower === 'erro' || lower === 'error') pushErr(v);\n      else if (lower === 'message' && typeof v === 'string') pushErr(v);\n      collectErrorsDeep(v, found);\n    }\n    return found;\n  }\n\n  return found;\n}\n\nfunction dedupStrings(arr) {\n  const seen = new Set();\n  const out = [];\n  for (const s of arr) if (!seen.has(s)) { seen.add(s); out.push(s); }\n  return out;\n}\n\n// Preferência do Luis: $json.message.content.data\nfunction extractUsefulPayload(j) {\n  if (Array.isArray(j?.message?.content?.data)) return j.message.content.data.slice();\n  if (Array.isArray(j?.data)) return j.data.slice();\n\n  // >>> AJUSTE 1: ignorar payload que é só { success: true }\n  if (j && typeof j === 'object') {\n    const keys = Object.keys(j);\n    if (keys.length === 1 && keys[0] === 'success') {\n      return [];\n    }\n  }\n\n  if (hasMeaningfulContent(j)) return [j];\n  return [];\n}\n\nfunction normalizeList(list) {\n  return list\n    .map(x => (x?.json ?? x))\n    .filter(o => hasMeaningfulContent(o))\n    .map(o => (typeof o === 'object' ? o : { value: o }));\n}\n\n// Captura a query de forma resiliente (suporta Set, Function e mesmo payload)\nfunction safeGetQuery() {\n  // 1) Se a query veio nos itens de entrada\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const q = j.query ?? j.sql ?? j.consulta;\n    if (typeof q === 'string' && q.trim()) return q.trim();\n  }\n\n  // 2) Caso a query esteja em outro nó do fluxo\n  try {\n    // Altere o nome abaixo para o nó onde a SQL é montada (ex: \"Extract SQL query\" ou \"Montar Query\")\n    const fromNode = $items('Extract SQL query', 0, 0);\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const q = j.query ?? j.sql ?? j.consulta;\n      if (typeof q === 'string' && q.trim()) return q.trim();\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null; // não encontrada\n}\n\nfunction safeGetPedidoCliente() {\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const q = j.query ?? j.sql ?? j.consulta;\n    if (typeof q === 'string' && q.trim()) return q.trim();\n  }\n\n  try {\n    const fromNode = $('Combine schema data and chat input').first().json.chatinput;\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const q = j.query ?? j.sql ?? j.consulta;\n      if (typeof q === 'string' && q.trim()) return q.trim();\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null; // não encontrada\n}\n\n\n// --- Fluxo ------------------------------------------------------------------\n\n// 1) Sem entradas\nif (!items || items.length === 0) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 2) Procure erros em todo o payload bruto\nlet erros = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  collectErrorsDeep(j, erros);\n}\nerros = dedupStrings(erros);\n\n// 3) Se achou erro, retorna somente { Erro }\nif (erros.length > 0) {\n  return [{ json: { Erro: erros[0] } }];\n}\n\n// 4) Extrair dados dos formatos suportados\nlet all = [];\nfor (const it of items) {\n  const j = it?.json ?? {};\n  all.push(...extractUsefulPayload(j));\n}\n\n// 5) Fallback: cada item.json\nif (all.length === 0) {\n  all = items.map(i => i?.json ?? {});\n}\n\n// 6) Checar erros dentro da lista\nlet innerErrors = [];\ncollectErrorsDeep(all, innerErrors);\ninnerErrors = dedupStrings(innerErrors);\nif (innerErrors.length > 0) {\n  return [{ json: { Erro: innerErrors[0] } }];\n}\n\n// 7) Limpeza de dados\nconst rows = normalizeList(all);\n\n// 8) Captura a query (sem quebrar se não existir)\nconst query = safeGetQuery();\n\n// 9) Sem dados OU apenas um marcador de sucesso → erro padrão\n// >>> AJUSTE 2: tratar { success: true } como \"sem dados\"\nconst isOnlySuccess =\n  rows.length === 1 &&\n  rows[0] &&\n  typeof rows[0] === 'object' &&\n  Object.keys(rows[0]).length === 1 &&\n  Object.prototype.hasOwnProperty.call(rows[0], 'success');\n\nif (rows.length === 0 || isOnlySuccess) {\n  return [{ json: { Erro: 'Não foram encontrados dados para esta solicitação' } }];\n}\n\n// 10) OK: retorna SEMPRE { data, query }\nreturn [{ json: { data: rows, query } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        -16
+      ],
+      "id": "039ca5bd-ff1f-4a03-9f02-ff98030a859e",
+      "name": "Repassar dados"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Entrada: { sql: \"SELECT ...\", userPrompt: \"...\" }  (ajuste nomes se preciso)\nlet sql = ($('Extract SQL query').first().json.query || \"\").trim();\n\n// 1) Remove comentários (-- e /* */) e normaliza espaços\nconst stripComments = s => {\n  // remove /* ... */ (multilinha)\n  s = s.replace(/\\/\\*[\\s\\S]*?\\*\\//g, ' ');\n  // remove -- até o fim da linha\n  s = s.replace(/--.*$/gm, ' ');\n  return s;\n};\nconst cleaned = stripComments(sql).replace(/\\s+/g, ' ').trim();\n\nconst forbidden = /\\b(SOMENTE|INSERT|UPDATE|DELETE|MERGE|CREATE|ALTER|DROP|TRUNCATE|GRANT|REVOKE|COMMENT|VACUUM|COPY|REFRESH|CALL|DO|BEGIN|COMMIT|ROLLBACK|SET|LOCK|CLUSTER|REINDEX|DISCARD)\\b/i;\nif (forbidden.test(cleaned)) {\n  return [{ \n    allowed: false, \n    reason: \"Contém comando proibido.\", \n    erro: `Somente SELECT é permitido. Não posso executar DDL/DML.\n    Detalhes: ` + $input.first().json.output\n  }];\n}\n\nreturn [{ allowed: true, sql }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        -112
+      ],
+      "id": "95d09280-0d68-40be-8e77-9c398291de2b",
+      "name": "Extrair query"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Run Once for Each Item\n// devolve UM item por entrada (sem colchetes)\nconst msg = $json.output; \nreturn {\n  json: {\n      erro:msg ?? \"Por favor, forneça a consulta ou pergunta específica que deseja realizar com base no esquema fornecido.\"\n  }\n};\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        176
+      ],
+      "id": "e929fa12-fa86-4046-96af-562840faefc2",
+      "name": "Mensagem de query inválida"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Run Once for Each Item\n/**\n const msg = \"Solicitação contém comando proibido, somente SELECT é permitido. Não posso executar DDL/DML.\";\n */\nconst msg = $json.erro;\nreturn {\n  json: { erro: msg }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        -16
+      ],
+      "id": "e8bb5448-b868-4c8e-a4f5-3f84b32340a5",
+      "name": "Mensagem de query Proibida"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoPorCliente = {\n  \"0001\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"3738\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"0962\": {\n    host: \"teste1.imanager.inovamobil.com.br\",\n    database: \"readerweb_0962\",\n    user: \"teste\",\n    senha: \"teste.1234@\",\n    porta: 3306,\n  },\n};\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? \"0962\");\nconst selected = configuracaoPorCliente[codigoIManager];\nif (!selected) {\n  throw new Error(\n    `Cliente ` + codigoIManager + ` não informado, favor validar para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: selected.host,\n    database: selected.database,\n    user: selected.user,\n    password: selected.senha,\n    port: selected.porta,\n  };\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2896,
+        -16
+      ],
+      "id": "10dff0e9-6967-41bf-b519-57e707e508c0",
+      "name": "Constantes"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $json.sql }}",
+        "options": {}
+      },
+      "id": "bccd3e43-0669-4800-91b0-5035034b73d9",
+      "name": "Executar query",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        -752,
+        -208
+      ],
+      "typeVersion": 2.4,
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "w2ul7xQhpE4d1ssF",
+          "name": "MySQL account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Captura o node \"Combine schema data and chat input\"\nconst combineNode = $('Combine schema data and chat input').first();\nconst pedido = combineNode?.json?.chatinput || '';\n\n// Captura o dataset atual\nconst src = $json.envelope ?? $json;\nconst dataIn = Array.isArray(src?.resultado?.data)\n  ? src.resultado.data\n  : Array.isArray(src?.data)\n  ? src.data\n  : [];\n\n// Normaliza chaves e converte valores numéricos\nconst normalizeKey = (k) =>\n  k\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/\\s+/g, '_')\n    .replace(/[^\\w]/g, '_')\n    .replace(/_+/g, '_')\n    .replace(/^_|_$/g, '')\n    .toLowerCase();\n\nconst toNumber = (v) =>\n  typeof v === 'string' && /^\\s*\\d+(?:[.,]\\d+)?\\s*$/.test(v)\n    ? Number(v.replace(',', '.'))\n    : v;\n\nconst dataNorm = (dataIn || []).map((row) => {\n  const out = {};\n  for (const [k, v] of Object.entries(row)) {\n    const nk = normalizeKey(k);\n    const nv = toNumber(v);\n    out[nk] = nv;\n    if (!(k in out)) out[k] = nv; // mantém original também\n  }\n  return out;\n});\n\n// Monta o envelope final para o BILL\nreturn [\n  {\n    json: {\n      envelope: {\n        pedido_cliente: pedido || src.pedido_cliente || '—',\n        resultado: {\n          data: dataNorm,\n          query: src?.resultado?.query || src?.query || '',\n        },\n        metadados: src.metadados || {\n          origem: 'n8n',\n          unidade: 'clientes',\n          moeda: 'BRL',\n        },\n      },\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        176
+      ],
+      "id": "35456242-c5a4-4444-bfb7-641b7fe148df",
+      "name": "Gerar envelope de dados e solicitação"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Agora o Merge já trouxe os dois lados num único item (json único)\nconst M = $json || {};\n\nconst pedido_cliente =$('Combine schema data and chat input').first().json.chatinput;\n  \nconst data =\n  M.data ??\n  M.envelope?.resultado?.data ??\n  null;\n\nconst query =\n  M.query ??\n  M.envelope?.resultado?.query ??\n  null;\n\n// Erros podem ter vindo de Repassar dados\nconst erro  = M.erro ?? M.error ?? null;\nconst erros = Array.isArray(M.Erros) ? M.Erros\n           : Array.isArray(M.erros) ? M.erros\n           : Array.isArray(M.errors) ? M.errors\n           : [];\n\n// A análise pode ter vindo do Analista em várias chaves\nconst diagnostico =$input.first().json[\"Diagnóstico\"];\n\nconst hasError = !!erro || (Array.isArray(erros) && erros.length > 0);\n\nreturn [{\n  json: {\n    pedido_cliente,\n    data,\n    query,\n    erro,\n    erros,\n    diagnostico: hasError ? null : diagnostico,\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        48
+      ],
+      "id": "f9e5bb69-6886-4c20-b64a-2ad21ebd17ad",
+      "name": "Unificar Resultado",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5787e004-2bc5-4530-8e20-cea5b52f05ef",
+              "leftValue": "={{ !!(\n  $json.Erro\n    ? (Array.isArray($json.Erro)\n        ? $json.Erro.length > 0\n        : String($json.Erro).trim() !== '')\n    : false\n) }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -304,
+        112
+      ],
+      "id": "4f401b86-a15d-4404-a6c7-a18d1b8b4803",
+      "name": "Gerou algum erro ?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the database schema: {{ $json.schema }}\nHere is the user request: {{ $json.chatinput }}",
+        "options": {
+          "systemMessage": "Você é um gerador de SQL para MySQL 8.0+, guiado por um JSON chamado SCHEMA.\nSeu objetivo é gerar apenas consultas SELECT 100% válidas e coerentes com o SCHEMA.\nNunca produza instruções que criem, alterem, excluam ou modifiquem dados.\n\nO SCHEMA é fornecido em formato JSON nesta conversa e contém:\n\ntabelas, colunas, tipos, chaves e relacionamentos;\n\nmetadados (meta.deduplication, meta.month_reference, meta.pivot, meta.role, meta_class);\n\npolíticas de geração (generator_policies) e normalização de termos de negócio.\n\nSempre que houver conflito entre uma regra genérica e algo explícito no SCHEMA, siga o SCHEMA.\n\n⚙️ CONFIGURAÇÕES DE DIALETO E FORMATAÇÃO\n\nDialeto: MySQL 8.0+\n\nIdentificadores (tabelas e colunas): sempre entre crases → ...\nStrings: entre aspas simples → 'texto'\n\nProibido:\n\nAspas duplas (\"...\")\n\nPrefixos de schema (ex.: public.)\n\nPonto e vírgula (;) ao final da query\n\nCase: respeitar exatamente o case do SCHEMA.\nSeparador decimal: ponto “.”.\nPalavras reservadas só podem ser usadas como identificadores se estiverem entre crases.\n\nMySQL 8 NÃO possui o operador ILIKE.\nNunca use ILIKE em nenhuma situação.\nSe em qualquer momento você gerar ILIKE, considere a query inválida e regenere a SQL substituindo por LIKE com COLLATE ou usando LOWER(coluna) LIKE padrão.\nSe precisar de comparação case-insensitive, use:\n\nLOWER(coluna) LIKE 'padrão', ou\n\ncoluna COLLATE <collation> LIKE 'padrão', se o SCHEMA indicar a collation.\n\n🔒 POLÍTICA DE SEGURANÇA\n\nSomente SELECT é permitido.\nNão posso criar, alterar, inserir ou deletar.\nReescreva qualquer pedido como um SELECT.\n\nComandos proibidos:\nINSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, TRUNCATE,\nGRANT, REVOKE, COMMENT, VACUUM, COPY, REFRESH, CALL, DO, BEGIN,\nCOMMIT, ROLLBACK, SET, LOCK, CLUSTER, REINDEX, DISCARD.\n\nSe o usuário pedir algo que envolva qualquer comando acima, responda somente com:\n\n❌ Somente SELECT é permitido. Não posso criar, alterar, inserir ou deletar. Reescreva seu pedido como um SELECT.\n\n🧩 REGRAS DE USO DO SCHEMA\n\nSó use colunas e tabelas que existem no SCHEMA JSON.\n\nRespeite os tipos, nomes e cases definidos.\n\nUse apenas relacionamentos descritos no SCHEMA (relacionamentos, meta.join_hint, meta.lookup).\n\nSe o campo solicitado não existir e não houver nenhum alias configurado para ele, responda:\n\n❌ Não é possível gerar a consulta porque o campo não existe no SCHEMA.\n\n🧠 INTERPRETAÇÃO EM LINGUAGEM DE NEGÓCIO\n\nO usuário sempre fala em linguagem de negócio, por exemplo:\n“leiturista”, “ocorrência”, “referência 09/2025”, “clientes com corte”, “consumo”, “hidrometro”, “nível”, “categoria”, “UC”, “unidade consumidora”, “matrícula”, “ligação”, etc.\n\nAntes de montar o SQL, faça internamente (sem imprimir) este fluxo:\n\nNormalize os termos de negócio usando, nesta ordem:\n\nSCHEMA.policy.terminology_normalization\n(ex.: “medidor” → “hidrometro”; “nível/nivel” → “categoria”;\n“UC”, “unidade consumidora”, “matrícula/matricula”, “ligação/ligacao” → “cliente”)\n\nSCHEMA.generator_policies.column_aliases\nExemplos típicos (dependem do SCHEMA real):\n\n“matrícula”, “código da ligação” → CodigoMatriculaCliente\n\n“ocorrência”, “código da ocorrência” → coluna de ocorrência configurada (por exemplo CodigoOcorrenciaAtual em vcliente)\n\n“descrição da ocorrência” → coluna de descrição de ocorrência (ex.: DescricaoOcorrência)\n\n“tipo de serviço”, “serviço” → campo de tipo de serviço na tabela de serviços\n\n“localização do hidrômetro” → campo de localização do hidrômetro\n\ndescrições das colunas em tabelas[colunas].descricao, quando necessário.\n\nIdentifique a intenção:\n\nentidade principal: cliente, leiturista, ocorrência, serviço, categoria, setor, rota, etc.\n\nmétrica: contagem de ocorrências, soma de consumo, média de valor, quantidade de serviços, ranking, comparação entre meses, etc.\n\nperíodo/referência: por exemplo “09/2025”, “10/2025”, “últimos 3 meses”.\n\nfiltros adicionais: tipo de ocorrência, tipo de serviço, bairro, rota, categoria, situação de corte/retenção, localização do hidrômetro, etc.\n\nReferência / MesAnoReferência (campo string MM/YYYY)\n\nMesAnoReferência é uma string no formato MM/YYYY.\n\nSempre que precisar comparar por tempo ou identificar a referência mais recente, converta para data usando a expressão definida em month_reference.to_date_expr, por exemplo:\n\nSTR_TO_DATE(CONCAT('01/', MesAnoReferência), '%d/%m/%Y')\n\n\nSe o usuário informar explicitamente a referência (ex.: “na referência 10/2025”), use exatamente essa string no filtro:\n\nWHERE c.`MesAnoReferência` = '10/2025'\n\n\nSe o usuário NÃO informar nenhuma referência, mês ou período e a consulta envolver vcliente (dados por referência):\n\nUse sempre a última referência disponível na base, utilizando a expressão configurada em generator_policies.default_reference.sql_expr, equivalente a:\n\n(\n  SELECT vc.`MesAnoReferência`\n  FROM `vcliente` vc\n  WHERE vc.`MesAnoReferência` IS NOT NULL\n    AND vc.`MesAnoReferência` <> ''\n  ORDER BY STR_TO_DATE(CONCAT('01/', vc.`MesAnoReferência`), '%d/%m/%Y') DESC\n  LIMIT 1\n)\n\n\nExemplo de uso:\n\nWHERE c.`MesAnoReferência` = (\n  SELECT vc.`MesAnoReferência`\n  FROM `vcliente` vc\n  WHERE vc.`MesAnoReferência` IS NOT NULL\n    AND vc.`MesAnoReferência` <> ''\n  ORDER BY STR_TO_DATE(CONCAT('01/', vc.`MesAnoReferência`), '%d/%m/%Y') DESC\n  LIMIT 1\n)\n\n\nNunca gere consultas em vcliente sem filtro de referência quando for possível restringir à última referência, a menos que o usuário peça explicitamente “todas as referências” ou um intervalo claro.\n\nEscolha as tabelas de origem de acordo com o SCHEMA:\n\nUse vcliente como visão principal de dados por referência (cliente, consumo, valores, ocorrência atual, rota, setor, categoria, economias, status de retenção, etc.).\n\nUse a(s) tabela(s) de serviços (por exemplo vserviços) quando o foco for serviços executados/lançados, ligando à vcliente pelos campos configurados (geralmente CodigoMatriculaCliente e NomeArquivo, e quando aplicável MesAnoReferência).\n\nUse int_leiturista e/ou tabelas de log (ex.: mob_log) para detalhes adicionais de leituristas.\n\nUse tabelas de domínio (tipos de cálculo, tipos de cobrança, status de retenção, localização de hidrômetro, tipos de serviço, categorias, etc.) quando o usuário falar em descrições.\n\nSó depois disso monte o SELECT, com:\n\nFROM e JOIN baseados em relacionamentos, meta.lookup, meta.join_hints.\n\nWHERE com filtros de referência/período, usando:\n\no valor informado pelo usuário, ou\n\na expressão da última referência quando o usuário não informar nada.\n\nGROUP BY e ORDER BY compatíveis com a métrica desejada.\n\n🔁 USO DE METADADOS DO SCHEMA\n\nO SCHEMA JSON pode conter:\n\nmeta.deduplication\n\nmeta.month_reference\n\nmeta.pivot\n\nmeta.role\n\nmeta_class (por exemplo \"analytical_view\")\n\nSempre que esses metadados estiverem presentes e forem relevantes:\n\nDeduplicação\n\nSe meta.deduplication estiver definido (por exemplo, em vcliente ou vhistóricodeleitura):\n\nselecione apenas a linha mais recente por combinação de campos em partition_by\n(geralmente algo como CodigoMatriculaCliente + MesAnoReferência),\n\nusando ROW_NUMBER() ou janela equivalente, com ORDER BY definido (por exemplo Sequencia ou Ordenacão DESC),\n\nsem usar agregações numéricas (SUM/AVG/COUNT) para eliminar duplicidade.\n\nPivot / comparações multi-mês\n\nQuando o pedido envolver duas ou mais referências de mês/ano e o SCHEMA tiver meta.pivot, use essa definição para montar um pivot emulado:\n\níndice: pivot.index (ex.: CodigoMatriculaCliente)\n\ncolunas: pivot.columns (ex.: MesAnoReferência)\n\nvalores: apenas campos em pivot.value_fields, quando aplicável\n\nNunca use a palavra-chave PIVOT/UNPIVOT (MySQL 8 não possui).\n\nEm vez disso, use CTE + JOIN entre CTEs por código do cliente, garantindo deduplicação por mês antes da junção.\n\nViews analíticas\n\nSe meta_class = \"analytical_view\", trate a tabela como visão de análise temporal, aplicando deduplicação e regras de referência de forma consistente.\n\n🧭 OCORRÊNCIAS (REGRAS ESPECÍFICAS)\n\nSó use campos de ocorrência (`CodigoOcorrenciaAtual`, tabelas de ocorrência como `mis_ocorrencia`, descrições de ocorrência)\nquando a pergunta falar explicitamente em ocorrência/ocorrências, códigos de ocorrência ou análise de ocorrência.\n\nSe a pergunta NÃO citar ocorrência (por exemplo, perguntas sobre “leituras realizadas”, “clientes visitados”, “produtividade de leitura”\nou “quem leu mais em determinada referência”), NÃO use `CodigoOcorrenciaAtual` nem faça JOIN ou subconsulta em `mis_ocorrencia`.\nNesses casos, baseie-se apenas em `Visitado = 'S'` e nos demais campos de leitura definidos no SCHEMA.\n\nQuando a consulta envolver claramente “ocorrências” e for necessário desconsiderar “Leitura normal” e “sem ocorrência”, utilize a política de exclusão\nde ocorrência definida no SCHEMA (policy.occurrence_exclusion e filters.occurrence_exclusions), sem transformar isso em regra padrão para todas as consultas.\nInterprete essas políticas como um recurso OPCIONAL, aplicado somente em queries cujo objetivo seja analisar ocorrências.\nNão copie cegamente blocos de SQL prontos de exemplos: construa a condição de exclusão de acordo com o SCHEMA e com a intenção explícita da pergunta.\n\nAntes de usar qualquer campo de ocorrência (como `CodigoOcorrenciaAtual` ou a tabela `mis_ocorrencia`), verifique se o usuário\nfalou explicitamente em “ocorrência”, “ocorrências”, “código de ocorrência” ou análise de ocorrência.\nSe a pergunta for sobre “leituras realizadas”, “leituras executadas”, “clientes visitados”, “produtividade de leitura”, “quantidade de leituras”\nou temas semelhantes, é PROIBIDO usar `CodigoOcorrenciaAtual` ou `mis_ocorrencia`. Nesses casos, use apenas `Visitado = 'S'` ou outros campos de leitura definidos no SCHEMA.\n\n\n🧮 COMPORTAMENTO GERAL\n\nGere apenas SELECTs legíveis e válidos para MySQL 8.0+.\n\nRespeite o SCHEMA, seus metadados e políticas de geração.\n\nPode usar agregações (SUM, AVG, COUNT, MAX, MIN, etc.) e WHERE, GROUP BY, ORDER BY, LIMIT, desde que:\n\nnão sejam usadas para mascarar duplicidade que deveria ser resolvida por deduplicação (ROW_NUMBER / subconsulta)\n\nnão violem allow_numeric_aggregation=false quando definido no SCHEMA.\n\nQuando a consulta envolver duas ou mais referências na mesma entidade (por exemplo, comparação de leituras entre 08/2025 e 09/2025 na própria vcliente), use apenas as chaves de join recomendadas (por exemplo, CodigoMatriculaCliente), evitando colunas que variam de mês a mês, como NomeArquivo, salvo se o SCHEMA indicar explicitamente o contrário.\n\n📤 SAÍDA\n\nRetorne apenas o SQL final, sem explicações, sem comentários e sem ponto e vírgula no fim.",
+          "maxIterations": 1,
+          "returnIntermediateSteps": true
+        }
+      },
+      "id": "8036a9bf-017d-45bc-8c5e-0618c8b99b35",
+      "name": "Gerador de Query",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -2000,
+        -16
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={\n  \"pedido_cliente\": \"{{$json.envelope.pedido_cliente}}\",\n  \"resultado\": {\n    \"data\": {{ JSON.stringify($json.envelope.resultado.data) }},\n    \"query\": \"{{$json.envelope.resultado.query}}\"\n  },\n  \"metadados\": {{ JSON.stringify($json.envelope.metadados) }}\n}",
+        "options": {
+          "systemMessage": "⦃\nVocê é BILL, consultor técnico e estratégico em saneamento. Analise pedido_cliente e resultado.data e produza somente um JSON válido, sem texto fora dele. Use exclusivamente resultado.data; não invente números.\n\nSe houver até 3 valores relevantes, seja direto; se houver mais, detalhe. Percentuais usam “%” e valores “R$xx.xx”. Não use separador de milhar.\n\nEstrutura obrigatória:\n⦃\n\"🧭 contexto\": \"Compare com benchmarks do setor (SNIS 2023, ANA, Trata Brasil, reguladoras). Indique se está melhor, pior ou similar.\",\n\n\"📈 indicadores\": ⦃\n\"📝 descrição\": \"Explique o formato do dataset (linha única ou múltiplos registros por leiturista, categoria, mês, ocorrência etc.). Use todos os números disponíveis, identificando variações quando houver datas (_MM_AAAA).\",\n\"🔢 valores\": ⦃\n\"principais_métricas\": \"Liste totais, médias, variações, percentuais e rankings com nomes reais dos campos, detalhando por leiturista, ocorrência, rota, bairro ou categoria quando existirem.\",\n\"resumo_quantitativo\": \"Resuma valores e percentuais (duas casas), classificando %: até 10 baixa; 10–20 moderada; 20–30 elevada; acima de 30 crítica. Reutilize exatamente os mesmos números de principais_métricas.\"\n⦄\n⦄,\n\n\"📋 análise_interpretativa\": \"Interprete os números: melhora, piora, estabilidade, concentração de problemas ou ganhos; compare grupos e explique o significado técnico (ex.: maior percentual de ocorrência ou maior faturamento).\",\n\n\"🧾 descrição\": \"Diagnóstico técnico direto, baseado nos números, relacionando causas/efeitos típicos (micromedição, perdas, leitura, faturamento, cadastro).\",\n\n\"⚙️ ações\": [\"Ações objetivas ligadas aos dados: auditorias, revisões cadastrais, vistorias, troca de hidrômetros, ajustes de rotas, melhorias de leitura ou comunicação.\"],\n\n\"🧷 resumo_consultivo\": \"Conclusão executiva (até 5 linhas) integrando números e recomendações; destaque gravidade (%) e impacto potencial (R$).\"\n⦄\n\nRegras numéricas:\n\nUse apenas valores de resultado.data.\n\nEm resumo_quantitativo, nunca contradiga principais_métricas.\n\nSe um total não puder ser consolidado, diga que a consolidação não é segura.\n\nSempre use “%” para percentuais e “R$” para valores.\n\nCasos de leitura e ocorrência:\n• Se houver leituristas: calcular total de leituras, leituras com ocorrência e percentual (duas casas, %).\n• Se houver tipos de ocorrência: identificar as 2 ou 3 mais frequentes e citá-las.\n• Garantir coerência entre totais e percentuais.\n\nSe resultado.data estiver vazio, retorne exatamente:\n⦃\n\"🧭 contexto\": \"—\",\n\"📈 indicadores\": \"—\",\n\"🧾 descrição\": \"—\",\n\"📋 análise_interpretativa\": \"-\",\n\"⚙️ ações\": [],\n\"🧷 resumo_consultivo\": \"Não há dados suficientes para análise.\"\n⦄\n⦄",
+          "maxIterations": 5,
+          "returnIntermediateSteps": true
+        }
+      },
+      "id": "dc67cd37-dfbb-47e6-80da-75b55d363cf3",
+      "name": "Analista de Dados",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        144,
+        112
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "model": "gpt-5-mini",
+        "options": {
+          "maxTokens": "***MASKED_SECRET***",
+          "maxRetries": 3
+        }
+      },
+      "id": "f7a5864e-770b-4346-a3b5-89585601e6eb",
+      "name": "OpenAI Chat Model gerador de Query",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -2112,
+        192
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "H4HnbIJCN7JE8cR5",
+          "name": "OpenAi datamobil_Reader"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "***MASKED_SECRET***",
+        "contextWindowLength": 1
+      },
+      "id": "6d2a647a-9f8b-4351-86fc-a8ecbcbbc1bd",
+      "name": "Window Buffer Memory Analista de dados",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        192,
+        352
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "model": "gpt-5-mini",
+        "options": {
+          "maxTokens": "***MASKED_SECRET***",
+          "maxRetries": 2
+        }
+      },
+      "id": "ad1bed0e-0359-4a50-b5ae-e74d4ba2795e",
+      "name": "OpenAI Chat Model Analista de dados",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        48,
+        352
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "H4HnbIJCN7JE8cR5",
+          "name": "OpenAi datamobil_Reader"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "92509306-8e2c-4b9b-85de-daeaffe92145",
+      "name": "Memória gerador de query",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        -1936,
+        192
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        672,
+        -64
+      ],
+      "id": "cfd2c79a-f8a0-4c57-81ac-f967f386de88",
+      "name": "Unificar saidas"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5787e004-2bc5-4530-8e20-cea5b52f05ef",
+              "leftValue": "={{ $json.Erro.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        -64
+      ],
+      "id": "de07ec64-29f3-43a1-989e-9e6fa8f3c3e0",
+      "name": "Gerou algum erro ?1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1104,
+        -240
+      ],
+      "id": "61889611-6081-4d92-af92-3b1bfcb583f5",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === 1. CAPTURA DO BRUTO VINDO DO AGENT ===\nconst steps = $json.intermediateSteps ?? [];\n\nlet raw =\n  (steps.length\n    ? (\n        steps[steps.length - 1].output\n        ?? steps[steps.length - 1].toolOutput\n        ?? steps[steps.length - 1].result\n      )\n    : null\n  )\n  ?? $json.output\n  ?? $json.text\n  ?? $json.response\n  ?? \"\";\n\n// Se já vier objeto, ótimo, não precisa parsear string\nlet obj;\nif (raw && typeof raw === \"object\") {\n  obj = raw;\n} else {\n  // força string\n  raw = String(raw).trim()\n    // remove ```json ... ``` se vier\n    .replace(/^```(?:json)?\\s*/i, \"\")\n    .replace(/\\s*```$/i, \"\");\n\n  // se for string JSON dentro de string (aspas por fora), tenta desserializar uma vez\n  if (\n    (raw.startsWith('\"') && raw.endsWith('\"')) ||\n    (raw.startsWith(\"'\") && raw.endsWith(\"'\"))\n  ) {\n    try { raw = JSON.parse(raw); } catch {}\n  }\n\n  // se ainda for string, tenta extrair o primeiro bloco { ... }\n  if (typeof raw === \"string\") {\n    const m = raw.match(/\\{[\\s\\S]*\\}/m);\n    if (m) raw = m[0];\n  }\n\n  // === 2. FUNÇÃO DE PARSE COM HEURÍSTICA + NORMALIZAÇÃO ===\n  function tryParseWithBraceHeuristic(str) {\n    if (typeof str !== \"string\") return str;\n\n    // 2.1 normalizar escapes comuns gerados pelo modelo (\\n, \\t)\n    str = str.replace(/\\\\n/g, '\\n').replace(/\\\\t/g, '\\t');\n\n    // 2.2 normalizar números com separador de milhar do tipo \": 2,570\"\n    // Ex.: \"total_leituras\\\": 2,570,\"  =>  \"total_leituras\\\": 2570,\"\n    // Padrão: \":\" + espaços + até 3 dígitos + \",\" + 3 dígitos + (\",\" ou \"}\")\n    str = str.replace(\n      /(:\\s*)(-?\\d{1,3}),(\\d{3})(\\s*[,\\}])/g,\n      (_, prefixo, milhar, centena, sufixo) => `${prefixo}${milhar}${centena}${sufixo}`\n    );\n\n    // 2.3 tenta JSON.parse direto\n    try {\n      return JSON.parse(str);\n    } catch (e1) {\n      // 2.4 heurística de balanceamento de chaves\n      let depth = 0;\n      let inString = false;\n      let escape = false;\n      let lastCompleteIndex = -1;\n\n      for (let i = 0; i < str.length; i++) {\n        const ch = str[i];\n\n        if (escape) {\n          escape = false;\n          continue;\n        }\n        if (ch === '\\\\') {\n          escape = true;\n          continue;\n        }\n        if (ch === '\"' && !escape) {\n          inString = !inString;\n          continue;\n        }\n        if (inString) continue;\n\n        if (ch === '{') {\n          depth++;\n        } else if (ch === '}') {\n          depth--;\n          if (depth === 0) {\n            lastCompleteIndex = i;\n          }\n        }\n      }\n\n      if (lastCompleteIndex > -1) {\n        const candidate = str.slice(0, lastCompleteIndex + 1);\n        return JSON.parse(candidate);\n      } else {\n        throw e1;\n      }\n    }\n  }\n\n  let parsed;\n  try {\n    parsed = tryParseWithBraceHeuristic(raw);\n  } catch (eFinal) {\n    // se der ruim, devolve erro explicando\n    return [{\n      json: {\n        Diagnóstico: {\n          erro: \"Falha ao parsear JSON do Agent (mesmo após tentativa de reparo por chaves balanceadas e normalização de números)\",\n          detalhe: String(eFinal),\n          amostra: String(raw).slice(0, 500)\n        }\n      }\n    }];\n  }\n\n  obj = parsed;\n}\n\n// === 3. MAPA DE RENOMEAÇÃO (sem emoji -> com emoji) ===\n\nconst map = {\n   \"🧭contexto\": \"🧭 contexto\",\n  \"contexto\": \"contexto\",\n  \"📈 indicadores\": \"📈 indicadores\",\n  \"indicadores\": \"📈 indicadores\",\n  \"📝 descrição\": \"📝 descrição\",\n  \"descricao\": \"🧾 descrição\",\n  \"descrição\": \"🧾 descrição\",\n  \"🧾 descricao\": \"🧾 descrição\",\n  \"valores\": \"🔢 valores\",\n  \"🔢 valores\": \"🔢 valores\",\n    \"acoes\": \"⚙️ ações\",\n  \"ações\": \"⚙️ ações\",\n  \"⚙️ acoes\": \"⚙️ ações\",\n  \"resumo_consultivo\": \"🧷 resumo_consultivo\"\n};\n\nfunction renameKeys(o) {\n  if (o == null || typeof o !== \"object\") return o;\n\n  const out = {};\n  for (const [k, v] of Object.entries(o)) {\n    const nk = map[k] ?? k;\n    out[nk] = v;\n  }\n\n  // Ajusta sub-bloco de indicadores\n  if (out[\"📈 indicadores\"] && typeof out[\"📈 indicadores\"] === \"object\") {\n    const ind = out[\"📈 indicadores\"];\n    const indOut = {};\n    for (const [k, v] of Object.entries(ind)) {\n      const nk = map[k] ?? k;\n      indOut[nk] = v;\n    }\n    out[\"📈 indicadores\"] = indOut;\n  }\n\n  return out;\n}\n\nconst withEmoji = renameKeys(obj);\n\n// === 4. RETORNO FINAL ENVELOPADO ===\nreturn [{\n  json: {\n    Diagnóstico: withEmoji\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        128
+      ],
+      "id": "5224de56-763e-4279-b199-9e5945ea5a58",
+      "name": "Formatar retorno GPT"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Em que posso lhe ajudar hoje ???",
+        "options": {
+          "subtitle": "",
+          "title": "Olá, sou o Datamobil 📈 ✅",
+          "customCss": ":root {\n  /* Paleta no estilo Datamobil */\n  --chat--color-primary: #00a0e3;              /* azul do botão/bolha do usuário */\n  --chat--color-primary-shade-50: #008fd0;\n  --chat--color-primary-shade-100: #0073ad;\n  --chat--color-secondary: #20b69e;\n  --chat--color-secondary-shade-50: #1ca08a;\n\n  /* Evitando branco puro: off-white e cinzas */\n  --chat--color-white: #fdfdfd;                /* quase branco para bolhas/cartões */\n  --chat--color-light: #f3f4f7;                /* FUNDO do chat – cinza da tela */\n  --chat--color-light-shade-50: #e3e7f0;\n  --chat--color-light-shade-100: #c7cedd;\n  --chat--color-medium: #d3d8e4;\n  --chat--color-dark: #101330;\n  --chat--color-disabled: #9aa0b5;\n  --chat--color-typing: #555555;\n\n  /* Base Layout */\n  --chat--spacing: 1rem;\n  --chat--border-radius: 1.5rem;              /* bolhas arredondadas como na imagem */\n  --chat--transition-duration: 0.15s;\n  --chat--font-family: (\n    -apple-system,\n    BlinkMacSystemFont,\n    'Segoe UI',\n    Roboto,\n    Oxygen-Sans,\n    Ubuntu,\n    Cantarell,\n    'Helvetica Neue',\n    sans-serif\n  );\n\n  /* Janela do chat */\n  --chat--window--width: 420px;\n  --chat--window--height: 620px;\n  --chat--window--bottom: var(--chat--spacing);\n  --chat--window--right: var(--chat--spacing);\n  --chat--window--z-index: 9999;\n  --chat--window--border: 1px solid var(--chat--color-light-shade-50);\n  --chat--window--border-radius: 0;           /* retinho, como o container da tela */\n  --chat--window--margin-bottom: var(--chat--spacing);\n\n  /* Header – faixa clara, texto escuro */\n  --chat--header-height: auto;\n  --chat--header--padding: 0.75rem 1.5rem;\n  --chat--header--background: #f7f8fb;        /* quase branco, mas levemente cinza */\n  --chat--header--color: var(--chat--color-dark);\n  --chat--header--border-top: none;\n  --chat--header--border-bottom: 1px solid var(--chat--color-light-shade-50);\n  --chat--header--border-left: none;\n  --chat--header--border-right: none;\n  --chat--heading--font-size: 1.6em;\n  --chat--subtitle--font-size: 0.9em;\n  --chat--subtitle--line-height: 1.4;\n\n  /* Mensagens */\n  --chat--message--font-size: 0.95rem;\n  --chat--message--padding: 0.75rem 1.2rem;\n  --chat--message--border-radius: var(--chat--border-radius);\n  --chat--message-line-height: 1.5;\n  --chat--message--margin-bottom: calc(var(--chat--spacing) * 0.75);\n\n  /* Bot: cartão off-white no fundo cinza */\n  --chat--message--bot--background: var(--chat--color-white);\n  --chat--message--bot--color: var(--chat--color-dark);\n  --chat--message--bot--border: 1px solid var(--chat--color-light-shade-50);\n\n  /* User: bolha azul como na captura */\n  --chat--message--user--background: var(--chat--color-primary);\n  --chat--message--user--color: #fefefe;\n  --chat--message--user--border: none;\n\n  --chat--message--pre--background: rgba(0, 0, 0, 0.03);\n  --chat--messages-list--padding: 1.5rem 2rem;\n\n  /* Botão flutuante */\n  --chat--toggle--size: 64px;\n  --chat--toggle--width: var(--chat--toggle--size);\n  --chat--toggle--height: var(--chat--toggle--size);\n  --chat--toggle--border-radius: 50%;\n  --chat--toggle--background: var(--chat--color-primary);\n  --chat--toggle--hover--background: var(--chat--color-primary-shade-50);\n  --chat--toggle--active--background: var(--chat--color-primary-shade-100);\n  --chat--toggle--color: #ffffff;\n\n  /* Input – barra clara, borda azul, como na imagem */\n  --chat--textarea--height: 52px;\n  --chat--textarea--max-height: 30rem;\n  --chat--input--font-size: 0.95rem;\n  --chat--input--border: 1px solid #b9d9f2;\n  --chat--input--border-radius: 999px;\n  --chat--input--padding: 0.75rem 1rem;\n  --chat--input--background: #f7f8fb;\n  --chat--input--text-color: var(--chat--color-dark);\n  --chat--input--line-height: 1.4;\n  --chat--input--placeholder--font-size: var(--chat--input--font-size);\n  --chat--input--border-active: 1px solid var(--chat--color-primary);\n  --chat--input--left--panel--width: 2rem;\n\n  /* Botões internos */\n  --chat--button--color: #fefefe;\n  --chat--button--background: var(--chat--color-primary);\n  --chat--button--padding: calc(var(--chat--spacing) * 0.5) var(--chat--spacing);\n  --chat--button--border-radius: 999px;\n  --chat--button--hover--color: #fefefe;\n  --chat--button--hover--background: var(--chat--color-primary-shade-50);\n  --chat--close--button--color-hover: var(--chat--color-primary);\n\n  /* Botões de enviar/anexo (cores) */\n  --chat--input--send--button--background: var(--chat--color-primary);\n  --chat--input--send--button--color: #fefefe;\n  --chat--input--send--button--background-hover: var(--chat--color-primary-shade-50);\n  --chat--input--send--button--color-hover: #fefefe;\n  --chat--input--file--button--background: transparent;\n  --chat--input--file--button--color: var(--chat--color-secondary);\n  --chat--input--file--button--background-hover: transparent;\n  --chat--input--file--button--color-hover: var(--chat--color-secondary-shade-50);\n  --chat--files-spacing: 0.25rem;\n\n  /* Body e footer – FUNDO CINZA como na imagem */\n  --chat--body--background: var(--chat--color-light);\n  --chat--footer--background: var(--chat--color-light);\n  --chat--footer--color: var(--chat--color-dark);\n}\n\n/* Bolhas no estilo Datamobil */\n.chat-message {\n  max-width: 50%;\n  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);\n}\n\n/* Alinhamento: usuário à direita, bot à esquerda */\n.chat-message--user {\n  margin-left: auto;\n}\n\n.chat-message--bot {\n  margin-right: auto;\n}\n\n/* Centraliza apenas a PRIMEIRA mensagem do bot\n   (ex: \"Boa tarde !!! Sou o Datamobil 📈\") */\n.chat-messages-list .chat-message--bot:first-child {\n  display: flex;\n  justify-content: center;\n  text-align: center;\n}\n\n/* === BOTÃO DE ENVIAR MAIS ARREDONDADO (ESTILO FAB) === */\n/* Ajuste o seletor abaixo para a classe real do botão de enviar, se for diferente */\n.chat-input__send-button {\n  width: 44px;\n  height: 44px;\n  border-radius: 50%;\n  padding: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-shadow: 0 4px 10px rgba(0, 160, 227, 0.45);\n}\n\n/* Deixa o ícone um pouco menor e bem centralizado */\n.chat-input__send-button svg,\n.chat-input__send-button i {\n  width: 18px;\n  height: 18px;\n}\n",
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -3456,
+        0
+      ],
+      "id": "d6ca1c79-329f-491e-816f-e9a2e30b9979",
+      "name": "When chat message received",
+      "webhookId": "d90fd405-b2e9-487b-b316-61bce6f6b61f"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ==============================\n// 1. ENTRADAS BÁSICAS\n// ==============================\nconst pedido = $json.pedido_cliente;\nconst data = $json.data || [];\nconst query = $json.query || \"\";\n\n// diagnostico pode vir como \"diagnostico\" ou \"Diagnóstico\"\nconst d = $json.Diagnóstico || $json.diagnostico || {};\n\n// ==============================\n// 2. HELPERS GERAIS\n// ==============================\nfunction toArraySafe(val) {\n  if (val == null) return [];\n  if (Array.isArray(val)) return val;\n  if (typeof val === \"object\") return [JSON.stringify(val, null, 2)];\n  return [String(val)];\n}\n\nfunction toTextSafe(val, fallback = \"—\") {\n  if (val == null) return fallback;\n  if (typeof val === \"string\") return val;\n  if (typeof val === \"number\" || typeof val === \"boolean\") return String(val);\n  return JSON.stringify(val, null, 2);\n}\n\n// ==============================\n// 3. FORMATAÇÃO NUMÉRICA POR CONTEXTO\n// ==============================\nfunction formatMoneyBr(num) {\n  if (num == null || isNaN(num)) return \"R$ 0,00\";\n  return (\n    \"R$ \" +\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    })\n  );\n}\n\nfunction formatPercentBr(num) {\n  if (num == null || isNaN(num)) return \"0%\";\n  return (\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    }) + \"%\"\n  );\n}\n\nfunction formatIntegerBr(num) {\n  if (num == null || isNaN(num)) return \"0\";\n  return Number(num).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 0,\n  });\n}\n\n// decide como formatar de acordo com o nome do campo / contexto pai\nfunction formatNumberWithContext(chave, parentKey, value) {\n  const k = (chave || \"\").toLowerCase();\n  const p = (parentKey || \"\").toLowerCase();\n\n  // 1) VALOR MONETÁRIO\n  if (\n    k.includes(\"valor\") ||\n    k.includes(\"fatura\") ||\n    k.includes(\"faturado\") ||\n    k.includes(\"receita\") ||\n    p.includes(\"valor_faturado\") ||\n    p.includes(\"faturado\") ||\n    p.includes(\"faturas\")\n  ) {\n    return formatMoneyBr(value);\n  }\n\n  // 2) PERCENTUAL\n  if (\n    k.includes(\"percent\") ||\n    k.includes(\"perc\") ||\n    k.endsWith(\"_pct\") ||\n    k.endsWith(\"_percentual\") ||\n    k.includes(\"taxa\") ||\n    k.includes(\"indice\") ||\n    k.includes(\"índice\")\n  ) {\n    return formatPercentBr(value);\n  }\n\n  // 3) CONSUMO / VOLUME (m³)\n  if (\n    k.includes(\"consumo\") ||\n    k.includes(\"volume\") ||\n    k.includes(\"m3\") ||\n    k.includes(\"m³\")\n  ) {\n    return `${formatIntegerBr(value)} m³`;\n  }\n\n  // 4) LEITURAS / QUANTIDADES / REGISTROS (inteiro com milhar)\n  if (\n    k.includes(\"leitura\") ||\n    k.includes(\"leituras\") ||\n    k.includes(\"qtd\") ||\n    k.includes(\"quantidade\") ||\n    k.includes(\"total\") ||\n    k.includes(\"economias\") ||\n    k.includes(\"registros\")\n  ) {\n    return formatIntegerBr(value);\n  }\n\n  // 5) DEFAULT: número \"cru\", mas em pt-BR\n  return Number(value).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 2,\n  });\n}\n\n// ==============================\n// 4. AMOSTRA DE DADOS (JSON COMPLETO)\n// ==============================\nlet amostraDados;\nif (data.length === 0) {\n  amostraDados = \"Nenhum registro retornado.\";\n} else {\n  amostraDados = JSON.stringify(data, null, 2);\n}\n\n// ==============================\n// 5. ACESSO AOS BLOCOS DO DIAGNÓSTICO\n// ==============================\nconst contexto =\n  d[\"🧭 contexto\"] ||\n  d[\"🧭 contexto_setorial\"] ||\n  d[\"contexto\"] ||\n  d[\"contexto_setorial\"] ||\n  \"—\";\n\nconst indicadoresRaw = d[\"📈 indicadores\"] || d[\"indicadores\"] || \"—\";\n\nlet indicadoresDescricao = \"—\";\nlet valores = {};\n\nif (typeof indicadoresRaw === \"string\") {\n  indicadoresDescricao = indicadoresRaw;\n} else if (indicadoresRaw && typeof indicadoresRaw === \"object\") {\n  indicadoresDescricao = toTextSafe(\n    indicadoresRaw[\"📝 descrição\"] || indicadoresRaw[\"📝 descricao\"] || indicadoresRaw.descricao\n  );\n  valores =\n    indicadoresRaw[\"🔢 valores\"] ||\n    indicadoresRaw[\"valores\"] ||\n    {};\n}\n\n// ==============================\n// 5.1 CAPTURA ROBUSTA DA ANÁLISE INTERPRETATIVA\n// ==============================\nfunction extrairAnaliseInterpretativa(...objs) {\n  for (const obj of objs) {\n    if (!obj || typeof obj !== \"object\") continue;\n    for (const [k, v] of Object.entries(obj)) {\n      const kl = k.toLowerCase();\n      if (\n        kl.includes(\"análise_interpretativa\") ||\n        kl.includes(\"analise_interpretativa\")\n      ) {\n        if (typeof v === \"string\") return v;\n      }\n    }\n  }\n  return \"-\";\n}\n\nconst analiseInterpretativa =\n  d[\"📋análise_interpretativa\"] ||\n  d[\"📋 análise_interpretativa\"] ||\n  extrairAnaliseInterpretativa(d, valores);\n\n// ações (lista simples)\nconst acoes = toArraySafe(d[\"⚙️ ações\"] || d[\"acoes\"] || d[\"ações\"]);\n\n// descrição técnica\nconst descricaoTecnica = toTextSafe(d[\"🧾 descrição\"] || d[\"descricao\"]);\n\n// resumo consultivo\nconst resumoConsultivo = toTextSafe(\n  d[\"🧷 resumo_consultivo\"] || d[\"resumo_consultivo\"]\n);\n\n// ==============================\n// 6. FORMATADOR GENÉRICO DE \"🔢 valores\"\n// ==============================\nfunction formatValores(obj, parentKey = \"\") {\n  if (obj == null) return \"—\";\n\n  // PRIMITIVO\n  if (\n    typeof obj === \"string\" ||\n    typeof obj === \"number\" ||\n    typeof obj === \"boolean\"\n  ) {\n    if (typeof obj === \"number\") {\n      return formatNumberWithContext(\"\", parentKey, obj);\n    }\n    return String(obj);\n  }\n\n  // ARRAY\n  if (Array.isArray(obj)) {\n    return obj\n      .map((item, idx) => {\n        if (item && typeof item === \"object\") {\n          const partes = [];\n          for (const [k, v] of Object.entries(item)) {\n            if (typeof v === \"number\") {\n              partes.push(\n                `${k}: ${formatNumberWithContext(k, parentKey, v)}`\n              );\n            } else {\n              partes.push(`${k}: ${toTextSafe(v)}`);\n            }\n          }\n          return `• item ${idx + 1}: ${partes.join(\" | \")}`;\n        }\n        if (typeof item === \"number\") {\n          return `• ${formatNumberWithContext(\"\", parentKey, item)}`;\n        }\n        return `• ${toTextSafe(item)}`;\n      })\n      .join(\"\\n\");\n  }\n\n  // OBJETO\n  if (typeof obj === \"object\") {\n    const linhas = [];\n\n    for (const [chave, val] of Object.entries(obj)) {\n      const chaveLower = chave.toLowerCase();\n\n      // não renderizar análise_interpretativa dentro de valores\n      if (\n        chaveLower.includes(\"análise_interpretativa\") ||\n        chaveLower.includes(\"analise_interpretativa\")\n      ) {\n        continue;\n      }\n\n      // primitivo\n      if (\n        val == null ||\n        typeof val === \"string\" ||\n        typeof val === \"number\" ||\n        typeof val === \"boolean\"\n      ) {\n        if (typeof val === \"number\") {\n          linhas.push(\n            `- ${chave}: ${formatNumberWithContext(chave, parentKey, val)}`\n          );\n        } else {\n          linhas.push(`- ${chave}: ${toTextSafe(val)}`);\n        }\n        continue;\n      }\n\n      // array\n      if (Array.isArray(val)) {\n        if (\n          val.length > 0 &&\n          val.every(\n            (item) => item && typeof item === \"object\" && !Array.isArray(item)\n          )\n        ) {\n          const itensFormatados = val\n            .map((item) => {\n              const partes = [];\n\n              const categoria =\n                item.categoria ||\n                item.Categoria ||\n                item.tipo ||\n                item.Tipo ||\n                item.nome ||\n                item.Nome;\n              const rota = item.rota || item.Rota;\n              const bairro = item.bairro || item.Bairro;\n\n              if (rota != null) partes.push(`rota: ${rota}`);\n              if (bairro != null) partes.push(`bairro: ${bairro}`);\n              if (categoria != null) partes.push(`categoria: ${categoria}`);\n\n              for (const [k2, v2] of Object.entries(item)) {\n                if (\n                  k2 === \"categoria\" ||\n                  k2 === \"Categoria\" ||\n                  k2 === \"tipo\" ||\n                  k2 === \"Tipo\" ||\n                  k2 === \"nome\" ||\n                  k2 === \"Nome\" ||\n                  k2 === \"rota\" ||\n                  k2 === \"Rota\" ||\n                  k2 === \"bairro\" ||\n                  k2 === \"Bairro\"\n                ) {\n                  continue;\n                }\n\n                if (typeof v2 === \"number\") {\n                  partes.push(\n                    `${k2}: ${formatNumberWithContext(k2, chave, v2)}`\n                  );\n                } else {\n                  partes.push(`${k2}: ${toTextSafe(v2)}`);\n                }\n              }\n\n              return `  • ${partes.join(\" | \")}`;\n            })\n            .join(\"\\n\");\n\n          linhas.push(`${chave}:\\n${itensFormatados}`);\n        } else {\n          const itens = val\n            .map((v) =>\n              typeof v === \"number\"\n                ? `  • ${formatNumberWithContext(chave, parentKey, v)}`\n                : `  • ${toTextSafe(v)}`\n            )\n            .join(\"\\n\");\n          linhas.push(`${chave}:\\n${itens}`);\n        }\n\n        continue;\n      }\n\n      // objeto aninhado\n      const sub = formatValores(val, chave)\n        .split(\"\\n\")\n        .map((ln) => \"  \" + ln)\n        .join(\"\\n\");\n      linhas.push(`${chave}:\\n${sub}`);\n    }\n\n    return linhas.length ? linhas.join(\"\\n\") : toTextSafe(obj);\n  }\n\n  return toTextSafe(obj);\n}\n\n// ==============================\n// 7. TEXTO FINAL\n// ==============================\nconst texto =\n  `**📌 PEDIDO DO CLIENTE**\\n` +\n  `${pedido || \"—\"}\\n\\n` +\n  `**📊 DADOS UTILIZADOS (amostra)**\\n\\n` +\n  `${amostraDados}\\n\\n` +\n  `**🧮 QUERY SQL**\\n\\n` +\n  `${query || \"—\"}\\n\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n` +\n  `**🔎 DIAGNÓSTICO BILL**\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n\\n` +\n  `**🧭 CONTEXTO**\\n\\n` +\n  `${toTextSafe(contexto)}\\n\\n` +\n  `**📈 INDICADORES**\\n\\n` +\n  `${indicadoresDescricao}\\n\\n` +\n  `**🔢 VALORES (detalhado)**\\n\\n` +\n  `${formatValores(valores, \"🔢 valores\")}\\n\\n` +\n  `**📋 ANÁLISE INTERPRETATIVA**\\n\\n` +\n  `${toTextSafe(analiseInterpretativa)}\\n\\n` +\n  `**🧾 DESCRIÇÃO TÉCNICA**\\n\\n` +\n  `${descricaoTecnica}\\n\\n` +\n  `**⚙️ AÇÕES**\\n\\n` +\n  `${\n    acoes.length\n      ? acoes.map((s) => \"- \" + s).join(\"\\n\")\n      : \"—\"\n  }\\n\\n` +\n  `**🧷 RESUMO CONSULTIVO**\\n\\n` +\n  `${resumoConsultivo}`;\n\n// ==============================\n// 8. RETORNO PARA O CHAT\n// ==============================\nreturn [\n  {\n    json: {\n      resposta_chat: texto,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        48
+      ],
+      "id": "db825670-9977-4a86-91e5-32c92d66488b",
+      "name": "Formatar visualização",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "message": "={{$json.resposta_chat}}",
+        "waitUserReply": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        1616,
+        0
+      ],
+      "id": "6ab34923-c94c-4ac7-a679-22fa838c4a1b",
+      "name": "Respond to Chat"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***MASKED_SECRET***"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4.1-mini\",\n  \"temperature\": 0.2,\n  \"input\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Você é um gerador de SQL para MySQL 8.0+, guiado por um JSON chamado SCHEMA.\\nSeu objetivo é gerar apenas consultas SELECT 100% válidas e coerentes com o SCHEMA.\\nNunca produza instruções que criem, alterem, excluam ou modifiquem dados.\\n\\n⚙️ CONFIGURAÇÕES DE DIALETO E FORMATAÇÃO\\n\\nDialeto: MySQL 8.0+\\n\\nIdentificadores (tabelas e colunas): sempre entre crases → `...`\\nStrings: entre aspas simples → 'texto'\\n\\nProibido:\\n- Aspas duplas (\\\"...\\\")\\n- Prefixes de schema (ex.: public.)\\n- Ponto e vírgula (;) ao final da query\\n\\nCase: respeitar exatamente o case do SCHEMA.\\nSeparador decimal: ponto .\\nPalavras reservadas só podem ser usadas se estiverem entre crases.\\n\\n🔒 POLÍTICA DE SEGURANÇA\\nSomente SELECT é permitido.\\nNão posso criar, alterar, inserir ou deletar.\\nReescreva seu pedido como um SELECT.\\n\\nComandos proibidos:\\nINSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, TRUNCATE,\\nGRANT, REVOKE, COMMENT, VACUUM, COPY, REFRESH, CALL, DO, BEGIN,\\nCOMMIT, ROLLBACK, SET, LOCK, CLUSTER, REINDEX, DISCARD.\\n\\nSe o usuário pedir algo que envolva qualquer comando acima, responda somente com:\\n\\\"❌ Somente SELECT é permitido. Não posso criar, alterar, inserir ou deletar. Reescreva seu pedido como um SELECT.\\\"\\n\\n🧩 REGRAS DE USO DO SCHEMA\\n\\nSó use colunas e tabelas que existem no SCHEMA JSON.\\nRespeite os tipos, nomes e cases definidos.\\nSe o campo solicitado não existir, responda:\\n\\\"❌ Não é possível gerar a consulta porque o campo não existe no SCHEMA.\\\"\\n\\n🔁 USO DE METADADOS DO SCHEMA\\n\\nO SCHEMA JSON contém informações adicionais sobre cada tabela e coluna, incluindo:\\n- Políticas de deduplicação (meta.deduplication)\\n- Referências mensais (meta.month_reference)\\n- Estrutura de pivot (meta.pivot)\\n- Funções de coluna (meta.role)\\n\\nSempre que esses metadados estiverem presentes:\\n- Aplique automaticamente as regras de deduplicação: selecione apenas a linha mais recente por combinação de campos definidos em partition_by (geralmente CodigoMatriculaCliente + MesAnoReferência), usando ROW_NUMBER() e Ordenacão DESC, sem usar agregações numéricas.\\n- Quando o pedido envolver duas ou mais referências de mês/ano, use as definições de meta.pivot para gerar um PIVOT:\\n  • índice: pivot.index\\n  • colunas: pivot.columns\\n  • valores: os campos solicitados que existam em pivot.value_fields\\n  • formato: long_format se nenhum campo solicitado estiver na lista.\\n- Nunca use SUM, AVG ou COUNT para eliminar duplicatas; respeite allow_numeric_aggregation=false.\\n- Use as expressões de data definidas em month_reference.to_date_expr para comparar ou ordenar períodos.\\n- Se o SCHEMA informar \\\"meta_class\\\": \\\"analytical_view\\\", interprete essa tabela como visão de análise temporal, aplicando as regras acima automaticamente.\\n\\nMySQL 8 NÃO possui PIVOT: nunca use a palavra-chave PIVOT/UNPIVOT. Emule o pivot criando uma CTE por referência com ROW_NUMBER() (rn=1) e faça JOIN entre as CTEs por CodigoMatriculaCliente (ou LEFT+RIGHT+UNION quando precisar).\\nQuando 2+ referências forem detectadas: proíba SUM/AVG/COUNT/MAX/MIN e GROUP BY para deduplicar; use apenas janela + JOIN.\\n\\n🧭 SAÍDA EM PIVOT (obrigatória para 2+ referências)\\n- Se o pedido envolver `vCliente` e forem detectadas 2+ referências mensais:\\n  • Gere PIVOT com índice `CodigoMatriculaCliente`, colunas `MesAnoReferência`.\\n  • Use como valores APENAS os campos solicitados que existam em `meta.pivot.value_fields`.\\n  • Sem agregação numérica; deduplique com ROW_NUMBER() por cliente/mês (Ordenacão DESC).\\n- Nome das colunas do PIVOT: <Campo>_<MM>_<YYYY> (ex.: ConsumoFaturado_06_2022).\\n- CHECK DE CONFORMIDADE (obrigatório — não imprimir em texto):\\n  1) Existem pelo menos duas colunas cujo nome termina em _MM_YYYY?\\n  2) Cada coluna de valor solicitada está replicada por mês? (ex.: ConsumoFaturado_06_2022 e ConsumoFaturado_07_2022)\\n  3) A consulta contém a deduplicação por Ordenacão (janela ou subconsulta)?\\n  4) Não há SUM/AVG/COUNT para remover duplicidade.\\n  Se qualquer item falhar, regenere a consulta até atender aos quatro itens.\\n\\n🧮 COMPORTAMENTO GERAL\\n\\nGere apenas SELECTs legíveis e válidos.\\nO foco é montar a query-base corretamente.\\nPode usar agregações (SUM, AVG, COUNT, etc.) e WHERE, GROUP BY, ORDER BY, LIMIT.\\n\\n📤 SAÍDA\\nRetorne apenas o SQL final, sem explicações, sem comentários, e sem ponto e vírgula no fim.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.chatinput }}\"\n    }\n  ],\n  \"tools\": [\n    {\n      \"type\": \"file_search\",\n      \"vector_store_ids\": [\n        \"vs_691735074a1081918f761d1dd6115160\"\n      ]\n    }\n  ],\n  \"max_output_tokens\": 5000\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        640
+      ],
+      "id": "2816c899-e1b2-4d80-96d5-5dc2dc58a61b",
+      "name": "GPT analisar dados"
+    }
+  ],
+  "connections": {
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract data from file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if query exists": {
+      "main": [
+        [
+          {
+            "node": "Extrair query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem de query inválida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract SQL query": {
+      "main": [
+        [
+          {
+            "node": "Check if query exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine schema data and chat input": {
+      "main": [
+        [
+          {
+            "node": "Gerador de Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract data from file": {
+      "main": [
+        [
+          {
+            "node": "Combine schema data and chat input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setar informações de Parâmetros": {
+      "main": [
+        [
+          {
+            "node": "Constantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Executar query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem de query Proibida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repassar dados": {
+      "main": [
+        [
+          {
+            "node": "Gerou algum erro ?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Unificar saidas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair query": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de query inválida": {
+      "main": [
+        [
+          {
+            "node": "Repassar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de query Proibida": {
+      "main": [
+        [
+          {
+            "node": "Repassar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Constantes": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executar query": {
+      "main": [
+        [
+          {
+            "node": "Repassar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar envelope de dados e solicitação": {
+      "main": [
+        [
+          {
+            "node": "Analista de Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unificar Resultado": {
+      "main": [
+        [
+          {
+            "node": "Formatar visualização",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerou algum erro ?": {
+      "main": [
+        [
+          {
+            "node": "Unificar saidas",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Gerar envelope de dados e solicitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerador de Query": {
+      "main": [
+        [
+          {
+            "node": "Extract SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analista de Dados": {
+      "main": [
+        [
+          {
+            "node": "Formatar retorno GPT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model gerador de Query": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gerador de Query",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory Analista de dados": {
+      "ai_memory": [
+        [
+          {
+            "node": "Analista de Dados",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model Analista de dados": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analista de Dados",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória gerador de query": {
+      "ai_memory": [
+        [
+          {
+            "node": "Gerador de Query",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unificar saidas": {
+      "main": [
+        [
+          {
+            "node": "Gerou algum erro ?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerou algum erro ?1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unificar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar retorno GPT": {
+      "main": [
+        [
+          {
+            "node": "Unificar saidas",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Setar informações de Parâmetros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar visualização": {
+      "main": [
+        [
+          {
+            "node": "Respond to Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "780ff91e-81b8-4440-9ae2-6999b74b8daf",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "createdAt": "2025-09-01T14:36:59.523Z",
+      "updatedAt": "2025-09-01T14:36:59.523Z",
+      "role": "workflow:owner",
+      "workflowId": "48s0HC916sOlb6kW",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
