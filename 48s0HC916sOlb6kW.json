@@ -2,39 +2,10 @@
   "id": "48s0HC916sOlb6kW",
   "name": "Datamobil - Reader Web + Análise - Produção",
   "createdAt": "2025-09-01T14:36:59.509Z",
-  "updatedAt": "2025-11-17T20:19:21.000Z",
+  "updatedAt": "2025-11-18T14:36:10.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
-    {
-      "parameters": {
-        "operation": "download",
-        "fileId": {
-          "__rl": true,
-          "value": "1QQSmwbXjo0-jTDq2a0_TrhvPruhROeON",
-          "mode": "list",
-          "cachedResultName": "ReaderWeb.json",
-          "cachedResultUrl": "https://drive.google.com/file/d/1QQSmwbXjo0-jTDq2a0_TrhvPruhROeON/view?usp=drivesdk"
-        },
-        "options": {
-          "binaryPropertyName": "json"
-        }
-      },
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [
-        -2672,
-        -16
-      ],
-      "id": "449329df-841f-449f-8de6-ce12b73772ca",
-      "name": "Download file",
-      "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "A7dItjE7OWcTVPSQ",
-          "name": "Google Drive account"
-        }
-      }
-    },
     {
       "parameters": {
         "conditions": {
@@ -110,12 +81,6 @@
               "name": "chatinput",
               "type": "string",
               "value": "={{ $('When chat message received').item.json.chatInput }}"
-            },
-            {
-              "id": "e42b39eb-dfbd-48d9-94ed-d658bdd41454",
-              "name": "schema",
-              "type": "string",
-              "value": "={{ $json.json }}"
             }
           ]
         },
@@ -130,24 +95,6 @@
       ],
       "executeOnce": true,
       "typeVersion": 3.4
-    },
-    {
-      "parameters": {
-        "operation": "fromJson",
-        "binaryPropertyName": "json",
-        "destinationKey": "***MASKED_SECRET***",
-        "options": {
-          "encoding": "utf8"
-        }
-      },
-      "id": "04fb0465-3b26-4929-87d5-9982f4ed7688",
-      "name": "Extract data from file",
-      "type": "n8n-nodes-base.extractFromFile",
-      "position": [
-        -2448,
-        -16
-      ],
-      "typeVersion": 1
     },
     {
       "parameters": {
@@ -172,7 +119,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -3120,
+        -2704,
         -16
       ],
       "id": "9a44d9cb-1220-44ed-867e-4afaeb629023",
@@ -274,7 +221,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2896,
+        -2480,
         -16
       ],
       "id": "10dff0e9-6967-41bf-b519-57e707e508c0",
@@ -305,7 +252,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Captura o node \"Combine schema data and chat input\"\nconst combineNode = $('Combine schema data and chat input').first();\nconst pedido = combineNode?.json?.chatinput || '';\n\n// Captura o dataset atual\nconst src = $json.envelope ?? $json;\nconst dataIn = Array.isArray(src?.resultado?.data)\n  ? src.resultado.data\n  : Array.isArray(src?.data)\n  ? src.data\n  : [];\n\n// Normaliza chaves e converte valores numéricos\nconst normalizeKey = (k) =>\n  k\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/\\s+/g, '_')\n    .replace(/[^\\w]/g, '_')\n    .replace(/_+/g, '_')\n    .replace(/^_|_$/g, '')\n    .toLowerCase();\n\nconst toNumber = (v) =>\n  typeof v === 'string' && /^\\s*\\d+(?:[.,]\\d+)?\\s*$/.test(v)\n    ? Number(v.replace(',', '.'))\n    : v;\n\nconst dataNorm = (dataIn || []).map((row) => {\n  const out = {};\n  for (const [k, v] of Object.entries(row)) {\n    const nk = normalizeKey(k);\n    const nv = toNumber(v);\n    out[nk] = nv;\n    if (!(k in out)) out[k] = nv; // mantém original também\n  }\n  return out;\n});\n\n// Monta o envelope final para o BILL\nreturn [\n  {\n    json: {\n      envelope: {\n        pedido_cliente: pedido || src.pedido_cliente || '—',\n        resultado: {\n          data: dataNorm,\n          query: src?.resultado?.query || src?.query || '',\n        },\n        metadados: src.metadados || {\n          origem: 'n8n',\n          unidade: 'clientes',\n          moeda: 'BRL',\n        },\n      },\n    },\n  },\n];\n"
+        "jsCode": "// Captura o node \"Combine schema data and chat input\"\nconst combineNode = $('Combine schema data and chat input').first();\nconst pedido = combineNode?.json?.chatinput || '';\n\n// Captura o dataset atual\nconst src = $json.envelope ?? $json;\nconst dataIn = Array.isArray(src?.resultado?.data)\n  ? src.resultado.data\n  : Array.isArray(src?.data)\n  ? src.data\n  : [];\n\n// Normaliza chaves e converte valores numéricos\nconst normalizeKey = (k) =>\n  k\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/\\s+/g, '_')\n    .replace(/[^\\w]/g, '_')\n    .replace(/_+/g, '_')\n    .replace(/^_|_$/g, '')\n    .toLowerCase();\n\nconst toNumber = (v) =>\n  typeof v === 'string' && /^\\s*\\d+(?:[.,]\\d+)?\\s*$/.test(v)\n    ? Number(v.replace(',', '.'))\n    : v;\n\n// 🔥 VERSÃO CORRIGIDA — sem duplicar TotalLeituras/totalleituras\nconst dataNorm = (dataIn || []).map((row) => {\n  const out = {};\n  for (const [k, v] of Object.entries(row)) {\n    const nk = normalizeKey(k);\n    const nv = toNumber(v);\n\n    // Apenas a chave normalizada\n    out[nk] = nv;\n  }\n  return out;\n});\n\n// Monta o envelope final para o BILL\nreturn [\n  {\n    json: {\n      envelope: {\n        pedido_cliente: pedido || src.pedido_cliente || '—',\n        resultado: {\n          data: dataNorm,\n          query: src?.resultado?.query || src?.query || '',\n        },\n        metadados: src.metadados || {\n          origem: 'n8n',\n          unidade: 'clientes',\n          moeda: 'BRL',\n        },\n      },\n    },\n  },\n];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -318,12 +265,12 @@
     },
     {
       "parameters": {
-        "jsCode": "// Agora o Merge já trouxe os dois lados num único item (json único)\nconst M = $json || {};\n\nconst pedido_cliente =$('Combine schema data and chat input').first().json.chatinput;\n  \nconst data =\n  M.data ??\n  M.envelope?.resultado?.data ??\n  null;\n\nconst query =\n  M.query ??\n  M.envelope?.resultado?.query ??\n  null;\n\n// Erros podem ter vindo de Repassar dados\nconst erro  = M.erro ?? M.error ?? null;\nconst erros = Array.isArray(M.Erros) ? M.Erros\n           : Array.isArray(M.erros) ? M.erros\n           : Array.isArray(M.errors) ? M.errors\n           : [];\n\n// A análise pode ter vindo do Analista em várias chaves\nconst diagnostico =$input.first().json[\"Diagnóstico\"];\n\nconst hasError = !!erro || (Array.isArray(erros) && erros.length > 0);\n\nreturn [{\n  json: {\n    pedido_cliente,\n    data,\n    query,\n    erro,\n    erros,\n    diagnostico: hasError ? null : diagnostico,\n  }\n}];\n"
+        "jsCode": "// Agora o Merge já trouxe os dois lados num único item (json único)\nconst M = $json || {};\n\nconst pedido_cliente =$('Combine schema data and chat input').first().json.chatinput;\n  \nconst data =\n  M.data ??\n  M.envelope?.resultado?.data ??\n  null;\n\nconst query =\n  M.query ??\n  M.envelope?.resultado?.query ??\n  null;\n\n// Erros podem ter vindo de Repassar dados\nconst erro  = M.erro ?? M.error ?? null;\nconst erros = Array.isArray(M.Erros) ? M.Erros\n           : Array.isArray(M.erros) ? M.erros\n           : Array.isArray(M.errors) ? M.errors\n           : [];\n\n// A análise pode ter vindo do Analista em várias chaves\nconst diagnostico = $input.first().json.Analise;\n\nconst usae_GPT_Query = $input.first().json.usage_GPT_Query;\nconst usae_GPT_Analista = $input.first().json.usage_GPT_Analista;\n\nconst hasError = !!erro || (Array.isArray(erros) && erros.length > 0);\n\nreturn [{\n  json: {\n    pedido_cliente,\n    data,\n    query,\n    erro,\n    erros,\n    diagnostico: hasError ? null : diagnostico,\n    usae_GPT_Query,\n    usae_GPT_Analista\n  }\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1136,
+        1616,
         80
       ],
       "id": "f9e5bb69-6886-4c20-b64a-2ad21ebd17ad",
@@ -379,8 +326,8 @@
       "name": "Gerador de Query",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "position": [
-        -3120,
-        528
+        -2832,
+        512
       ],
       "typeVersion": 1.6
     },
@@ -398,8 +345,8 @@
       "name": "Analista de Dados",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "position": [
-        -2640,
-        544
+        -2352,
+        528
       ],
       "typeVersion": 1.6
     },
@@ -415,8 +362,8 @@
       "name": "OpenAI Chat Model gerador de Query",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "position": [
-        -3168,
-        784
+        -2880,
+        768
       ],
       "typeVersion": 1,
       "credentials": {
@@ -436,8 +383,8 @@
       "name": "Window Buffer Memory Analista de dados",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "position": [
-        -2480,
-        768
+        -2192,
+        752
       ],
       "typeVersion": 1.2
     },
@@ -453,8 +400,8 @@
       "name": "OpenAI Chat Model Analista de dados",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "position": [
-        -2672,
-        752
+        -2384,
+        736
       ],
       "typeVersion": 1,
       "credentials": {
@@ -470,8 +417,8 @@
       "name": "Memória gerador de query",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "position": [
-        -2928,
-        800
+        -2640,
+        784
       ],
       "typeVersion": 1.2
     },
@@ -484,7 +431,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        752,
+        1232,
         0
       ],
       "id": "cfd2c79a-f8a0-4c57-81ac-f967f386de88",
@@ -517,7 +464,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        976,
+        1456,
         0
       ],
       "id": "de07ec64-29f3-43a1-989e-9e6fa8f3c3e0",
@@ -530,7 +477,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        1184,
+        1664,
         -192
       ],
       "id": "61889611-6081-4d92-af92-3b1bfcb583f5",
@@ -550,8 +497,8 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.3,
       "position": [
-        -3456,
-        0
+        -2960,
+        -16
       ],
       "id": "d6ca1c79-329f-491e-816f-e9a2e30b9979",
       "name": "When chat message received",
@@ -559,12 +506,12 @@
     },
     {
       "parameters": {
-        "jsCode": "// ==============================\n// 1. ENTRADAS BÁSICAS\n// ==============================\nconst pedido = $json.pedido_cliente;\nconst data = $json.data || [];\nconst query = $json.query || \"\";\n\n// diagnostico pode vir como \"diagnostico\" ou \"Diagnóstico\"\nconst d = $json.Diagnóstico || $json.diagnostico || {};\n\n// ==============================\n// 2. HELPERS GERAIS\n// ==============================\nfunction toArraySafe(val) {\n  if (val == null) return [];\n  if (Array.isArray(val)) return val;\n  if (typeof val === \"object\") return [JSON.stringify(val, null, 2)];\n  return [String(val)];\n}\n\nfunction toTextSafe(val, fallback = \"—\") {\n  if (val == null) return fallback;\n  if (typeof val === \"string\") return val;\n  if (typeof val === \"number\" || typeof val === \"boolean\") return String(val);\n  return JSON.stringify(val, null, 2);\n}\n\n// ==============================\n// 3. FORMATAÇÃO NUMÉRICA POR CONTEXTO\n// ==============================\nfunction formatMoneyBr(num) {\n  if (num == null || isNaN(num)) return \"R$ 0,00\";\n  return (\n    \"R$ \" +\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    })\n  );\n}\n\nfunction formatPercentBr(num) {\n  if (num == null || isNaN(num)) return \"0%\";\n  return (\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    }) + \"%\"\n  );\n}\n\nfunction formatIntegerBr(num) {\n  if (num == null || isNaN(num)) return \"0\";\n  return Number(num).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 0,\n  });\n}\n\n// decide como formatar de acordo com o nome do campo / contexto pai\nfunction formatNumberWithContext(chave, parentKey, value) {\n  const k = (chave || \"\").toLowerCase();\n  const p = (parentKey || \"\").toLowerCase();\n\n  // 1) VALOR MONETÁRIO\n  if (\n    k.includes(\"valor\") ||\n    k.includes(\"fatura\") ||\n    k.includes(\"faturado\") ||\n    k.includes(\"receita\") ||\n    p.includes(\"valor_faturado\") ||\n    p.includes(\"faturado\") ||\n    p.includes(\"faturas\")\n  ) {\n    return formatMoneyBr(value);\n  }\n\n  // 2) PERCENTUAL\n  if (\n    k.includes(\"percent\") ||\n    k.includes(\"perc\") ||\n    k.endsWith(\"_pct\") ||\n    k.endsWith(\"_percentual\") ||\n    k.includes(\"taxa\") ||\n    k.includes(\"indice\") ||\n    k.includes(\"índice\")\n  ) {\n    return formatPercentBr(value);\n  }\n\n  // 3) CONSUMO / VOLUME (m³)\n  if (\n    k.includes(\"consumo\") ||\n    k.includes(\"volume\") ||\n    k.includes(\"m3\") ||\n    k.includes(\"m³\")\n  ) {\n    return `${formatIntegerBr(value)} m³`;\n  }\n\n  // 4) LEITURAS / QUANTIDADES / REGISTROS (inteiro com milhar)\n  if (\n    k.includes(\"leitura\") ||\n    k.includes(\"leituras\") ||\n    k.includes(\"qtd\") ||\n    k.includes(\"quantidade\") ||\n    k.includes(\"total\") ||\n    k.includes(\"economias\") ||\n    k.includes(\"registros\")\n  ) {\n    return formatIntegerBr(value);\n  }\n\n  // 5) DEFAULT: número \"cru\", mas em pt-BR\n  return Number(value).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 2,\n  });\n}\n\n// ==============================\n// 4. AMOSTRA DE DADOS (JSON COMPLETO)\n// ==============================\nlet amostraDados;\nif (data.length === 0) {\n  amostraDados = \"Nenhum registro retornado.\";\n} else {\n  amostraDados = JSON.stringify(data, null, 2);\n}\n\n// ==============================\n// 5. ACESSO AOS BLOCOS DO DIAGNÓSTICO\n// ==============================\nconst contexto =\n  d[\"🧭 contexto\"] ||\n  d[\"🧭 contexto_setorial\"] ||\n  d[\"contexto\"] ||\n  d[\"contexto_setorial\"] ||\n  \"—\";\n\nconst indicadoresRaw = d[\"📈 indicadores\"] || d[\"indicadores\"] || \"—\";\n\nlet indicadoresDescricao = \"—\";\nlet valores = {};\n\nif (typeof indicadoresRaw === \"string\") {\n  indicadoresDescricao = indicadoresRaw;\n} else if (indicadoresRaw && typeof indicadoresRaw === \"object\") {\n  indicadoresDescricao = toTextSafe(\n    indicadoresRaw[\"📝 descrição\"] || indicadoresRaw[\"📝 descricao\"] || indicadoresRaw.descricao\n  );\n  valores =\n    indicadoresRaw[\"🔢 valores\"] ||\n    indicadoresRaw[\"valores\"] ||\n    {};\n}\n\n// ==============================\n// 5.1 CAPTURA ROBUSTA DA ANÁLISE INTERPRETATIVA\n// ==============================\nfunction extrairAnaliseInterpretativa(...objs) {\n  for (const obj of objs) {\n    if (!obj || typeof obj !== \"object\") continue;\n    for (const [k, v] of Object.entries(obj)) {\n      const kl = k.toLowerCase();\n      if (\n        kl.includes(\"análise_interpretativa\") ||\n        kl.includes(\"analise_interpretativa\")\n      ) {\n        if (typeof v === \"string\") return v;\n      }\n    }\n  }\n  return \"-\";\n}\n\nconst analiseInterpretativa =\n  d[\"📋análise_interpretativa\"] ||\n  d[\"📋 análise_interpretativa\"] ||\n  extrairAnaliseInterpretativa(d, valores);\n\n// ações (lista simples)\nconst acoes = toArraySafe(d[\"⚙️ ações\"] || d[\"acoes\"] || d[\"ações\"]);\n\n// descrição técnica\nconst descricaoTecnica = toTextSafe(d[\"🧾 descrição\"] || d[\"descricao\"]);\n\n// resumo consultivo\nconst resumoConsultivo = toTextSafe(\n  d[\"🧷 resumo_consultivo\"] || d[\"resumo_consultivo\"]\n);\n\n// ==============================\n// 6. FORMATADOR GENÉRICO DE \"🔢 valores\"\n// ==============================\nfunction formatValores(obj, parentKey = \"\") {\n  if (obj == null) return \"—\";\n\n  // PRIMITIVO\n  if (\n    typeof obj === \"string\" ||\n    typeof obj === \"number\" ||\n    typeof obj === \"boolean\"\n  ) {\n    if (typeof obj === \"number\") {\n      return formatNumberWithContext(\"\", parentKey, obj);\n    }\n    return String(obj);\n  }\n\n  // ARRAY\n  if (Array.isArray(obj)) {\n    return obj\n      .map((item, idx) => {\n        if (item && typeof item === \"object\") {\n          const partes = [];\n          for (const [k, v] of Object.entries(item)) {\n            if (typeof v === \"number\") {\n              partes.push(\n                `${k}: ${formatNumberWithContext(k, parentKey, v)}`\n              );\n            } else {\n              partes.push(`${k}: ${toTextSafe(v)}`);\n            }\n          }\n          return `• item ${idx + 1}: ${partes.join(\" | \")}`;\n        }\n        if (typeof item === \"number\") {\n          return `• ${formatNumberWithContext(\"\", parentKey, item)}`;\n        }\n        return `• ${toTextSafe(item)}`;\n      })\n      .join(\"\\n\");\n  }\n\n  // OBJETO\n  if (typeof obj === \"object\") {\n    const linhas = [];\n\n    for (const [chave, val] of Object.entries(obj)) {\n      const chaveLower = chave.toLowerCase();\n\n      // não renderizar análise_interpretativa dentro de valores\n      if (\n        chaveLower.includes(\"análise_interpretativa\") ||\n        chaveLower.includes(\"analise_interpretativa\")\n      ) {\n        continue;\n      }\n\n      // primitivo\n      if (\n        val == null ||\n        typeof val === \"string\" ||\n        typeof val === \"number\" ||\n        typeof val === \"boolean\"\n      ) {\n        if (typeof val === \"number\") {\n          linhas.push(\n            `- ${chave}: ${formatNumberWithContext(chave, parentKey, val)}`\n          );\n        } else {\n          linhas.push(`- ${chave}: ${toTextSafe(val)}`);\n        }\n        continue;\n      }\n\n      // array\n      if (Array.isArray(val)) {\n        if (\n          val.length > 0 &&\n          val.every(\n            (item) => item && typeof item === \"object\" && !Array.isArray(item)\n          )\n        ) {\n          const itensFormatados = val\n            .map((item) => {\n              const partes = [];\n\n              const categoria =\n                item.categoria ||\n                item.Categoria ||\n                item.tipo ||\n                item.Tipo ||\n                item.nome ||\n                item.Nome;\n              const rota = item.rota || item.Rota;\n              const bairro = item.bairro || item.Bairro;\n\n              if (rota != null) partes.push(`rota: ${rota}`);\n              if (bairro != null) partes.push(`bairro: ${bairro}`);\n              if (categoria != null) partes.push(`categoria: ${categoria}`);\n\n              for (const [k2, v2] of Object.entries(item)) {\n                if (\n                  k2 === \"categoria\" ||\n                  k2 === \"Categoria\" ||\n                  k2 === \"tipo\" ||\n                  k2 === \"Tipo\" ||\n                  k2 === \"nome\" ||\n                  k2 === \"Nome\" ||\n                  k2 === \"rota\" ||\n                  k2 === \"Rota\" ||\n                  k2 === \"bairro\" ||\n                  k2 === \"Bairro\"\n                ) {\n                  continue;\n                }\n\n                if (typeof v2 === \"number\") {\n                  partes.push(\n                    `${k2}: ${formatNumberWithContext(k2, chave, v2)}`\n                  );\n                } else {\n                  partes.push(`${k2}: ${toTextSafe(v2)}`);\n                }\n              }\n\n              return `  • ${partes.join(\" | \")}`;\n            })\n            .join(\"\\n\");\n\n          linhas.push(`${chave}:\\n${itensFormatados}`);\n        } else {\n          const itens = val\n            .map((v) =>\n              typeof v === \"number\"\n                ? `  • ${formatNumberWithContext(chave, parentKey, v)}`\n                : `  • ${toTextSafe(v)}`\n            )\n            .join(\"\\n\");\n          linhas.push(`${chave}:\\n${itens}`);\n        }\n\n        continue;\n      }\n\n      // objeto aninhado\n      const sub = formatValores(val, chave)\n        .split(\"\\n\")\n        .map((ln) => \"  \" + ln)\n        .join(\"\\n\");\n      linhas.push(`${chave}:\\n${sub}`);\n    }\n\n    return linhas.length ? linhas.join(\"\\n\") : toTextSafe(obj);\n  }\n\n  return toTextSafe(obj);\n}\n\n// ==============================\n// 7. TEXTO FINAL\n// ==============================\nconst texto =\n  `**📌 PEDIDO DO CLIENTE**\\n` +\n  `${pedido || \"—\"}\\n\\n` +\n  `**📊 DADOS UTILIZADOS (amostra)**\\n\\n` +\n  `${amostraDados}\\n\\n` +\n  `**🧮 QUERY SQL**\\n\\n` +\n  `${query || \"—\"}\\n\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n` +\n  `**🔎 DIAGNÓSTICO BILL**\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n\\n` +\n  `**🧭 CONTEXTO**\\n\\n` +\n  `${toTextSafe(contexto)}\\n\\n` +\n  `**📈 INDICADORES**\\n\\n` +\n  `${indicadoresDescricao}\\n\\n` +\n  `**🔢 VALORES (detalhado)**\\n\\n` +\n  `${formatValores(valores, \"🔢 valores\")}\\n\\n` +\n  `**📋 ANÁLISE INTERPRETATIVA**\\n\\n` +\n  `${toTextSafe(analiseInterpretativa)}\\n\\n` +\n  `**🧾 DESCRIÇÃO TÉCNICA**\\n\\n` +\n  `${descricaoTecnica}\\n\\n` +\n  `**⚙️ AÇÕES**\\n\\n` +\n  `${\n    acoes.length\n      ? acoes.map((s) => \"- \" + s).join(\"\\n\")\n      : \"—\"\n  }\\n\\n` +\n  `**🧷 RESUMO CONSULTIVO**\\n\\n` +\n  `${resumoConsultivo}`;\n\n// ==============================\n// 8. RETORNO PARA O CHAT\n// ==============================\nreturn [\n  {\n    json: {\n      resposta_chat: texto,\n    },\n  },\n];\n"
+        "jsCode": "// ==============================\n// 1. ENTRADAS BÁSICAS\n// ==============================\nconst pedido = $json.pedido_cliente;\nconst data = $json.data || [];\nconst query = $json.query || \"\";\n\n// diagnostico pode vir como \"diagnostico\" ou \"Diagnóstico\"\nconst d = $json.Diagnóstico || $json.diagnostico || {};\n\n// ==============================\n// 2. HELPERS GERAIS\n// ==============================\nfunction toArraySafe(val) {\n  if (val == null) return [];\n  if (Array.isArray(val)) return val;\n  if (typeof val === \"object\") return [JSON.stringify(val, null, 2)];\n  return [String(val)];\n}\n\nfunction toTextSafe(val, fallback = \"—\") {\n  if (val == null) return fallback;\n  if (typeof val === \"string\") return val;\n  if (typeof val === \"number\" || typeof val === \"boolean\") return String(val);\n  return JSON.stringify(val, null, 2);\n}\n\n// ==============================\n// 3. FORMATAÇÃO NUMÉRICA POR CONTEXTO\n// ==============================\nfunction formatMoneyBr(num) {\n  if (num == null || isNaN(num)) return \"R$ 0,00\";\n  return (\n    \"R$ \" +\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    })\n  );\n}\n\nfunction formatPercentBr(num) {\n  if (num == null || isNaN(num)) return \"0%\";\n  return (\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    }) + \"%\"\n  );\n}\n\nfunction formatIntegerBr(num) {\n  if (num == null || isNaN(num)) return \"0\";\n  return Number(num).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 0,\n  });\n}\n\n// decide como formatar de acordo com o nome do campo / contexto pai\nfunction formatNumberWithContext(chave, parentKey, value) {\n  const k = (chave || \"\").toLowerCase();\n  const p = (parentKey || \"\").toLowerCase();\n\n  // 1) VALOR MONETÁRIO\n  if (\n    k.includes(\"valor\") ||\n    k.includes(\"fatura\") ||\n    k.includes(\"faturado\") ||\n    k.includes(\"receita\") ||\n    p.includes(\"valor_faturado\") ||\n    p.includes(\"faturado\") ||\n    p.includes(\"faturas\")\n  ) {\n    return formatMoneyBr(value);\n  }\n\n  // 2) PERCENTUAL\n  if (\n    k.includes(\"percent\") ||\n    k.includes(\"perc\") ||\n    k.endsWith(\"_pct\") ||\n    k.endsWith(\"_percentual\") ||\n    k.includes(\"taxa\") ||\n    k.includes(\"indice\") ||\n    k.includes(\"índice\")\n  ) {\n    return formatPercentBr(value);\n  }\n\n  // 3) CONSUMO / VOLUME (m³)\n  if (\n    k.includes(\"consumo\") ||\n    k.includes(\"volume\") ||\n    k.includes(\"m3\") ||\n    k.includes(\"m³\")\n  ) {\n    return `${formatIntegerBr(value)} m³`;\n  }\n\n  // 4) LEITURAS / QUANTIDADES / REGISTROS (inteiro com milhar)\n  if (\n    k.includes(\"leitura\") ||\n    k.includes(\"leituras\") ||\n    k.includes(\"qtd\") ||\n    k.includes(\"quantidade\") ||\n    k.includes(\"total\") ||\n    k.includes(\"economias\") ||\n    k.includes(\"registros\")\n  ) {\n    return formatIntegerBr(value);\n  }\n\n  // 5) DEFAULT: número \"cru\", mas em pt-BR\n  return Number(value).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 2,\n  });\n}\n\n// ==============================\n// 4. AMOSTRA DE DADOS (JSON COMPLETO)\n// ==============================\nlet amostraDados;\nif (data.length === 0) {\n  amostraDados = \"Nenhum registro retornado.\";\n} else {\n  amostraDados = JSON.stringify(data, null, 2);\n}\n\n// ==============================\n// 5. ACESSO AOS BLOCOS DO DIAGNÓSTICO\n// ==============================\nconst contexto =\n  d[\"🧭 contexto\"] ||\n  d[\"🧭 contexto_setorial\"] ||\n  d[\"contexto\"] ||\n  d[\"contexto_setorial\"] ||\n  \"—\";\n\nconst indicadoresRaw = d[\"📈 indicadores\"] || d[\"indicadores\"] || \"—\";\n\nlet indicadoresDescricao = \"—\";\nlet valores = {};\n\nif (typeof indicadoresRaw === \"string\") {\n  indicadoresDescricao = indicadoresRaw;\n} else if (indicadoresRaw && typeof indicadoresRaw === \"object\") {\n  indicadoresDescricao = toTextSafe(\n    indicadoresRaw[\"📝 descrição\"] || indicadoresRaw[\"📝 descricao\"] || indicadoresRaw.descricao\n  );\n  valores =\n    indicadoresRaw[\"🔢 valores\"] ||\n    indicadoresRaw[\"valores\"] ||\n    {};\n}\n\n// ==============================\n// 5.1 CAPTURA ROBUSTA DA ANÁLISE INTERPRETATIVA\n// ==============================\nfunction extrairAnaliseInterpretativa(...objs) {\n  for (const obj of objs) {\n    if (!obj || typeof obj !== \"object\") continue;\n    for (const [k, v] of Object.entries(obj)) {\n      const kl = k.toLowerCase();\n      if (\n        kl.includes(\"análise_interpretativa\") ||\n        kl.includes(\"analise_interpretativa\")\n      ) {\n        if (typeof v === \"string\") return v;\n      }\n    }\n  }\n  return \"-\";\n}\n\nconst analiseInterpretativa =\n  d[\"📋análise_interpretativa\"] ||\n  d[\"📋 análise_interpretativa\"] ||\n  extrairAnaliseInterpretativa(d, valores);\n\n// ações (lista simples)\nconst acoes = toArraySafe(d[\"⚙️ ações\"] || d[\"acoes\"] || d[\"ações\"]);\n\n// descrição técnica\nconst descricaoTecnica = toTextSafe(d[\"🧾 descrição\"] || d[\"descricao\"]);\n\n// resumo consultivo\nconst resumoConsultivo = toTextSafe(\n  d[\"🧷 resumo_consultivo\"] || d[\"resumo_consultivo\"]\n);\n\n// ==============================\n// 6. FORMATADOR GENÉRICO DE \"🔢 valores\"\n// ==============================\nfunction formatValores(obj, parentKey = \"\") {\n  if (obj == null) return \"—\";\n\n  // PRIMITIVO\n  if (\n    typeof obj === \"string\" ||\n    typeof obj === \"number\" ||\n    typeof obj === \"boolean\"\n  ) {\n    if (typeof obj === \"number\") {\n      return formatNumberWithContext(\"\", parentKey, obj);\n    }\n    return String(obj);\n  }\n\n  // ARRAY\n  if (Array.isArray(obj)) {\n    return obj\n      .map((item, idx) => {\n        if (item && typeof item === \"object\") {\n          const partes = [];\n          for (const [k, v] of Object.entries(item)) {\n            if (typeof v === \"number\") {\n              partes.push(\n                `${k}: ${formatNumberWithContext(k, parentKey, v)}`\n              );\n            } else {\n              partes.push(`${k}: ${toTextSafe(v)}`);\n            }\n          }\n          return `• item ${idx + 1}: ${partes.join(\" | \")}`;\n        }\n        if (typeof item === \"number\") {\n          return `• ${formatNumberWithContext(\"\", parentKey, item)}`;\n        }\n        return `• ${toTextSafe(item)}`;\n      })\n      .join(\"\\n\");\n  }\n\n  // OBJETO\n  if (typeof obj === \"object\") {\n    const linhas = [];\n\n    for (const [chave, val] of Object.entries(obj)) {\n      const chaveLower = chave.toLowerCase();\n\n      // não renderizar análise_interpretativa dentro de valores\n      if (\n        chaveLower.includes(\"análise_interpretativa\") ||\n        chaveLower.includes(\"analise_interpretativa\")\n      ) {\n        continue;\n      }\n\n      // primitivo\n      if (\n        val == null ||\n        typeof val === \"string\" ||\n        typeof val === \"number\" ||\n        typeof val === \"boolean\"\n      ) {\n        if (typeof val === \"number\") {\n          linhas.push(\n            `- ${chave}: ${formatNumberWithContext(chave, parentKey, val)}`\n          );\n        } else {\n          linhas.push(`- ${chave}: ${toTextSafe(val)}`);\n        }\n        continue;\n      }\n\n      // array\n      if (Array.isArray(val)) {\n        if (\n          val.length > 0 &&\n          val.every(\n            (item) => item && typeof item === \"object\" && !Array.isArray(item)\n          )\n        ) {\n          const itensFormatados = val\n            .map((item) => {\n              const partes = [];\n\n              const categoria =\n                item.categoria ||\n                item.Categoria ||\n                item.tipo ||\n                item.Tipo ||\n                item.nome ||\n                item.Nome;\n              const rota = item.rota || item.Rota;\n              const bairro = item.bairro || item.Bairro;\n\n              if (rota != null) partes.push(`rota: ${rota}`);\n              if (bairro != null) partes.push(`bairro: ${bairro}`);\n              if (categoria != null) partes.push(`categoria: ${categoria}`);\n\n              for (const [k2, v2] of Object.entries(item)) {\n                if (\n                  k2 === \"categoria\" ||\n                  k2 === \"Categoria\" ||\n                  k2 === \"tipo\" ||\n                  k2 === \"Tipo\" ||\n                  k2 === \"nome\" ||\n                  k2 === \"Nome\" ||\n                  k2 === \"rota\" ||\n                  k2 === \"Rota\" ||\n                  k2 === \"bairro\" ||\n                  k2 === \"Bairro\"\n                ) {\n                  continue;\n                }\n\n                if (typeof v2 === \"number\") {\n                  partes.push(\n                    `${k2}: ${formatNumberWithContext(k2, chave, v2)}`\n                  );\n                } else {\n                  partes.push(`${k2}: ${toTextSafe(v2)}`);\n                }\n              }\n\n              return `  • ${partes.join(\" | \")}`;\n            })\n            .join(\"\\n\");\n\n          linhas.push(`${chave}:\\n${itensFormatados}`);\n        } else {\n          const itens = val\n            .map((v) =>\n              typeof v === \"number\"\n                ? `  • ${formatNumberWithContext(chave, parentKey, v)}`\n                : `  • ${toTextSafe(v)}`\n            )\n            .join(\"\\n\");\n          linhas.push(`${chave}:\\n${itens}`);\n        }\n\n        continue;\n      }\n\n      // objeto aninhado\n      const sub = formatValores(val, chave)\n        .split(\"\\n\")\n        .map((ln) => \"  \" + ln)\n        .join(\"\\n\");\n      linhas.push(`${chave}:\\n${sub}`);\n    }\n\n    return linhas.length ? linhas.join(\"\\n\") : toTextSafe(obj);\n  }\n\n  return toTextSafe(obj);\n}\n\n// ==============================\n// 7. TEXTO FINAL\n// ==============================\nconst texto =\n  `**📌 PEDIDO DO CLIENTE**\\n` +\n  `${pedido || \"—\"}\\n\\n` +\n  `**📊 DADOS UTILIZADOS (amostra)**\\n\\n` +\n  `${amostraDados}\\n\\n` +\n  `**🧮 QUERY SQL**\\n\\n` +\n  `${query || \"—\"}\\n\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n` +\n  `**🔎 DIAGNÓSTICO BILL**\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n\\n` +\n  `$input.first().json.diagnostico\\n\\n` +\n  `${toTextSafe(contexto)}\\n\\n` +\n  `**📈 INDICADORES**\\n\\n` +\n  `${indicadoresDescricao}\\n\\n` +\n  `**🔢 VALORES (detalhado)**\\n\\n` +\n  `${formatValores(valores, \"🔢 valores\")}\\n\\n` +\n  `**📋 ANÁLISE INTERPRETATIVA**\\n\\n` +\n  `${toTextSafe(analiseInterpretativa)}\\n\\n` +\n  `**🧾 DESCRIÇÃO TÉCNICA**\\n\\n` +\n  `${descricaoTecnica}\\n\\n` +\n  `**⚙️ AÇÕES**\\n\\n` +\n  `${\n    acoes.length\n      ? acoes.map((s) => \"- \" + s).join(\"\\n\")\n      : \"—\"\n  }\\n\\n` +\n  `**🧷 RESUMO CONSULTIVO**\\n\\n` +\n  `${resumoConsultivo}`;\n\n// ==============================\n// 8. RETORNO PARA O CHAT\n// ==============================\nreturn [\n  {\n    json: {\n      resposta_chat: texto,\n    },\n  },\n];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1360,
+        1840,
         80
       ],
       "id": "db825670-9977-4a86-91e5-32c92d66488b",
@@ -580,7 +527,7 @@
       "type": "@n8n/n8n-nodes-langchain.chat",
       "typeVersion": 1,
       "position": [
-        1616,
+        2096,
         0
       ],
       "id": "6ab34923-c94c-4ac7-a679-22fa838c4a1b",
@@ -604,18 +551,20 @@
           ]
         },
         "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"gpt-4.1-mini\",\n  \"temperature\": 0.2,\n  \"input\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Você é BILL, consultor técnico e estratégico em saneamento. Analise pedido_cliente e resultado.data e produza somente um JSON válido, sem texto fora dele. Use exclusivamente resultado.data; não invente números.\\n\\nSe houver até 3 valores relevantes, seja direto; se houver mais, detalhe. Percentuais usam \\\"%\\\" e valores \\\"R$xx.xx\\\". Não use separador de milhar.\\n\\nEstrutura obrigatória (nomes das chaves devem ser exatamente estes):\\n- 🧭 contexto\\n- 📈 indicadores\\n  - 📝 descrição\\n  - 🔢 valores\\n    - principais_métricas\\n    - resumo_quantitativo\\n- 📋 análise_interpretativa\\n- 🧾 descrição\\n- ⚙️ ações (array de strings)\\n- 🧷 resumo_consultivo\\n\\nRegras numéricas:\\n- Use apenas valores de resultado.data.\\n- Em resumo_quantitativo, nunca contradiga principais_métricas.\\n- Se um total não puder ser consolidado, diga que a consolidação não é segura.\\n- Sempre use \\\"%\\\" para percentuais e \\\"R$\\\" para valores.\\n\\nCasos de leitura e ocorrência:\\n- Se houver leituristas: calcular total de leituras, leituras com ocorrência e percentual (duas casas, %).\\n- Se houver tipos de ocorrência: identificar as 2 ou 3 mais frequentes e citá-las.\\n- Garantir coerência entre totais e percentuais.\\n\\nSe resultado.data estiver vazio, retorne exatamente:\\n{\\n\\\"🧭 contexto\\\": \\\"—\\\",\\n\\\"📈 indicadores\\\": \\\"—\\\",\\n\\\"🧾 descrição\\\": \\\"—\\\",\\n\\\"📋 análise_interpretativa\\\": \\\"-\\\",\\n\\\"⚙️ ações\\\": [],\\n\\\"🧷 resumo_consultivo\\\": \\\"Não há dados suficientes para análise.\\\"\\n}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"PEDIDO DO CLIENTE:\\n{{ $json.envelope.pedido_cliente }}\\n\\nDADOS:\\n{{ JSON.stringify($json.envelope.resultado.data) }}\"\n    }\n  ],\n  \"max_output_tokens\": 2000\n}\n",
+        "contentType": "raw",
+        "body": "={{ JSON.stringify($json.openaiBody) }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        144,
+        528,
         176
       ],
       "id": "2816c899-e1b2-4d80-96d5-5dc2dc58a61b",
-      "name": "GPT analisar dados"
+      "name": "GPT analisar dados",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000
     },
     {
       "parameters": {
@@ -667,37 +616,39 @@
       "name": "Formatar retorno GTP analista",
       "type": "n8n-nodes-base.set",
       "position": [
-        368,
+        800,
         176
       ],
       "typeVersion": 3.4
     },
     {
       "parameters": {
-        "jsCode": "// Run Once for All Items\n\nconst items = $input.all();\n\nfunction findUsageIn(obj) {\n  if (obj == null) return null;\n\n  if (Array.isArray(obj)) {\n    for (const el of obj) {\n      const found = findUsageIn(el);\n      if (found) return found;\n    }\n    return null;\n  }\n\n  if (typeof obj === 'object') {\n    if (obj.usage && typeof obj.usage === 'object') {\n      const u = obj.usage;\n      const total =\n        typeof u.total_tokens === 'number'\n          ? u.total_tokens\n          : (typeof u.input_tokens === 'number' && typeof u.output_tokens === 'number'\n              ? u.input_tokens + u.output_tokens\n              : undefined);\n\n      return {\n        input_tokens: typeof u.input_tokens === 'number' ? u.input_tokens : undefined,\n        output_tokens: typeof u.output_tokens === 'number' ? u.output_tokens : undefined,\n        total_tokens: typeof total === 'number' ? total : undefined,\n      };\n    }\n\n    for (const v of Object.values(obj)) {\n      const found = findUsageIn(v);\n      if (found) return found;\n    }\n  }\n\n  return null;\n}\n\nfunction safeGetUsage() {\n  // 1) Tenta achar usage nos próprios itens de entrada\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const usage = findUsageIn(j);\n    if (usage) return usage;\n  }\n\n  // 2) Tenta achar usage no nó \"GPT gerar query\"\n  try {\n    const fromNode = $items('GPT analisar dados'); // <<--- AQUI entra o seu nó\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const usage = findUsageIn(j);\n      if (usage) return usage;$input.first().json.output[1].content[0].text\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null;\n}\n\n\n// 8) Captura a query (sem quebrar se não existir)\nconst Analise = $input.first().json.output[1].content[0].text;\n\n// 9) Captura usage da resposta do modelo (input_tokens, output_tokens, total_tokens)\nconst usage_GPT = safeGetUsage();\n\n\n// 11) OK: retorna SEMPRE { data, query } + usage_GTP quando disponível\nconst payload = { Analise };\n\nif (usage_GPT && Object.values(usage_GPT).some(v => v !== undefined && v !== null)) {\n  payload.usage_GPT_Analista = usage_GPT;\n}\n\nreturn [{ json: payload }];\n"
+        "jsCode": "// Run Once for All Items\n\nconst items = $input.all();\n\nfunction findUsageIn(obj) {\n  if (obj == null) return null;\n\n  if (Array.isArray(obj)) {\n    for (const el of obj) {\n      const found = findUsageIn(el);\n      if (found) return found;\n    }\n    return null;\n  }\n\n  if (typeof obj === 'object') {\n    if (obj.usage && typeof obj.usage === 'object') {\n      const u = obj.usage;\n      const total =\n        typeof u.total_tokens === 'number'\n          ? u.total_tokens\n          : (typeof u.input_tokens === 'number' && typeof u.output_tokens === 'number'\n              ? u.input_tokens + u.output_tokens\n              : undefined);\n\n      return {\n        input_tokens: typeof u.input_tokens === 'number' ? u.input_tokens : undefined,\n        output_tokens: typeof u.output_tokens === 'number' ? u.output_tokens : undefined,\n        total_tokens: typeof total === 'number' ? total : undefined,\n      };\n    }\n\n    for (const v of Object.values(obj)) {\n      const found = findUsageIn(v);\n      if (found) return found;\n    }\n  }\n\n  return null;\n}\n\nfunction safeGetUsage() {\n  // 1) Tenta achar usage nos próprios itens de entrada\n  for (const it of items) {\n    const j = it?.json ?? {};\n    const usage = findUsageIn(j);\n    if (usage) return usage;\n  }\n\n  // 2) Tenta achar usage no nó \"GPT gerar query\"\n  try {\n    const fromNode = $items('GPT analisar dados'); // <<--- AQUI entra o seu nó\n    for (const it of fromNode ?? []) {\n      const j = it?.json ?? {};\n      const usage = findUsageIn(j);\n      if (usage) return usage;$input.first().json.output[1].content[0].text\n    }\n  } catch (_) { /* ignora erros */ }\n\n  return null;\n}\n\n\n// 8) Captura a query (sem quebrar se não existir)\nconst Analise = $input.first().json.analise;\n\n// 9) Captura usage da resposta do modelo (input_tokens, output_tokens, total_tokens)\nconst usage_GPT = safeGetUsage();\n\n\n// 11) OK: retorna SEMPRE { data, query } + usage_GTP quando disponível\nconst payload = { Analise };\n\nif (usage_GPT && Object.values(usage_GPT).some(v => v !== undefined && v !== null)) {\n  payload.usage_GPT_Analista = usage_GPT;\n}\n\nreturn [{ json: payload }];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        576,
+        1056,
         176
       ],
       "id": "5224de56-763e-4279-b199-9e5945ea5a58",
       "name": "Gerar dados do GTP Analista"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Entrada vinda do nó anterior\nconst pedido = $json.envelope.pedido_cliente;\nconst data = $json.envelope.resultado.data ?? [];\n\n// Prompt BILL completo\nconst promptBill = `\nVocê é BILL, consultor técnico e estratégico especializado em saneamento básico.\nAnalise o pedido_cliente e o resultado.data, produzindo um diagnóstico consultivo em JSON válido, sem texto fora do JSON.\n\nPrincípios:\n- Use apenas os dados de resultado.data.\n- Não crie números; interprete com base no que existe.\n- Seja proporcional: se o dataset tiver até 3 valores relevantes, seja direto; se houver mais, detalhe.\n- Use % para percentuais e R$ com duas casas para valores monetários.\n- Não use separador de milhar em números dentro do JSON (ex.: 2570).\n\nRetorne **apenas um único objeto JSON** com esta estrutura:\n\n⦃\n\"🧭 contexto\": \"Compare o desempenho local com benchmarks e boas práticas do saneamento (ex.: SNIS 2023, ANA, Trata Brasil, agências reguladoras). Diga se os resultados estão melhores, piores ou semelhantes ao padrão setorial.\",\n\n\"📈 indicadores\": ⦃\n  \"📝 descrição\": \"Descreva o formato do dataset (linha única ou múltiplos registros por leiturista, categoria, mês, ocorrência etc.). Utilize todos os campos numéricos como indicadores e, se houver sufixos de data (_MM_AAAA), identifique variações entre períodos.\",\n  \"🔢 valores\": ⦃\n    \"principais_métricas\": \"Liste as métricas numéricas derivadas do dataset (totais, médias, percentuais, variações, ranking por grupo). Sempre cite nomes de campo reais e, se houver agrupamentos, detalhe por leiturista, tipo de ocorrência, rota, bairro ou categoria.\",\n    \"resumo_quantitativo\": \"Resuma os principais valores e percentuais (duas casas decimais). Classifique percentuais em faixas: até 10% baixa, 10–20% moderada, 20–30% elevada, acima de 30% crítica. Reutilize os mesmos números já apresentados em principais_métricas.\"\n  ⦄\n⦄,\n\n\"📋 análise_interpretativa\": \"Explique o que os números mostram — melhora, piora, estabilidade, concentração de problemas ou ganhos. Compare grupos entre si e interprete tecnicamente o significado (ex.: quem tem maior percentual de ocorrência ou maior valor faturado).\",\n\n\"🧾 descrição\": \"Apresente um diagnóstico técnico direto, ancorado nos números. Relacione causas e efeitos típicos do setor (micromedição, perdas, leitura, faturamento, cadastro etc.) sem generalizações.\",\n\n\"⚙️ ações\": [\"Liste ações objetivas baseadas nos dados — auditorias, revisões cadastrais, vistorias, substituição de hidrômetros, ajustes em rotas, melhorias de leitura ou comunicação com usuários — sem prazos nem orçamentos.\"],\n\n\"🧷 resumo_consultivo\": \"Conclusão executiva (até 5 linhas) integrando evidências numéricas e recomendações. Destaque a gravidade (em %) e o impacto potencial em R$, mostrando o valor estratégico de agir sobre o diagnóstico.\"\n⦄\n\nRegras numéricas:\n1. Use sempre os valores de resultado.data; nunca declare ausência se houver números.\n2. Em resumo_quantitativo, não contradiga principais_métricas.\n3. Se não for possível consolidar um total, indique que a consolidação não é segura.\n4. Em percentuais, sempre use o símbolo %, e em valores financeiros, o prefixo R$.\n\nCasos de leitura e ocorrência:\n- Quando houver leituristas, calcule por leiturista:\n  • total de leituras,\n  • leituras com ocorrência,\n  • percentual de ocorrência (duas casas, com %).\n- Quando houver tipos de ocorrência, identifique as 2 ou 3 mais frequentes e cite-as em métricas e análise.\n- Certifique-se de que percentuais e totais estejam coerentes entre si.\n\nSe resultado.data estiver vazio, retorne exatamente:\n⦃\n\"🧭 contexto\": \"—\",\n\"📈 indicadores\": \"—\",\n\"🧾 descrição\": \"—\",\n\"📋 análise_interpretativa\": \"-\",\n\"⚙️ ações\": [],\n\"🧷 resumo_consultivo\": \"Não há dados suficientes para análise.\"\n⦄\n⦄\n`;\n\n// Body da chamada para /v1/responses\nconst openaiBody = {\n  model: \"gpt-4.1-mini\",\n  temperature: 0.2,\n\n  // JSON mode na Responses API\n  text: {\n    format: {\n      type: \"json_object\"\n    }\n  },\n\n  // sem tools aqui, para não conflitar com JSON mode\n  input: [\n    {\n      role: \"system\",\n      content: [\n        {\n          type: \"input_text\",\n          text: promptBill\n        }\n      ]\n    },\n    {\n      role: \"user\",\n      content: [\n        {\n          type: \"input_text\",\n          text:\n`pedido_cliente:\n${pedido}\n\nresultado.data:\n${JSON.stringify(data, null, 2)}`\n        }\n      ]\n    }\n  ]\n};\n\nreturn [\n  {\n    json: {\n      openaiBody\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        176
+      ],
+      "id": "688fe936-b20f-4cc5-bda0-b55953d1f819",
+      "name": "Montar Prompt análise"
     }
   ],
   "connections": {
-    "Download file": {
-      "main": [
-        [
-          {
-            "node": "Extract data from file",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Check if query exists": {
       "main": [
         [
@@ -732,17 +683,6 @@
         [
           {
             "node": "GPT gerar query",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extract data from file": {
-      "main": [
-        [
-          {
-            "node": "Combine schema data and chat input",
             "type": "main",
             "index": 0
           }
@@ -831,7 +771,7 @@
       "main": [
         [
           {
-            "node": "Download file",
+            "node": "Combine schema data and chat input",
             "type": "main",
             "index": 0
           }
@@ -853,7 +793,7 @@
       "main": [
         [
           {
-            "node": "GPT analisar dados",
+            "node": "Montar Prompt análise",
             "type": "main",
             "index": 0
           }
@@ -1037,6 +977,17 @@
           }
         ]
       ]
+    },
+    "Montar Prompt análise": {
+      "main": [
+        [
+          {
+            "node": "GPT analisar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -1047,7 +998,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "fa714207-c80a-4109-8fcc-d58be75cf431",
+  "versionId": "fccb4cfb-7c07-49fc-9649-fa946208aa08",
   "triggerCount": 1,
   "shared": [
     {
