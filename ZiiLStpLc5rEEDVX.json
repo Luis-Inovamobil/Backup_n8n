@@ -1,0 +1,107 @@
+{
+  "id": "ZiiLStpLc5rEEDVX",
+  "name": "BILL - Gestao_ZApi",
+  "createdAt": "2025-11-24T18:16:30.276Z",
+  "updatedAt": "2025-11-24T18:25:23.000Z",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "webhookUri": "https://discord.com/api/webhooks/1442581253281812500/w3CYjGuxL3kLHUcugUpZIIb8fWV0eKcw7bxYuzwnI1rhmXWKxdGOchyBMMav9kT7y61Z",
+        "text": "={{ $json.result.text }}",
+        "options": {}
+      },
+      "name": "Discord",
+      "type": "n8n-nodes-base.discord",
+      "position": [
+        -128,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "c07b373c-114f-458c-b504-57408faaaccf"
+    },
+    {
+      "parameters": {
+        "chatId": "-4839166523",
+        "text": "=Atenção : Link : {{ $json.url }} está fora !!!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        -64
+      ],
+      "id": "3c526fda-bec5-4c03-8961-345e6fe073f6",
+      "name": "Send a text message",
+      "webhookId": "4c2a8dca-cbc5-4c10-aa91-1912efa8b5ad",
+      "credentials": {
+        "telegramApi": {
+          "id": "dMpHryt4Rv5NnNUE",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "BILL_Gestao_ZApi",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        -64
+      ],
+      "id": "d0210352-359d-4858-aba3-9e38c62003e8",
+      "name": "Webhook",
+      "webhookId": "2befb3d6-0541-4fc8-af06-2e0f23ead956"
+    }
+  ],
+  "connections": {
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "6fcf6584-9a5c-4380-8e9d-4197a878099b",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "createdAt": "2025-11-24T18:16:30.292Z",
+      "updatedAt": "2025-11-24T18:16:30.292Z",
+      "role": "workflow:owner",
+      "workflowId": "ZiiLStpLc5rEEDVX",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
