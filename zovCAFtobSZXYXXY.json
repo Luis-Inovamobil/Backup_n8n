@@ -2,7 +2,7 @@
   "id": "zovCAFtobSZXYXXY",
   "name": "BILL - Homologação",
   "createdAt": "2025-09-18T17:40:49.995Z",
-  "updatedAt": "2025-11-26T17:41:56.000Z",
+  "updatedAt": "2025-11-27T11:52:38.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -760,7 +760,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// -------- Processa Validação (após MERGE) --------\nconst j = $input.item.json || {};\nconst sess = j.session || {};\nconst phone = j.phone || sess.phone || null;\n\nconst found = Number(j.found ?? j.matricula != null) === 1;\nconst nome = sess?.data?.nome || \"cliente\";\nconst codigo = sess?.data?.codigoLigacao || j.codigo || \"\";\n\nif (found) {\n  sess.data = sess.data || {};\n  sess.data.authOk = true;\n  sess.flow = \"menu\";\n  sess.step = 0;\n  sess.needValidateLigacao = false;\n  sess.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n  sess.data.codigoLigacao = codigo;\n  sess.data.nome = nome;\n\nconst cab = `Tudo certo, *` + nome + `*!✅\\n\\nValidei a ligação *` + codigo + `*.\\n\\nEsta ligação está vinculada ao endereço : *` + $input.first().json.rua + `*, número *XXX*, *` + $input.first().json.bairro + `*.\\n\\nQue bom ter você por aqui !\\nEm que posso lhe ajudar ?`;\n  return [{ json: { phone, session: sess, showMenu: true, reply: cab } }];\n}\n\n// NÃO ENCONTROU → sempre devolve texto\nsess.step = 2;\nsess.needValidateLigacao = true;\nsess.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n\nconst msg =\n  \"Não consegui validar os dados informados.\\n\\nPor favor, digite novamente o *código da ligação* (apenas os números, sem o dígito). 🔁\";\nreturn [{ json: { phone, session: sess, showMenu: false, reply: msg } }];\n"
+        "jsCode": "// -------- Processa Validação (após MERGE) --------\nconst j = $input.item.json || {};\nconst sess = j.session || {};\nconst phone = j.phone || sess.phone || null;\n\nconst found = Number(j.found ?? j.matricula != null) === 1;\nconst nome = sess?.data?.nome || \"cliente\";\nconst codigo = sess?.data?.codigoLigacao || j.codigo || \"\";\n\nif (found) {\n  sess.data = sess.data || {};\n  sess.data.authOk = true;\n  sess.flow = \"menu\";\n  sess.step = 0;\n  sess.needValidateLigacao = false;\n  sess.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n  sess.data.codigoLigacao = codigo;\n  sess.data.nome = nome;\n\nconst cab = `Tudo certo, *` + nome + `*!✅\\n\\nValidei a ligação *` + codigo + `*.\\n\\nEsta ligação está vinculada ao endereço : *` + $input.first().json.rua + `*, número *XXX*, *` + $input.first().json.bairro + `*.\\n\\nQue bom ter você por aqui !\\nEm que posso lhe ajudar ?`;\n  return [{ json: { phone, session: sess, showMenu: true, reply: cab } }];\n}\n\n// NÃO ENCONTROU → sempre devolve texto\nsess.step = 2;\nsess.needValidateLigacao = true;\nsess.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n\nconst msg =\n  \"Parece que o código da ligação ou a chave digital não conferem, confirme as informações.\\n\\nPor favor, digite novamente o *código da ligação* (apenas os números, sem o dígito). 🔁\";\nreturn [{ json: { phone, session: sess, showMenu: false, reply: msg } }];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -4251,7 +4251,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "6f8ac404-86f4-40f4-8373-ad01d3cf6219",
+  "versionId": "6bae59de-7f23-49e6-9026-83915b0a397f",
   "triggerCount": 1,
   "shared": [
     {
