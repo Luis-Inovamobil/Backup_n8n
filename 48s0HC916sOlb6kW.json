@@ -2,7 +2,7 @@
   "id": "48s0HC916sOlb6kW",
   "name": "Datamobil - Reader Web + Análise - Produção",
   "createdAt": "2025-09-01T14:36:59.509Z",
-  "updatedAt": "2025-11-19T17:48:00.000Z",
+  "updatedAt": "2025-11-27T13:02:25.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -265,7 +265,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Agora o Merge já trouxe os dois lados num único item (json único)\nconst M = $json || {};\n\nconst pedido_cliente =$('Combine schema data and chat input').first().json.chatinput;\n  \nconst data =\n  M.data ??\n  M.envelope?.resultado?.data ??\n  null;\n\nconst query =\n  M.query ??\n  M.envelope?.resultado?.query ??\n  null;\n\n// Erros podem ter vindo de Repassar dados\nconst erro  = M.erro ?? M.error ?? null;\nconst erros = Array.isArray(M.Erros) ? M.Erros\n           : Array.isArray(M.erros) ? M.erros\n           : Array.isArray(M.errors) ? M.errors\n           : [];\n\n// A análise pode ter vindo do Analista em várias chaves\nconst diagnostico =$input.first().json[\"Diagnóstico\"];\n\nconst usage_GPT_Query = $input.first().json.usage_GPT_Query;\nconst usage_GPT_Analista = $input.first().json.usage_GTP_Analista;\n\nconst hasError = !!erro || (Array.isArray(erros) && erros.length > 0);\n\nreturn [{\n  json: {\n    pedido_cliente,\n    data,\n    query,\n    erro,\n    erros,\n    diagnostico: hasError ? null : diagnostico,\n    usage_GPT_Query,\n    usage_GPT_Analista\n  }\n}];\n"
+        "jsCode": "// Agora o Merge já trouxe os dois lados num único item (json único)\nconst M = $json || {};\n\nconst pedido_cliente =$('Combine schema data and chat input').first().json.chatinput;\n  \nconst data =\n  M.data ??\n  M.envelope?.resultado?.data ??\n  null;\n\nconst query =\n  M.query ??\n  M.envelope?.resultado?.query ??\n  null;\n\n// Erros podem ter vindo de Repassar dados\nconst erro  = M.erro ?? M.error ?? null;\nconst erros = Array.isArray(M.Erros) ? M.Erros\n           : Array.isArray(M.erros) ? M.erros\n           : Array.isArray(M.errors) ? M.errors\n           : [];\n\n// A análise pode ter vindo do Analista em várias chaves\nconst diagnostico =$input.first().json[\"Diagnóstico\"];\n\nconsole.log(\"input\", $input.first())\n\nconst usage_GPT_Query = $input.first().json.usage_GPT_Query;\nconst usage_GPT_Analista = $input.first().json.usage_GTP_Analista;\n\nconst hasError = !!erro || (Array.isArray(erros) && erros.length > 0);\n\nreturn [{\n  json: {\n    pedido_cliente,\n    data,\n    query,\n    erro,\n    erros,\n    diagnostico: hasError ? null : diagnostico,\n    usage_GPT_Query,\n    usage_GPT_Analista\n  }\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1016,7 +1016,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "4c0e6cd9-6fd2-42b7-9c52-a41aab207f16",
+  "versionId": "9440ea0f-0e78-4b95-b122-adb41faf1b1f",
   "triggerCount": 1,
   "shared": [
     {
