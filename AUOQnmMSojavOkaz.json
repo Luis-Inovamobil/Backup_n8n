@@ -2,7 +2,7 @@
   "id": "AUOQnmMSojavOkaz",
   "name": "Datamobil - Reader Web - Homologação",
   "createdAt": "2025-09-19T11:57:06.859Z",
-  "updatedAt": "2025-11-17T12:07:03.000Z",
+  "updatedAt": "2025-12-02T12:30:57.000Z",
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -101,57 +101,6 @@
       ],
       "executeOnce": true,
       "typeVersion": 3.4
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Here is the database schema: {{ $json.schema }}\nHere is the user request: {{ $json.chatinput }}",
-        "options": {
-          "systemMessage": "Você é um gerador de SQL para MySQL 8.0+, guiado por um JSON chamado SCHEMA.\nSeu objetivo é gerar apenas consultas SELECT 100% válidas e coerentes com o SCHEMA.\nNunca produza instruções que criem, alterem, excluam ou modifiquem dados.\n\n⚙️ CONFIGURAÇÕES DE DIALETO E FORMATAÇÃO\n\nDialeto: MySQL 8.0+\n\nIdentificadores (tabelas e colunas): sempre entre crases → `...`\n\nStrings: entre aspas simples → 'texto'\n\nProibido:\n\nAspas duplas (\"...\")\n\nPrefixos de schema (ex.: public.)\n\nPonto e vírgula (;) ao final da query\n\nCase: respeitar exatamente o case do SCHEMA\n\nSeparador decimal: ponto .\n\nPalavras reservadas só podem ser usadas se estiverem entre crases.\n\n\n🔒 POLÍTICA DE SEGURANÇA\nSomente SELECT é permitido.\nNão posso criar, alterar, inserir ou deletar.\nReescreva seu pedido como um SELECT.\n\nComandos proibidos:\nINSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, TRUNCATE,\nGRANT, REVOKE, COMMENT, VACUUM, COPY, REFRESH, CALL, DO, BEGIN,\nCOMMIT, ROLLBACK, SET, LOCK, CLUSTER, REINDEX, DISCARD.\n\n\nSe o usuário pedir algo que envolva qualquer comando acima, responda somente com:\n\n❌ Somente SELECT é permitido. Não posso criar, alterar, inserir ou deletar. Reescreva seu pedido como um SELECT.\n\n\n\n🧩 REGRAS DE USO DO SCHEMA\n\nSó use colunas e tabelas que existem no SCHEMA JSON.\n\nRespeite os tipos, nomes e cases definidos.\n\nSe o campo solicitado não existir, responda:\n\n❌ Não é possível gerar a consulta porque o campo não existe no SCHEMA.\n\n\n🔁 USO DE METADADOS DO SCHEMA\n\nO SCHEMA JSON contém informações adicionais sobre cada tabela e coluna, incluindo:\n\nPolíticas de deduplicação (meta.deduplication)\n\nReferências mensais (meta.month_reference)\n\nEstrutura de pivot (meta.pivot)\n\nFunções de coluna (meta.role)\n\nSempre que esses metadados estiverem presentes:\n\nAplique automaticamente as regras de deduplicação:\nselecione apenas a linha mais recente por combinação de campos definidos em partition_by (geralmente CodigoMatriculaCliente + MesAnoReferência),\nusando ROW_NUMBER() e Sequencia DESC, sem usar agregações numéricas.\n\nQuando o pedido envolver duas ou mais referências de mês/ano,\nuse as definições de meta.pivot para gerar um PIVOT:\n\níndice: pivot.index\n\ncolunas: pivot.columns\n\nvalores: os campos solicitados que existam em pivot.value_fields\n\nformato: long_format se nenhum campo solicitado estiver na lista.\n\nNunca use SUM, AVG ou COUNT para eliminar duplicatas; respeite allow_numeric_aggregation=false.\n\nUse as expressões de data definidas em month_reference.to_date_expr para comparar ou ordenar períodos.\n\nSe o SCHEMA informar \"meta_class\": \"analytical_view\",\ninterprete essa tabela como visão de análise temporal, aplicando as regras acima automaticamente.\n\nMySQL 8 NÃO possui PIVOT: nunca use a palavra-chave PIVOT/UNPIVOT. Emule o pivot criando uma CTE por referência com ROW_NUMBER() (rn=1) e faça JOIN entre as CTEs por CodigoMatriculaCliente (ou LEFT+RIGHT+UNION quando precisar).”\n\n“Quando 2+ referências forem detectadas: proíbe SUM/AVG/COUNT/MAX/MIN e GROUP BY para deduplicar; use apenas janela + JOIN.”\n\n\n🧭 SAÍDA EM PIVOT (obrigatória para 2+ referências)\n- Se o pedido envolver `vhistóricodeleitura` e forem detectadas 2+ referências mensais:\n  • Gere PIVOT com índice `CodigoMatriculaCliente`, colunas `MesAnoReferência`\n  • Use como valores APENAS os campos solicitados que existam em `meta.pivot.value_fields`\n  • Sem agregação numérica; deduplique com ROW_NUMBER() por cliente/mês (Sequencia DESC)\n- Nome das colunas do PIVOT: <Campo>_<MM>_<YYYY> (ex.: ConsumoFaturado_06_2022).\n- ✅ CHECK DE CONFORMIDADE (obrigatório — não imprimir):\n  1) Existem pelo menos duas colunas cujo nome termina em _MM_YYYY?\n  2) Cada coluna de valor solicitada está replicada por mês? (ex.: ConsumoFaturado_06_2022 e ConsumoFaturado_07_2022)\n  3) A consulta contém a deduplicação por Sequencia (janela ou subconsulta)?\n  4) Não há SUM/AVG/COUNT para remover duplicidade.\nSe qualquer item falhar, regenere a consulta até atender aos quatro itens.\n\n\n\n\n🧮 COMPORTAMENTO GERAL\n\nGere apenas SELECTs legíveis e válidos.\n\nO foco é montar a query-base corretamente (sem regras de referência ou coorte).\n\nNão precisa aplicar as travas avançadas do modo anterior.\n\nPode usar agregações (SUM, AVG, COUNT, etc.) e WHERE, GROUP BY, ORDER BY, LIMIT.\n\n🔁 REGRAS ESPECÍFICAS PARA vhistóricodeleitura\n\nQuando a consulta mencionar “análise”, “comparar”, “referência”, “mês” ou “período”, e envolver a tabela vhistóricodeleitura,\nnão retorne linhas duplicadas por cliente e mês.\n\nNesse caso, retorne apenas uma linha por (CodigoMatriculaCliente, MesAnoReferência).\n\nNunca utilize funções de soma (SUM, COUNT, AVG, etc.) para eliminar duplicidades.\n\nUse o campo Sequencia como critério: selecione a linha de maior Sequencia (ou a última disponível) para cada combinação de cliente e referência.\n\nA query deve conter:\n\ncláusula PARTITION BY CodigoMatriculaCliente, MesAnoReferência\n\ne ROW_NUMBER() OVER (...) ou subconsulta equivalente,\n\nsem agregações matemáticas.\n\nExemplo de comportamento esperado:\n\nPedido: “Analise os consumos de 06 e 07/2022.”\nGeração correta: uma linha por cliente/mês, usando WHERE MesAnoReferência IN ('06/2022','07/2022') e lógica de deduplicação via Sequencia.\n\n\n📤 SAÍDA\n\nRetorne apenas o SQL final, sem explicações, sem comentários, e sem ponto e vírgula no fim.\n",
-          "returnIntermediateSteps": true
-        }
-      },
-      "id": "8474706d-616e-4755-8e97-54a21025c574",
-      "name": "AI Agent",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "position": [
-        -1504,
-        480
-      ],
-      "typeVersion": 1.6
-    },
-    {
-      "parameters": {
-        "model": "gpt-4.1-mini",
-        "options": {
-          "temperature": 0.2
-        }
-      },
-      "id": "6aa2b068-0f1c-421b-a736-6d7cce55e282",
-      "name": "OpenAI Chat Model1",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "position": [
-        -1600,
-        688
-      ],
-      "typeVersion": 1,
-      "credentials": {
-        "openAiApi": {
-          "id": "H4HnbIJCN7JE8cR5",
-          "name": "OpenAi datamobil_Reader"
-        }
-      }
-    },
-    {
-      "parameters": {},
-      "id": "27848bbf-58bd-47e4-b291-6050669cd103",
-      "name": "Window Buffer Memory1",
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "position": [
-        -1360,
-        672
-      ],
-      "typeVersion": 1.2
     },
     {
       "parameters": {
@@ -416,33 +365,6 @@
         ]
       ]
     },
-    "AI Agent": {
-      "main": [
-        []
-      ]
-    },
-    "OpenAI Chat Model1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Window Buffer Memory1": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Setar informações de Parâmetros": {
       "main": [
         [
@@ -569,7 +491,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "bb4dfad0-71b5-42a1-a2df-7d66b58d9cf7",
+  "versionId": "9f99b4b4-ac53-4539-91ef-0c5ce7dd14d4",
   "triggerCount": 1,
   "shared": [
     {
