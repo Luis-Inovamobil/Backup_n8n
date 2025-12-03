@@ -1,1 +1,185 @@
-{"createdAt":"2025-09-19T15:54:45.199Z","updatedAt":"2025-10-01T12:25:55.000Z","id":"3O7GVyECrlRt3xjq","name":"Processo de Desligamento","active":false,"isArchived":false,"nodes":[{"parameters":{"pollTimes":{"item":[{"mode":"everyHour","minute":3}]},"documentId":{"__rl":true,"value":"https://docs.google.com/spreadsheets/d/1Nls4pu3cgoIJ0SljQoY6eQY1pc6H_Quv4aTGBX2tQpg/edit?gid=259172608#gid=259172608","mode":"url"},"sheetName":{"__rl":true,"mode":"list","value":""},"event":"rowAdded","options":{}},"name":"Google Sheets Trigger","type":"n8n-nodes-base.googleSheetsTrigger","typeVersion":1,"position":[0,0],"id":"9ddfc862-0a80-4d18-a1f1-99fda3823946","credentials":{"googleSheetsTriggerOAuth2Api":{"id":"E1xCUbLtI94mBk1O","name":"Google Sheets Trigger account"}}},{"parameters":{"options":{}},"name":"Organizar Dados","type":"n8n-nodes-base.set","typeVersion":1,"position":[256,0],"id":"5c8a9a18-2b97-410e-842d-19224fdf7070"},{"parameters":{"functionCode":"const data = items[0].json;\nconst html = `<h2>Processo de Desligamento</h2>\n<p><b>Colaborador:</b> ${data.Colaborador || ''}</p>\n<p><b>Cargo:</b> ${data.Cargo || ''}</p>\n<p><b>Gestor:</b> ${data.Gestor || ''}</p>\n<p><b>Motivo:</b> ${data.Motivo || ''}</p>\n<p><b>Data de Saída:</b> ${data.Data_Saida || ''}</p>\n<p>--</p>\n<p>Este é um resumo automático gerado pelo n8n.</p>`;\nreturn [{ json: { html } }];"},"name":"Criar Resumo HTML","type":"n8n-nodes-base.function","typeVersion":1,"position":[512,0],"id":"3a9055cd-a5df-4ea9-a049-040e3b03b625"},{"parameters":{"fromEmail":"rh@empresa.com","toEmail":"rh@empresa.com","subject":"Novo processo de desligamento iniciado - {{$json[\"Colaborador\"]}}","html":"={{$json[\"html\"]}}","options":{}},"name":"Enviar Email RH","type":"n8n-nodes-base.emailSend","typeVersion":1,"position":[752,0],"id":"599703fd-7df8-4b06-8227-109f56caf94e"},{"parameters":{},"name":"Checklist Manual","type":"n8n-nodes-base.manualTrigger","typeVersion":1,"position":[1008,0],"id":"57ea14b2-d1eb-4e20-8607-135cd50cbe2c"},{"parameters":{"fromEmail":"rh@empresa.com","toEmail":"gestor@empresa.com","subject":"Comunicação Interna: Desligamento - {{$json[\"Colaborador\"]}}","html":"<p>Prezado(a),</p><p>O processo de desligamento do colaborador {{$json[\"Colaborador\"]}} foi concluído. Segue o resumo da entrevista:</p><p>{{$json[\"resumo_entrevista\"]}}</p>","options":{}},"name":"Enviar Email Gestor/Diretor","type":"n8n-nodes-base.emailSend","typeVersion":1,"position":[1264,0],"id":"0e798bc9-b8c2-4d71-bd33-e18f6124481b"}],"connections":{"Google Sheets Trigger":{"main":[[{"node":"Organizar Dados","type":"main","index":0}]]},"Organizar Dados":{"main":[[{"node":"Criar Resumo HTML","type":"main","index":0}]]},"Criar Resumo HTML":{"main":[[{"node":"Enviar Email RH","type":"main","index":0}]]},"Checklist Manual":{"main":[[{"node":"Enviar Email Gestor/Diretor","type":"main","index":0}]]}},"settings":{"executionOrder":"v1"},"staticData":null,"meta":{"templateCredsSetupCompleted":true},"pinData":{},"versionId":"48f11bb5-fcc6-4e63-960e-4c8c281b50b9","triggerCount":0,"shared":[{"createdAt":"2025-09-19T15:54:45.204Z","updatedAt":"2025-09-19T15:54:45.204Z","role":"workflow:owner","workflowId":"3O7GVyECrlRt3xjq","projectId":"bDUBly1zU3yziLIn"}],"tags":[]}
+{
+  "id": "3O7GVyECrlRt3xjq",
+  "name": "Processo de Desligamento",
+  "createdAt": "2025-09-19T15:54:45.199Z",
+  "updatedAt": "2025-12-03T19:14:25.000Z",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour",
+              "minute": 3
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1Nls4pu3cgoIJ0SljQoY6eQY1pc6H_Quv4aTGBX2tQpg/edit?gid=259172608#gid=259172608",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "name": "Google Sheets Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9ddfc862-0a80-4d18-a1f1-99fda3823946",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "E1xCUbLtI94mBk1O",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Organizar Dados",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        256,
+        0
+      ],
+      "id": "5c8a9a18-2b97-410e-842d-19224fdf7070"
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = items[0].json;\nconst html = `<h2>Processo de Desligamento</h2>\n<p><b>Colaborador:</b> ${data.Colaborador || ''}</p>\n<p><b>Cargo:</b> ${data.Cargo || ''}</p>\n<p><b>Gestor:</b> ${data.Gestor || ''}</p>\n<p><b>Motivo:</b> ${data.Motivo || ''}</p>\n<p><b>Data de Saída:</b> ${data.Data_Saida || ''}</p>\n<p>--</p>\n<p>Este é um resumo automático gerado pelo n8n.</p>`;\nreturn [{ json: { html } }];"
+      },
+      "name": "Criar Resumo HTML",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        512,
+        0
+      ],
+      "id": "3a9055cd-a5df-4ea9-a049-040e3b03b625"
+    },
+    {
+      "parameters": {
+        "fromEmail": "rh@empresa.com",
+        "toEmail": "rh@empresa.com",
+        "subject": "Novo processo de desligamento iniciado - {{$json[\"Colaborador\"]}}",
+        "html": "={{$json[\"html\"]}}",
+        "options": {}
+      },
+      "name": "Enviar Email RH",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        752,
+        0
+      ],
+      "id": "599703fd-7df8-4b06-8227-109f56caf94e"
+    },
+    {
+      "parameters": {},
+      "name": "Checklist Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        0
+      ],
+      "id": "57ea14b2-d1eb-4e20-8607-135cd50cbe2c"
+    },
+    {
+      "parameters": {
+        "fromEmail": "rh@empresa.com",
+        "toEmail": "gestor@empresa.com",
+        "subject": "Comunicação Interna: Desligamento - {{$json[\"Colaborador\"]}}",
+        "html": "<p>Prezado(a),</p><p>O processo de desligamento do colaborador {{$json[\"Colaborador\"]}} foi concluído. Segue o resumo da entrevista:</p><p>{{$json[\"resumo_entrevista\"]}}</p>",
+        "options": {}
+      },
+      "name": "Enviar Email Gestor/Diretor",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "0e798bc9-b8c2-4d71-bd33-e18f6124481b"
+    }
+  ],
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Organizar Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organizar Dados": {
+      "main": [
+        [
+          {
+            "node": "Criar Resumo HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Resumo HTML": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email RH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Checklist Manual": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Gestor/Diretor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "4243e59b-2250-4558-bf47-da7288ccac26",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-09-19T15:54:45.204Z",
+      "updatedAt": "2025-09-19T15:54:45.204Z",
+      "role": "workflow:owner",
+      "workflowId": "3O7GVyECrlRt3xjq",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
