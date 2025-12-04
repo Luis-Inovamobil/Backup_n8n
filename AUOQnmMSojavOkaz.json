@@ -2,7 +2,7 @@
   "id": "AUOQnmMSojavOkaz",
   "name": "Datamobil - Reader Web - Homologação",
   "createdAt": "2025-09-19T11:57:06.859Z",
-  "updatedAt": "2025-12-02T12:30:57.000Z",
+  "updatedAt": "2025-12-04T11:37:21.000Z",
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -258,7 +258,7 @@
     },
     {
       "parameters": {
-        "message": "={{ JSON.stringify($json.data, null, 2) }}",
+        "message": "={{ JSON.stringify($json.data ?? $json.Erro ?? $json, null, 2) }}\n",
         "waitUserReply": false,
         "options": {}
       },
@@ -269,7 +269,8 @@
         352
       ],
       "id": "861edd6f-2e7a-4ad7-afc3-31ba6278d08c",
-      "name": "Respond to Chat"
+      "name": "Respond to Chat",
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -491,12 +492,12 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "9f99b4b4-ac53-4539-91ef-0c5ce7dd14d4",
+  "versionId": "13a5488d-40af-4023-b568-b5843a635637",
   "triggerCount": 1,
   "shared": [
     {
-      "createdAt": "2025-09-19T11:57:06.865Z",
       "updatedAt": "2025-09-19T11:57:06.865Z",
+      "createdAt": "2025-09-19T11:57:06.865Z",
       "role": "workflow:owner",
       "workflowId": "AUOQnmMSojavOkaz",
       "projectId": "bDUBly1zU3yziLIn"
