@@ -2,7 +2,7 @@
   "id": "X1RNJ1uC3Sw4fPtD",
   "name": "Datamobil - Reader Embedded - Produção",
   "createdAt": "2025-10-20T12:45:06.062Z",
-  "updatedAt": "2025-12-02T13:52:07.000Z",
+  "updatedAt": "2025-12-05T14:52:26.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -247,7 +247,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Run Once for Each Item\n// devolve UM item por entrada (sem colchetes)\nconst msg = $json.output\n                 .flatMap(item => item.content || [])\n                 .filter(c => c.type === \"output_text\")\n                 .map(c => c.text)[0];   \nreturn {\n  json: {\n      erro: msg ?? \"Por favor, forneça a consulta ou pergunta específica que deseja realizar com base no esquema fornecido.\"\n  }\n};\n\n\n\n"
+        "jsCode": "\nconst msg = $json.output\n                 .flatMap(item => item.content || [])\n                 .filter(c => c.type === \"output_text\")\n                 .map(c => c.text)[0];   \nreturn {\n  json: {\n      erro: msg ?? \"Por favor, forneça a consulta ou pergunta específica que deseja realizar com base no esquema fornecido.\"\n  }\n};\n\n\n\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -990,12 +990,12 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "6bb9fcff-fdc4-4481-8535-bb04003034c4",
+  "versionId": "4802f829-0b5e-48bf-b20c-4b77224b682d",
   "triggerCount": 1,
   "shared": [
     {
-      "createdAt": "2025-10-20T12:45:06.069Z",
       "updatedAt": "2025-10-20T12:45:06.069Z",
+      "createdAt": "2025-10-20T12:45:06.069Z",
       "role": "workflow:owner",
       "workflowId": "X1RNJ1uC3Sw4fPtD",
       "projectId": "bDUBly1zU3yziLIn"
