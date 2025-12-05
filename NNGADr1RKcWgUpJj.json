@@ -2,7 +2,7 @@
   "id": "NNGADr1RKcWgUpJj",
   "name": "Datamobil - VX Embedded - Produção",
   "createdAt": "2025-09-08T19:14:20.112Z",
-  "updatedAt": "2025-11-27T13:42:14.000Z",
+  "updatedAt": "2025-12-05T14:52:33.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -337,7 +337,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Run Once for Each Item\n// devolve UM item por entrada (sem colchetes)\nconst msg = $json.output; \nreturn {\n  json: {\n      erro:msg ?? \"Por favor, forneça a consulta ou pergunta específica que deseja realizar com base no esquema fornecido.\"\n  }\n};\n\n\n\n"
+        "jsCode": "const msg = $json.output\n                 .flatMap(item => item.content || [])\n                 .filter(c => c.type === \"output_text\")\n                 .map(c => c.text)[0];   \nreturn {\n  json: {\n      erro: msg ?? \"Por favor, forneça a consulta ou pergunta específica que deseja realizar com base no esquema fornecido.\"\n  }\n};\n\n\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -659,12 +659,12 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "620af325-818d-41b7-83a7-8280fd11444e",
+  "versionId": "ce59bf4b-fa45-4cb8-aa6e-3bf4a2728c91",
   "triggerCount": 1,
   "shared": [
     {
-      "createdAt": "2025-09-08T19:14:20.116Z",
       "updatedAt": "2025-09-08T19:14:20.116Z",
+      "createdAt": "2025-09-08T19:14:20.116Z",
       "role": "workflow:owner",
       "workflowId": "NNGADr1RKcWgUpJj",
       "projectId": "bDUBly1zU3yziLIn"
