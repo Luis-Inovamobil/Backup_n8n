@@ -2,7 +2,7 @@
   "id": "X1RNJ1uC3Sw4fPtD",
   "name": "Datamobil - Reader Embedded - Produção",
   "createdAt": "2025-10-20T12:45:06.062Z",
-  "updatedAt": "2025-12-05T14:52:26.000Z",
+  "updatedAt": "2025-12-08T17:21:39.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -82,7 +82,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoPorCliente = {\n  \"0001\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"3738\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"0001_teste1\": {\n    host: \"aws.reader.linux.homologacao001.inovamobil.com.br\",\n    database: \"readerweb_0001_teste1\",\n    user: \"root\",\n    senha: \"Idb#Inov@19#\",\n    porta: 3306,\n  },\n  \"0962\": {\n    host: \"teste1.imanager.inovamobil.com.br\",\n    database: \"readerweb_0962\",\n    user: \"teste\",\n    senha: \"teste.1234@\",\n    porta: 3306,\n  },\n};\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? \"\");\nconst selected = configuracaoPorCliente[codigoIManager];\nif (!selected) {\n  throw new Error(\n    `Cliente ` + codigoIManager + ` não informado, favor validar para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: selected.host,\n    database: selected.database,\n    user: selected.user,\n    password: selected.senha,\n    port: selected.porta,\n  };\n\nreturn item;\n"
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoPorCliente = {\n  \"0001\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"3738\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_0926_teste\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  },\n  \"0001_teste1\": {\n    host: \"aws.reader.linux.homologacao001.inovamobil.com.br\",\n    database: \"readerweb_0001_teste1\",\n    user: \"root\",\n    senha: \"Idb#Inov@19#\",\n    porta: 3306,\n  },\n  \"0962\": {\n    host: \"teste1.imanager.inovamobil.com.br\",\n    database: \"readerweb_0962\",\n    user: \"teste\",\n    senha: \"teste.1234@\",\n    porta: 3306,\n  },\n  \"gestaobetha_demonstracao\": {\n    host: \"readerweb.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    database: \"readerweb_gestaobetha_demonstracao\",\n    user: \"root\",\n    senha: \"iF9Z!BE4gy\",\n    porta: 3306,\n  }\n};\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? \"\");\nconst selected = configuracaoPorCliente[codigoIManager];\nif (!selected) {\n  throw new Error(\n    `Cliente ` + codigoIManager + ` não informado, favor validar para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: selected.host,\n    database: selected.database,\n    user: selected.user,\n    password: selected.senha,\n    port: selected.porta,\n  };\n\nreturn item;\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -990,7 +990,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "4802f829-0b5e-48bf-b20c-4b77224b682d",
+  "versionId": "a244455c-3e72-4a23-b7ab-eb5b737bfa8c",
   "triggerCount": 1,
   "shared": [
     {
