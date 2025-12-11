@@ -2,7 +2,7 @@
   "id": "NNGADr1RKcWgUpJj",
   "name": "Datamobil - VX Embedded - Produção",
   "createdAt": "2025-09-08T19:14:20.112Z",
-  "updatedAt": "2025-12-05T14:52:33.000Z",
+  "updatedAt": "2025-12-11T14:32:54.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -364,7 +364,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoPorCliente = {\n  \"0001\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"52.45.149.188\",\n    bancodedados: \"icommercial_faturamento_teste_luis\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"3738\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"52.45.149.188\",\n    bancodedados: \"icommercial_faturamento_teste_luis\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"testedev2\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"rabbitmq.icommercial002.inovamobil.com.br\",\n    bancodedados: \"icommercial_faturamento_testedev2\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n};\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? \"\");\nconst selected = configuracaoPorCliente[codigoIManager];\nif (!selected) {\n  throw new Error(\n    `Cliente ` + codigoIManager + ` não informado, favor validar para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: selected.servidor,\n    database: selected.bancodedados,\n    user: selected.usuario,\n    password: selected.senha,\n    port: selected.porta,\n  };\n\nreturn item;\n"
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoPorCliente = {\n  \"0001\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"52.45.149.188\",\n    bancodedados: \"icommercial_faturamento_teste_luis\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"3738\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"52.45.149.188\",\n    bancodedados: \"icommercial_faturamento_teste_luis\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"testedev2\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"rabbitmq.icommercial002.inovamobil.com.br\",\n    bancodedados: \"icommercial_faturamento_testedev2\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"teste1\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"rabbitmq.icommercial001.inovamobil.com.br\",\n    bancodedados: \"icommercial_faturamento_teste1\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n};\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? \"\");\nconst selected = configuracaoPorCliente[codigoIManager];\nif (!selected) {\n  throw new Error(\n    `Cliente ` + codigoIManager + ` não informado, favor validar para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: selected.servidor,\n    database: selected.bancodedados,\n    user: selected.usuario,\n    password: selected.senha,\n    port: selected.porta,\n  };\n\nreturn item;\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -659,7 +659,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "ce59bf4b-fa45-4cb8-aa6e-3bf4a2728c91",
+  "versionId": "bdf6c809-7cfc-41ca-adfd-18ddb25f121d",
   "triggerCount": 1,
   "shared": [
     {
