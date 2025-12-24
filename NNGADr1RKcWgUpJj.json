@@ -2,7 +2,7 @@
   "id": "NNGADr1RKcWgUpJj",
   "name": "Datamobil - VX Embedded - Produção",
   "createdAt": "2025-09-08T19:14:20.112Z",
-  "updatedAt": "2025-12-11T14:32:54.000Z",
+  "updatedAt": "2025-12-24T14:56:51.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -245,7 +245,7 @@
     },
     {
       "parameters": {
-        "path": "datamobilIA",
+        "path": "analyticsIA",
         "responseMode": "responseNode",
         "options": {
           "binaryPropertyName": "data",
@@ -659,7 +659,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "bdf6c809-7cfc-41ca-adfd-18ddb25f121d",
+  "versionId": "4bbd582e-3688-4a60-878e-8da8b493248b",
   "triggerCount": 1,
   "shared": [
     {
