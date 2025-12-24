@@ -2,8 +2,8 @@
   "id": "ScfkSb8eRAojeAcR",
   "name": "Datamobil - VX + Análise Produção",
   "createdAt": "2025-12-24T13:52:39.045Z",
-  "updatedAt": "2025-12-24T13:52:39.000Z",
-  "active": false,
+  "updatedAt": "2025-12-24T20:23:10.000Z",
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
@@ -304,8 +304,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1824,
-        -32
+        -1808,
+        -96
       ],
       "id": "6fb6cd10-e9a9-4b01-baa7-d777f152729b",
       "name": "Repassar dados"
@@ -332,7 +332,7 @@
       "typeVersion": 2,
       "position": [
         -2496,
-        -144
+        -80
       ],
       "id": "6c1cc2ba-eb30-470b-b044-4a87d5653a41",
       "name": "Mensagem de query inválida"
@@ -369,8 +369,7 @@
         "public": true,
         "options": {
           "responseMode": "responseNodes"
-        },
-        "path": "dfe04b12-7912-40e7-ae28-200628303d04"
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.3,
@@ -391,8 +390,8 @@
       "type": "@n8n/n8n-nodes-langchain.chat",
       "typeVersion": 1,
       "position": [
-        -1552,
-        -32
+        896,
+        -64
       ],
       "id": "b5d91368-0a5e-4c01-8171-ede7fb2dda22",
       "name": "Respond to Chat",
@@ -430,6 +429,213 @@
       ],
       "id": "d0ae6183-6799-442f-89d3-d36802d80547",
       "name": "GPT gerar query"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        0,
+        -144
+      ],
+      "id": "0f60e74f-520c-4d7e-94f1-da58f22256c3",
+      "name": "Unificar saidas"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5787e004-2bc5-4530-8e20-cea5b52f05ef",
+              "leftValue": "={{ $json.Erro.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        176,
+        -144
+      ],
+      "id": "9cbf46fc-9702-4595-9ce3-09dae60af013",
+      "name": "Gerou algum erro ?1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === 1. CAPTURA DO BRUTO (CAMPO \"analise\") ===\nlet raw =\n  $json.analise\n  ?? $json.output\n  ?? $json.text\n  ?? $json.response\n  ?? \"\";\n\n// captura o bloco de uso do modelo, se existir\nconst usageRaw = $json.usage ?? {};\n\n// normaliza para o formato usage_GTP_Analista\nconst usage_GTP_Analista = {\n  input_tokens: usageRaw.input_tokens ?? null,\n  output_tokens: usageRaw.output_tokens ?? null,\n  total_tokens: usageRaw.total_tokens ?? null,\n};\n\n// Se já vier objeto, ótimo, não precisa parsear string\nlet obj;\nif (raw && typeof raw === \"object\") {\n  obj = raw;\n} else {\n  // força string\n  raw = String(raw).trim()\n    // remove ```json ... ``` se vier\n    .replace(/^```(?:json)?\\s*/i, \"\")\n    .replace(/\\s*```$/i, \"\");\n\n  // desserializa caso seja string JSON dentro de aspas\n  if (\n    (raw.startsWith('\"') && raw.endsWith('\"')) ||\n    (raw.startsWith(\"'\") && raw.endsWith(\"'\"))\n  ) {\n    try { raw = JSON.parse(raw); } catch {}\n  }\n\n  // extrai a partir do primeiro \"{\", mesmo que não tenha \"}\" depois\n  if (typeof raw === \"string\") {\n    const firstBrace = raw.indexOf(\"{\");\n    if (firstBrace >= 0) {\n      raw = raw.slice(firstBrace);\n    }\n  }\n\n  // === 2. PARSE COM HEURÍSTICA REFORÇADA ===\n  function tryParseWithBraceHeuristic(str) {\n    if (typeof str !== \"string\") return str;\n\n    let cleaned = str.trim();\n\n    // normaliza quebras de linha Windows\n    cleaned = cleaned.replace(/\\r\\n/g, \"\\n\");\n\n    // normalizar números com separador de milhar tipo \": 2,570\"\n    cleaned = cleaned.replace(\n      /(:\\s*)(-?\\d{1,3}),(\\d{3})(\\s*[,\\}])/g,\n      (_, p, a, b, s) => `${p}${a}${b}${s}`\n    );\n\n    // remove vírgula sobrando antes de } ou ]\n    cleaned = cleaned.replace(/,\\s*([}\\]])/g, \"$1\");\n\n    // 1ª tentativa: JSON.parse direto\n    try {\n      return JSON.parse(cleaned);\n    } catch (e1) {\n      // 2ª tentativa: procurar fechamento de objeto por chaves balanceadas\n      let depth = 0;\n      let inString = false;\n      let escape = false;\n      let lastCompleteIndex = -1;\n      let lastTopCommaIndex = -1; // vírgula em profundidade 1\n\n      for (let i = 0; i < cleaned.length; i++) {\n        const ch = cleaned[i];\n\n        if (escape) {\n          escape = false;\n          continue;\n        }\n        if (ch === \"\\\\\") {\n          escape = true;\n          continue;\n        }\n        if (ch === '\"' && !escape) {\n          inString = !inString;\n          continue;\n        }\n        if (inString) continue;\n\n        if (ch === \"{\") {\n          depth++;\n        } else if (ch === \"}\") {\n          depth--;\n          if (depth === 0) {\n            lastCompleteIndex = i;\n          }\n        } else if (ch === \",\" && depth === 1) {\n          // vírgula logo após um campo completo no objeto raiz\n          lastTopCommaIndex = i;\n        }\n      }\n\n      // Caso 1: encontramos um objeto completo dentro da string\n      if (lastCompleteIndex > -1) {\n        let candidate = cleaned.slice(0, lastCompleteIndex + 1);\n        candidate = candidate.replace(/,\\s*([}\\]])/g, \"$1\");\n        return JSON.parse(candidate);\n      }\n\n      // Caso 2: objeto nunca fecha (JSON truncado), mas temos\n      // pelo menos uma vírgula em profundidade 1 → podemos cortar o último campo quebrado\n      if (lastTopCommaIndex > -1) {\n        let candidate = cleaned.slice(0, lastTopCommaIndex); // corta na vírgula\n        candidate = candidate.replace(/[\\s,\\n\\r]+$/g, \"\");  // limpa sobra no final\n        candidate = candidate + \"\\n}\";                     // fecha o objeto\n\n        candidate = candidate.replace(/,\\s*([}\\]])/g, \"$1\");\n\n        return JSON.parse(candidate);\n      }\n\n      // Se nada disso funcionar, real joga o erro\n      throw e1;\n    }\n  }\n\n  let parsed;\n  try {\n    parsed = tryParseWithBraceHeuristic(raw);\n  } catch (eFinal) {\n    // fallback final: em vez de estourar tudo, devolve bruto dentro de DiagnósticoTextoBruto\n    return [{\n      json: {\n        Diagnóstico: {\n          erro: \"Falha ao parsear JSON (mesmo com heurística).\",\n          detalhe: String(eFinal),\n          amostra: String(raw).slice(0, 500)\n        },\n        usage_GTP_Analista\n      }\n    }];\n  }\n\n  obj = parsed;\n}\n\n// === 3. MAPA DE RENOMEAÇÃO (NOVO) ===\nconst map = {\n  // contexto\n  \"🧭contexto\": \"🧭 contexto\",\n  \"contexto\": \"🧭 contexto\",\n\n  // indicadores\n  \"📈indicadores\": \"📈 indicadores\",\n  \"indicadores\": \"📈 indicadores\",\n\n  // análise\n  \"🧠análise\": \"🧠 análise\",\n  \"analise\": \"🧠 análise\",\n  \"análise\": \"🧠 análise\",\n\n  // ações\n  \"⚙️ações\": \"⚙️ ações\",\n  \"acoes\": \"⚙️ ações\",\n  \"ações\": \"⚙️ ações\",\n\n  // resumo consultivo\n  \"resumo_consultivo\": \"🧷 resumo_consultivo\",\n  \"🧷resumo_consultivo\": \"🧷 resumo_consultivo\"\n};\n\nfunction renameKeys(o) {\n  if (o == null || typeof o !== \"object\") return o;\n\n  const out = {};\n\n  for (const [k, v] of Object.entries(o)) {\n    const nk = map[k] ?? k;\n    out[nk] = v;\n  }\n\n  return out;\n}\n\nconst withEmoji = renameKeys(obj);\n\n// === 4. RETORNO FINAL ===\nreturn [{\n  json: {\n    Diagnóstico: withEmoji,\n    usage_GTP_Analista\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        32
+      ],
+      "id": "6f02a031-40ce-4c25-8340-e7766c09e624",
+      "name": "Formatar retorno GPT"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Entrada vinda do nó anterior (Gerar Resumo para BILL)\n\n// pedido do cliente\nconst pedido =\n  $json.envelope?.pedido_cliente\n  ?? $json.pedido_cliente\n  ?? $json.envelope?.pedido\n  ?? \"\";\n\n// dados reais do dataset (resultado.data)\nconst data =\n  $json.envelope?.resultado?.data\n  ?? $json.data\n  ?? [];\n\n// PROMPT BILL – VERSÃO COMPLETA REESTRUTURADA\nconst promptBill = `\nVocê é BILL, consultor técnico e estratégico especializado em saneamento básico. Sua missão é analisar o pedido_cliente e o data, produzindo um diagnóstico consultivo em JSON válido, com rigor técnico, sem texto fora do JSON. Use somente os dados de data para cálculos e análises. Não presuma variáveis ausentes no dataset. Adapte sempre a análise ao tema do pedido.\n\nCaso haja apenas 1 a 3 valores numéricos relevantes, seja extremamente direto. Se houver mais de 3 valores, produza análise mais detalhada e interpretativa.\n\nVocê DEVE retornar apenas um único objeto JSON, seguindo exatamente a estrutura abaixo, sem alterar nomes de campos, sem criar campos extras, sem pluralizar ou traduzir chaves:\n\n⦃\n \"🧭 contexto\": \"Compare o desempenho local com benchmarks nacionais, metas regulatórias e boas práticas do setor. Utilize referências do SNIS 2023 (2025), ANA, Trata Brasil, ONDAS, ABCON/SINDCON, IAS e agências reguladoras estaduais. Explique de forma objetiva onde os resultados se distanciam ou se aproximam dos padrões de referência, sempre coerente com o tema do pedido_cliente.\",\n \n \"📈 indicadores\": \"Reconheça automaticamente se o dataset é linha única com colunas agregadas ou múltiplos registros. Use todas as colunas numéricas como indicadores válidos. Em múltiplas linhas, calcule totais, médias, proporções e percentuais diretamente dos valores existentes. Identifique variações temporais quando houver sufixos como '_MM_AAAA'. Liste métricas derivadas dos valores existentes — somatórios, médias, percentuais, variações entre períodos, indicadores por grupo, distribuição de ocorrência, concentração e diferenças entre categorias/rotas/leituristas quando existirem — sempre usando exatamente os nomes dos campos do dataset. Nunca repita números de forma divergente em outra seção. Resuma esses mesmos números com duas casas decimais quando aplicável, incluindo percentuais com símbolo % e valores financeiros com prefixo R$. Nunca crie novos números; apenas reorganize e combine valores já presentes. Se alguma consolidação for insegura, declare isso explicitamente. Sempre que houver distribuição por categorias, faixas de consumo, tipos de ocorrência, rotas, bairros ou grupos similares, apresente cada item em linha separada, iniciando com '•'. Nunca apresente listas desse tipo em linha única.\",\n\n \"🧠 análise\": \"Explique o que os valores de data significam em termos de comportamento: melhora, piora, estabilidade, concentração de problemas, variações entre grupos ou períodos, faixas de criticidade (até 10% baixa, 10–20% moderada, 20–30% elevada, >30% crítica). Relacione os achados com fenômenos típicos do saneamento: micromedição, perdas comerciais, tarifa mínima, ocorrências recorrentes, baixa cobertura de hidrômetros, inconsistências de leitura, concentração de consumo, falhas de processo, problemas cadastrais e efeitos operacionais. Traga hipóteses técnicas plausíveis coerentes com o setor, sem inventar números. Compare grupos quando existirem, indicando quem está melhor ou pior e qual a diferença aproximada, sempre baseada nos valores reais do dataset.\",\n\n \"⚙️ ações\": [\"Descreva ações práticas e decisões futuras baseadas nos valores presentes em data: auditorias, inspeções em campo, ajustes operacionais, substituição ou instalação de hidrômetros, revisão cadastral, refinamento de rotas de leitura, intervenções para reduzir reincidências, validações adicionais de dados e definição de próximos passos para continuidade da análise. Não mencione prazos.\"],\n\n \"🧷 resumo_consultivo\": \"Forneça uma conclusão executiva (até 7 linhas) destacando evidências numéricas-chave, gravidade expressa em %, potenciais impactos em R$, prioridades e o valor estratégico de agir — em eficiência, perdas, faturamento, qualidade de leitura e sustentabilidade econômica.\"\n⦄\n\nRegras numéricas e de consistência:\n- Nunca invente valores; apenas use os existentes em data.\n- Percentuais sempre com símbolo %.\n- Valores financeiros sempre com R$.\n- Nunca use separador de milhar no JSON (2570).\n- Não contradiga números entre seções.\n- Se uma consolidação for insegura, declare isso.\n\nCASO SEM DADOS:\n⦃\n \"🧭 contexto\": \"—\",\n \"📈 indicadores\": \"—\",\n \"🧠 análise\": \"—\",\n \"⚙️ ações\": [],\n \"🧷 resumo_consultivo\": \"Não há dados suficientes para análise.\"\n⦄`;\n\n// Compacta entrada do usuário em um único JSON\nconst userPayload = {\n  pedido_cliente: pedido,\n  data\n};\n\n\n// Body da chamada para /v1/responses\nconst openaiBody = {\n  model: \"gpt-4.1-mini\",\n  temperature: 0.2,\n  max_output_tokens: 1000,\n\n  text: {\n    format: {\n      type: \"json_object\"\n    }\n  },\n\n  input: [\n    {\n      role: \"system\",\n      content: [\n        {\n          type: \"input_text\",\n          text: promptBill\n        }\n      ]\n    },\n    {\n      role: \"user\",\n      content: [\n        {\n          type: \"input_text\",\n          text: JSON.stringify(userPayload)\n        }\n      ]\n    }\n  ]\n};\n\nreturn [\n  {\n    json: {\n      openaiBody\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        32
+      ],
+      "id": "d3f2c1d6-a893-47ec-a114-e2d3b3085f3a",
+      "name": "Montar Prompt análise"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebbe194a-4b8b-44c9-ac19-03cf69d353bf",
+              "name": "analise",
+              "type": "string",
+              "value": "={{ \n  ($json.output || [])\n    .find(o => o.type === 'message')\n    .content\n    .find(c => c.type === 'output_text')\n    .text \n}}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "872ee13a-8795-45c3-abf7-7e7935367c34",
+      "name": "Formatar retorno GTP analista",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -400,
+        32
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***MASKED_SECRET***"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={{ JSON.stringify($json.openaiBody) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -704,
+        32
+      ],
+      "id": "355741e9-ca37-4010-ab09-da4687efbbd6",
+      "name": "GPT analisar dados",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// ==============================\n// 1. ENTRADAS BÁSICAS\n// ==============================\nconst pedido = $json.pedido_cliente;\nconst data = $json.data || [];\nconst query = $json.query || \"\";\n\n// diagnostico pode vir como \"diagnostico\" ou \"Diagnóstico\"\nconst d = $json.Diagnóstico || $json.diagnostico || {};\n\n\n// ==============================\n// 2. HELPERS GERAIS\n// ==============================\nfunction toArraySafe(val) {\n  if (val == null) return [];\n  if (Array.isArray(val)) return val;\n  if (typeof val === \"object\") return [JSON.stringify(val, null, 2)];\n  return [String(val)];\n}\n\nfunction toTextSafe(val, fallback = \"—\") {\n  if (val == null) return fallback;\n  if (typeof val === \"string\") return val;\n  if (typeof val === \"number\" || typeof val === \"boolean\") return String(val);\n  return JSON.stringify(val, null, 2);\n}\n\n\n// ==============================\n// 3. FORMATAÇÃO NUMÉRICA POR CONTEXTO\n// ==============================\nfunction formatMoneyBr(num) {\n  if (num == null || isNaN(num)) return \"R$ 0,00\";\n  return (\n    \"R$ \" +\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    })\n  );\n}\n\nfunction formatPercentBr(num) {\n  if (num == null || isNaN(num)) return \"0%\";\n  return (\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    }) + \"%\"\n  );\n}\n\nfunction formatIntegerBr(num) {\n  if (num == null || isNaN(num)) return \"0\";\n  return Number(num).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 0,\n  });\n}\n\nfunction formatNumberWithContext(chave, parentKey, value) {\n  const k = (chave || \"\").toLowerCase();\n  const p = (parentKey || \"\").toLowerCase();\n\n  if (\n    k.includes(\"valor\") ||\n    k.includes(\"fatura\") ||\n    k.includes(\"faturado\") ||\n    k.includes(\"receita\") ||\n    p.includes(\"valor_faturado\") ||\n    p.includes(\"faturado\") ||\n    p.includes(\"faturas\")\n  ) {\n    return formatMoneyBr(value);\n  }\n\n  if (\n    k.includes(\"percent\") ||\n    k.includes(\"perc\") ||\n    k.endsWith(\"_pct\") ||\n    k.endsWith(\"_percentual\") ||\n    k.includes(\"taxa\") ||\n    k.includes(\"indice\") ||\n    k.includes(\"índice\")\n  ) {\n    return formatPercentBr(value);\n  }\n\n  if (\n    k.includes(\"consumo\") ||\n    k.includes(\"volume\") ||\n    k.includes(\"m3\") ||\n    k.includes(\"m³\")\n  ) {\n    return `${formatIntegerBr(value)} m³`;\n  }\n\n  if (\n    k.includes(\"leitura\") ||\n    k.includes(\"leituras\") ||\n    k.includes(\"qtd\") ||\n    k.includes(\"quantidade\") ||\n    k.includes(\"total\") ||\n    k.includes(\"economias\") ||\n    k.includes(\"registros\")\n  ) {\n    return formatIntegerBr(value);\n  }\n\n  return Number(value).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 2,\n  });\n}\n\n\n// ==============================\n// 4. AMOSTRA DE DADOS (JSON COMPLETO)\n// ==============================\nlet amostraDados;\nif (data.length === 0) {\n  amostraDados = \"Nenhum registro retornado.\";\n} else {\n  amostraDados = JSON.stringify(data, null, 2);\n}\n\n\n// ==============================\n// 5. ACESSO AOS BLOCOS DO DIAGNÓSTICO\n// ==============================\nconst contexto =\n  d[\"🧭 contexto\"] ||\n  d[\"contexto\"] ||\n  \"—\";\n\nconst indicadoresRaw = d[\"📈 indicadores\"] || d[\"indicadores\"] || \"—\";\n\nlet indicadoresDescricao = \"—\";\nlet valores = {};\n\nif (typeof indicadoresRaw === \"string\") {\n  indicadoresDescricao = indicadoresRaw;\n} else if (indicadoresRaw && typeof indicadoresRaw === \"object\") {\n  indicadoresDescricao = toTextSafe(\n    indicadoresRaw[\"📝 descrição\"] ||\n      indicadoresRaw[\"📝 descricao\"] ||\n      indicadoresRaw.descricao\n  );\n  valores =\n    indicadoresRaw[\"🔢 valores\"] ||\n    indicadoresRaw[\"valores\"] ||\n    {};\n}\n\n// valor final de indicadores\nlet indicadores = toTextSafe(indicadoresDescricao);\n\n\n// 🔧 **AJUSTE CRÍTICO: transformar bullets \"•\" em lista markdown \"-\"**\nif (typeof indicadores === \"string\" && indicadores.includes(\"•\")) {\n  const partes = indicadores.split(\"•\");\n\n  const cabecalho = partes.shift().trimEnd();\n\n  const linhasBullets = partes\n    .map(p => p.trim())\n    .filter(p => p.length > 0)\n    .map(p => \"- \" + p)\n    .join(\"\\n\");\n\n  if (cabecalho && linhasBullets) {\n    indicadores = cabecalho + \"\\n\" + linhasBullets;\n  } else if (!cabecalho && linhasBullets) {\n    indicadores = linhasBullets;\n  } else {\n    indicadores = cabecalho || indicadores;\n  }\n}\n\n\n// ==============================\n// 5.1 CAPTURA ROBUSTA DA ANÁLISE\n// ==============================\nfunction extrairAnaliseInterpretativa(...objs) {\n  for (const obj of objs) {\n    if (!obj || typeof obj !== \"object\") continue;\n    for (const [k, v] of Object.entries(obj)) {\n      const kl = k.toLowerCase();\n      if (\n        kl.includes(\"análise_interpretativa\") ||\n        kl.includes(\"analise_interpretativa\")\n      ) {\n        if (typeof v === \"string\") return v;\n      }\n    }\n  }\n  return \"-\";\n}\n\nconst analise =\n  d[\"🧠 análise\"] ||\n  d[\"🧠 analise\"] ||\n  d[\"analise\"] ||\n  d[\"análise\"] ||\n  extrairAnaliseInterpretativa(d, valores) ||\n  \"-\";\n\nconst acoes = toArraySafe(d[\"⚙️ ações\"] || d[\"acoes\"] || d[\"ações\"]);\n\nconst resumoConsultivo = toTextSafe(\n  d[\"🧷 resumo_consultivo\"] || d[\"resumo_consultivo\"]\n);\n\n\n// ==============================\n// 7. TEXTO FINAL\n// ==============================\nconst texto =\n  `**📌 PEDIDO DO CLIENTE**\\n` +\n  `${pedido || \"—\"}\\n\\n` +\n  `**📊 DADOS UTILIZADOS (amostra)**\\n\\n` +\n  `${amostraDados}\\n\\n` +\n  `**🧮 QUERY SQL**\\n\\n` +\n  `${query || \"—\"}\\n\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n` +\n  `**🔎 DIAGNÓSTICO BILL**\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n\\n` +\n  `**🧭 CONTEXTO**\\n\\n` +\n  `${toTextSafe(contexto)}\\n\\n` +\n  `**📈 INDICADORES**\\n\\n` +\n  `${indicadores}\\n\\n` +\n  `**📋 ANÁLISE**\\n\\n` +\n  `${toTextSafe(analise)}\\n\\n` +\n  `**⚙️ AÇÕES**\\n\\n` +\n  `${\n    acoes.length\n      ? acoes.map((s) => \"- \" + s).join(\"\\n\")\n      : \"—\"\n  }\\n\\n` +\n  `**🧷 RESUMO CONSULTIVO**\\n\\n` +\n  `${resumoConsultivo}`;\n\n\n// ==============================\n// 8. RETORNO PARA O CHAT\n// ==============================\nreturn [\n  {\n    json: {\n      resposta_chat: texto,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        -224
+      ],
+      "id": "87beef8f-0aeb-4750-9ded-95d3fa0050fa",
+      "name": "Formatar visualização",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5787e004-2bc5-4530-8e20-cea5b52f05ef",
+              "leftValue": "={{ !!(\n  $json.Erro\n    ? (Array.isArray($json.Erro)\n        ? $json.Erro.length > 0\n        : String($json.Erro).trim() !== '')\n    : false\n) }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1584,
+        -32
+      ],
+      "id": "685040bd-f797-4e07-9cd8-a81002b24ca8",
+      "name": "Gerou algum erro ?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Agora o Merge já trouxe os dois lados num único item (json único)\nconst M = $json || {};\n\nconst pedido_cliente =$('Combine schema data and chat input').first().json.chatinput;\n  \nconst data =\n  M.data ??\n  M.envelope?.resultado?.data ??\n  null;\n\nconst query =\n  M.query ??\n  M.envelope?.resultado?.query ??\n  null;\n\n// Erros podem ter vindo de Repassar dados\nconst erro  = M.erro ?? M.error ?? null;\nconst erros = Array.isArray(M.Erros) ? M.Erros\n           : Array.isArray(M.erros) ? M.erros\n           : Array.isArray(M.errors) ? M.errors\n           : [];\n\n// A análise pode ter vindo do Analista em várias chaves\nconst diagnostico =$input.first().json[\"Diagnóstico\"];\n\nconsole.log(\"input\", $input.first())\n\nconst usage_GPT_Query = $input.first().json.usage_GPT_Query;\nconst usage_GPT_Analista = $input.first().json.usage_GTP_Analista;\n\nconst hasError = !!erro || (Array.isArray(erros) && erros.length > 0);\n\nreturn [{\n  json: {\n    pedido_cliente,\n    data,\n    query,\n    erro,\n    erros,\n    diagnostico: hasError ? null : diagnostico,\n    usage_GPT_Query,\n    usage_GPT_Analista\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -64
+      ],
+      "id": "1397eb18-bef9-434c-845d-56fb0aa4801c",
+      "name": "Unificar Resultado",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Captura o node \"Combine schema data and chat input\"\nconst combineNode = $('Combine schema data and chat input').first();\nconst pedido = combineNode?.json?.chatinput || '';\n\n// Captura o dataset atual\nconst src = $json.envelope ?? $json;\nconst dataIn = Array.isArray(src?.resultado?.data)\n  ? src.resultado.data\n  : Array.isArray(src?.data)\n  ? src.data\n  : [];\n\n// Normaliza chaves e converte valores numéricos\nconst normalizeKey = (k) =>\n  k\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/\\s+/g, '_')\n    .replace(/[^\\w]/g, '_')\n    .replace(/_+/g, '_')\n    .replace(/^_|_$/g, '')\n    .toLowerCase();\n\nconst toNumber = (v) =>\n  typeof v === 'string' && /^\\s*\\d+(?:[.,]\\d+)?\\s*$/.test(v)\n    ? Number(v.replace(',', '.'))\n    : v;\n\n// 🔥 VERSÃO CORRIGIDA — sem duplicar TotalLeituras/totalleituras\nconst dataNorm = (dataIn || []).map((row) => {\n  const out = {};\n  for (const [k, v] of Object.entries(row)) {\n    const nk = normalizeKey(k);\n    const nv = toNumber(v);\n\n    // Apenas a chave normalizada\n    out[nk] = nv;\n  }\n  return out;\n});\n\n// Monta o envelope final para o BILL\nreturn [\n  {\n    json: {\n      envelope: {\n        pedido_cliente: pedido || src.pedido_cliente || '—',\n        resultado: {\n          data: dataNorm,\n          query: src?.resultado?.query || src?.query || '',\n        },\n        metadados: src.metadados || {\n          origem: 'n8n',\n          unidade: 'clientes',\n          moeda: 'BRL',\n        },\n      },\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1344,
+        32
+      ],
+      "id": "d0c94e8b-f4fa-4d43-a40b-c89fea1c56fa",
+      "name": "Gerar envelope de dados e solicitação"
     }
   ],
   "connections": {
@@ -566,7 +772,12 @@
       "main": [
         [
           {
-            "node": "Respond to Chat",
+            "node": "Gerou algum erro ?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Unificar saidas",
             "type": "main",
             "index": 0
           }
@@ -638,6 +849,118 @@
           }
         ]
       ]
+    },
+    "Unificar saidas": {
+      "main": [
+        [
+          {
+            "node": "Gerou algum erro ?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerou algum erro ?1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Unificar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar retorno GPT": {
+      "main": [
+        [
+          {
+            "node": "Unificar saidas",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Montar Prompt análise": {
+      "main": [
+        [
+          {
+            "node": "GPT analisar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar retorno GTP analista": {
+      "main": [
+        [
+          {
+            "node": "Formatar retorno GPT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT analisar dados": {
+      "main": [
+        [
+          {
+            "node": "Formatar retorno GTP analista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerou algum erro ?": {
+      "main": [
+        [
+          {
+            "node": "Unificar saidas",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Gerar envelope de dados e solicitação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unificar Resultado": {
+      "main": [
+        [
+          {
+            "node": "Respond to Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar envelope de dados e solicitação": {
+      "main": [
+        [
+          {
+            "node": "Montar Prompt análise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar visualização": {
+      "main": [
+        []
+      ]
     }
   },
   "settings": {
@@ -648,7 +971,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "1b49eefc-1085-4bbe-8f5e-4e3edc4cb726",
+  "versionId": "89f091c7-3ff5-428a-8b8c-155eb4ee871c",
   "triggerCount": 1,
   "shared": [
     {
