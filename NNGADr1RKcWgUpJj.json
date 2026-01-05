@@ -2,7 +2,7 @@
   "id": "NNGADr1RKcWgUpJj",
   "name": "Datamobil - VX Embedded - Produção",
   "createdAt": "2025-09-08T19:14:20.112Z",
-  "updatedAt": "2025-12-24T14:56:51.000Z",
+  "updatedAt": "2026-01-05T18:59:47.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -364,7 +364,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoPorCliente = {\n  \"0001\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"52.45.149.188\",\n    bancodedados: \"icommercial_faturamento_teste_luis\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"3738\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"52.45.149.188\",\n    bancodedados: \"icommercial_faturamento_teste_luis\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"testedev2\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"rabbitmq.icommercial002.inovamobil.com.br\",\n    bancodedados: \"icommercial_faturamento_testedev2\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"teste1\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"rabbitmq.icommercial001.inovamobil.com.br\",\n    bancodedados: \"icommercial_faturamento_teste1\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n};\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? \"\");\nconst selected = configuracaoPorCliente[codigoIManager];\nif (!selected) {\n  throw new Error(\n    `Cliente ` + codigoIManager + ` não informado, favor validar para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: selected.servidor,\n    database: selected.bancodedados,\n    user: selected.usuario,\n    password: selected.senha,\n    port: selected.porta,\n  };\n\nreturn item;\n"
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoPorCliente = {\n  \"0001\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"52.45.149.188\",\n    bancodedados: \"icommercial_faturamento_teste_luis\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"3738\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"52.45.149.188\",\n    bancodedados: \"icommercial_faturamento_teste_luis\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"testedev2\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"rabbitmq.icommercial002.inovamobil.com.br\",\n    bancodedados: \"icommercial_faturamento_testedev2\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"teste1\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"rabbitmq.icommercial001.inovamobil.com.br\",\n    bancodedados: \"icommercial_faturamento_teste1\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"0796\": {\n    CNPJ: $input.first().json.CNPJ,\n    servidor: \"joinville-postgres-producao.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    bancodedados: \"icommercial_faturamento_0796\",\n    usuario: \"postgres\",\n    senha: \"idb#inova#21#\",\n    porta: 5432,\n  },\n  \"0796_2\": {\n        CNPJ: $input.first().json.CNPJ,\n    servidor: \"joinville-postgres-producao-2.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    bancodedados: \"icommercial_faturamento_0796_2\",\n    usuario: \"postgres\",\n    senha: \"idb#inova#21#\",\n    porta: 5432,\n  },\n};\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? \"\");\nconst selected = configuracaoPorCliente[codigoIManager];\nif (!selected) {\n  throw new Error(\n    `Cliente ` + codigoIManager + ` não informado, favor validar para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: selected.servidor,\n    database: selected.bancodedados,\n    user: selected.usuario,\n    password: selected.senha,\n    port: selected.porta,\n  };\n\nreturn item;\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -659,7 +659,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "4bbd582e-3688-4a60-878e-8da8b493248b",
+  "versionId": "3960330e-782a-41e1-911b-d371f8d4c191",
   "triggerCount": 1,
   "shared": [
     {
