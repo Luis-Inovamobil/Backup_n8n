@@ -1,8 +1,8 @@
 {
   "id": "ScfkSb8eRAojeAcR",
-  "name": "Datamobil - VX + Análise Produção",
+  "name": "Datamobil - VX + Análise Produção Embedded",
   "createdAt": "2025-12-24T13:52:39.045Z",
-  "updatedAt": "2025-12-24T20:23:10.000Z",
+  "updatedAt": "2026-01-06T20:12:48.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -366,41 +366,6 @@
     },
     {
       "parameters": {
-        "public": true,
-        "options": {
-          "responseMode": "responseNodes"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        -4640,
-        -160
-      ],
-      "id": "b8a874df-9245-467e-abcb-a10a7401cd50",
-      "name": "When chat message received",
-      "webhookId": "dfe04b12-7912-40e7-ae28-200628303d04"
-    },
-    {
-      "parameters": {
-        "message": "=```json\n{{ JSON.stringify($json, null, 2) }}",
-        "waitUserReply": false,
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chat",
-      "typeVersion": 1,
-      "position": [
-        896,
-        -64
-      ],
-      "id": "b5d91368-0a5e-4c01-8171-ede7fb2dda22",
-      "name": "Respond to Chat",
-      "executeOnce": false,
-      "alwaysOutputData": false,
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
         "method": "POST",
         "url": "https://api.openai.com/v1/responses",
         "sendHeaders": true,
@@ -563,20 +528,6 @@
     },
     {
       "parameters": {
-        "jsCode": "// ==============================\n// 1. ENTRADAS BÁSICAS\n// ==============================\nconst pedido = $json.pedido_cliente;\nconst data = $json.data || [];\nconst query = $json.query || \"\";\n\n// diagnostico pode vir como \"diagnostico\" ou \"Diagnóstico\"\nconst d = $json.Diagnóstico || $json.diagnostico || {};\n\n\n// ==============================\n// 2. HELPERS GERAIS\n// ==============================\nfunction toArraySafe(val) {\n  if (val == null) return [];\n  if (Array.isArray(val)) return val;\n  if (typeof val === \"object\") return [JSON.stringify(val, null, 2)];\n  return [String(val)];\n}\n\nfunction toTextSafe(val, fallback = \"—\") {\n  if (val == null) return fallback;\n  if (typeof val === \"string\") return val;\n  if (typeof val === \"number\" || typeof val === \"boolean\") return String(val);\n  return JSON.stringify(val, null, 2);\n}\n\n\n// ==============================\n// 3. FORMATAÇÃO NUMÉRICA POR CONTEXTO\n// ==============================\nfunction formatMoneyBr(num) {\n  if (num == null || isNaN(num)) return \"R$ 0,00\";\n  return (\n    \"R$ \" +\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    })\n  );\n}\n\nfunction formatPercentBr(num) {\n  if (num == null || isNaN(num)) return \"0%\";\n  return (\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    }) + \"%\"\n  );\n}\n\nfunction formatIntegerBr(num) {\n  if (num == null || isNaN(num)) return \"0\";\n  return Number(num).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 0,\n  });\n}\n\nfunction formatNumberWithContext(chave, parentKey, value) {\n  const k = (chave || \"\").toLowerCase();\n  const p = (parentKey || \"\").toLowerCase();\n\n  if (\n    k.includes(\"valor\") ||\n    k.includes(\"fatura\") ||\n    k.includes(\"faturado\") ||\n    k.includes(\"receita\") ||\n    p.includes(\"valor_faturado\") ||\n    p.includes(\"faturado\") ||\n    p.includes(\"faturas\")\n  ) {\n    return formatMoneyBr(value);\n  }\n\n  if (\n    k.includes(\"percent\") ||\n    k.includes(\"perc\") ||\n    k.endsWith(\"_pct\") ||\n    k.endsWith(\"_percentual\") ||\n    k.includes(\"taxa\") ||\n    k.includes(\"indice\") ||\n    k.includes(\"índice\")\n  ) {\n    return formatPercentBr(value);\n  }\n\n  if (\n    k.includes(\"consumo\") ||\n    k.includes(\"volume\") ||\n    k.includes(\"m3\") ||\n    k.includes(\"m³\")\n  ) {\n    return `${formatIntegerBr(value)} m³`;\n  }\n\n  if (\n    k.includes(\"leitura\") ||\n    k.includes(\"leituras\") ||\n    k.includes(\"qtd\") ||\n    k.includes(\"quantidade\") ||\n    k.includes(\"total\") ||\n    k.includes(\"economias\") ||\n    k.includes(\"registros\")\n  ) {\n    return formatIntegerBr(value);\n  }\n\n  return Number(value).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 2,\n  });\n}\n\n\n// ==============================\n// 4. AMOSTRA DE DADOS (JSON COMPLETO)\n// ==============================\nlet amostraDados;\nif (data.length === 0) {\n  amostraDados = \"Nenhum registro retornado.\";\n} else {\n  amostraDados = JSON.stringify(data, null, 2);\n}\n\n\n// ==============================\n// 5. ACESSO AOS BLOCOS DO DIAGNÓSTICO\n// ==============================\nconst contexto =\n  d[\"🧭 contexto\"] ||\n  d[\"contexto\"] ||\n  \"—\";\n\nconst indicadoresRaw = d[\"📈 indicadores\"] || d[\"indicadores\"] || \"—\";\n\nlet indicadoresDescricao = \"—\";\nlet valores = {};\n\nif (typeof indicadoresRaw === \"string\") {\n  indicadoresDescricao = indicadoresRaw;\n} else if (indicadoresRaw && typeof indicadoresRaw === \"object\") {\n  indicadoresDescricao = toTextSafe(\n    indicadoresRaw[\"📝 descrição\"] ||\n      indicadoresRaw[\"📝 descricao\"] ||\n      indicadoresRaw.descricao\n  );\n  valores =\n    indicadoresRaw[\"🔢 valores\"] ||\n    indicadoresRaw[\"valores\"] ||\n    {};\n}\n\n// valor final de indicadores\nlet indicadores = toTextSafe(indicadoresDescricao);\n\n\n// 🔧 **AJUSTE CRÍTICO: transformar bullets \"•\" em lista markdown \"-\"**\nif (typeof indicadores === \"string\" && indicadores.includes(\"•\")) {\n  const partes = indicadores.split(\"•\");\n\n  const cabecalho = partes.shift().trimEnd();\n\n  const linhasBullets = partes\n    .map(p => p.trim())\n    .filter(p => p.length > 0)\n    .map(p => \"- \" + p)\n    .join(\"\\n\");\n\n  if (cabecalho && linhasBullets) {\n    indicadores = cabecalho + \"\\n\" + linhasBullets;\n  } else if (!cabecalho && linhasBullets) {\n    indicadores = linhasBullets;\n  } else {\n    indicadores = cabecalho || indicadores;\n  }\n}\n\n\n// ==============================\n// 5.1 CAPTURA ROBUSTA DA ANÁLISE\n// ==============================\nfunction extrairAnaliseInterpretativa(...objs) {\n  for (const obj of objs) {\n    if (!obj || typeof obj !== \"object\") continue;\n    for (const [k, v] of Object.entries(obj)) {\n      const kl = k.toLowerCase();\n      if (\n        kl.includes(\"análise_interpretativa\") ||\n        kl.includes(\"analise_interpretativa\")\n      ) {\n        if (typeof v === \"string\") return v;\n      }\n    }\n  }\n  return \"-\";\n}\n\nconst analise =\n  d[\"🧠 análise\"] ||\n  d[\"🧠 analise\"] ||\n  d[\"analise\"] ||\n  d[\"análise\"] ||\n  extrairAnaliseInterpretativa(d, valores) ||\n  \"-\";\n\nconst acoes = toArraySafe(d[\"⚙️ ações\"] || d[\"acoes\"] || d[\"ações\"]);\n\nconst resumoConsultivo = toTextSafe(\n  d[\"🧷 resumo_consultivo\"] || d[\"resumo_consultivo\"]\n);\n\n\n// ==============================\n// 7. TEXTO FINAL\n// ==============================\nconst texto =\n  `**📌 PEDIDO DO CLIENTE**\\n` +\n  `${pedido || \"—\"}\\n\\n` +\n  `**📊 DADOS UTILIZADOS (amostra)**\\n\\n` +\n  `${amostraDados}\\n\\n` +\n  `**🧮 QUERY SQL**\\n\\n` +\n  `${query || \"—\"}\\n\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n` +\n  `**🔎 DIAGNÓSTICO BILL**\\n` +\n  `━━━━━━━━━━━━━━━━━━━━━━\\n\\n` +\n  `**🧭 CONTEXTO**\\n\\n` +\n  `${toTextSafe(contexto)}\\n\\n` +\n  `**📈 INDICADORES**\\n\\n` +\n  `${indicadores}\\n\\n` +\n  `**📋 ANÁLISE**\\n\\n` +\n  `${toTextSafe(analise)}\\n\\n` +\n  `**⚙️ AÇÕES**\\n\\n` +\n  `${\n    acoes.length\n      ? acoes.map((s) => \"- \" + s).join(\"\\n\")\n      : \"—\"\n  }\\n\\n` +\n  `**🧷 RESUMO CONSULTIVO**\\n\\n` +\n  `${resumoConsultivo}`;\n\n\n// ==============================\n// 8. RETORNO PARA O CHAT\n// ==============================\nreturn [\n  {\n    json: {\n      resposta_chat: texto,\n    },\n  },\n];\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        592,
-        -224
-      ],
-      "id": "87beef8f-0aeb-4750-9ded-95d3fa0050fa",
-      "name": "Formatar visualização",
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -617,8 +568,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        336,
-        -64
+        448,
+        -48
       ],
       "id": "1397eb18-bef9-434c-845d-56fb0aa4801c",
       "name": "Unificar Resultado",
@@ -636,6 +587,64 @@
       ],
       "id": "d0c94e8b-f4fa-4d43-a40b-c89fea1c56fa",
       "name": "Gerar envelope de dados e solicitação"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ==============================\n// 1. ENTRADAS BÁSICAS\n// ==============================\nconst pedido = $json.pedido_cliente;\nconst data = $json.data || [];\nconst query = $json.query || \"\";\n\n// diagnostico pode vir como \"diagnostico\" ou \"Diagnóstico\"\nconst d = $json.Diagnóstico || $json.diagnostico || {};\n\n\n// ==============================\n// 2. HELPERS GERAIS\n// ==============================\nfunction toArraySafe(val) {\n  if (val == null) return [];\n  if (Array.isArray(val)) return val;\n  if (typeof val === \"object\") return [JSON.stringify(val, null, 2)];\n  return [String(val)];\n}\n\nfunction toTextSafe(val, fallback = \"—\") {\n  if (val == null) return fallback;\n  if (typeof val === \"string\") return val;\n  if (typeof val === \"number\" || typeof val === \"boolean\") return String(val);\n  return JSON.stringify(val, null, 2);\n}\n\n\n// ==============================\n// 3. FORMATAÇÃO NUMÉRICA POR CONTEXTO\n// ==============================\nfunction formatMoneyBr(num) {\n  if (num == null || isNaN(num)) return \"R$ 0,00\";\n  return (\n    \"R$ \" +\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    })\n  );\n}\n\nfunction formatPercentBr(num) {\n  if (num == null || isNaN(num)) return \"0%\";\n  return (\n    Number(num).toLocaleString(\"pt-BR\", {\n      minimumFractionDigits: 2,\n      maximumFractionDigits: 2,\n    }) + \"%\"\n  );\n}\n\nfunction formatIntegerBr(num) {\n  if (num == null || isNaN(num)) return \"0\";\n  return Number(num).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 0,\n  });\n}\n\nfunction formatNumberWithContext(chave, parentKey, value) {\n  const k = (chave || \"\").toLowerCase();\n  const p = (parentKey || \"\").toLowerCase();\n\n  if (\n    k.includes(\"valor\") ||\n    k.includes(\"fatura\") ||\n    k.includes(\"faturado\") ||\n    k.includes(\"receita\") ||\n    p.includes(\"valor_faturado\") ||\n    p.includes(\"faturado\") ||\n    p.includes(\"faturas\")\n  ) {\n    return formatMoneyBr(value);\n  }\n\n  if (\n    k.includes(\"percent\") ||\n    k.includes(\"perc\") ||\n    k.endsWith(\"_pct\") ||\n    k.endsWith(\"_percentual\") ||\n    k.includes(\"taxa\") ||\n    k.includes(\"indice\") ||\n    k.includes(\"índice\")\n  ) {\n    return formatPercentBr(value);\n  }\n\n  if (\n    k.includes(\"consumo\") ||\n    k.includes(\"volume\") ||\n    k.includes(\"m3\") ||\n    k.includes(\"m³\")\n  ) {\n    return `${formatIntegerBr(value)} m³`;\n  }\n\n  if (\n    k.includes(\"leitura\") ||\n    k.includes(\"leituras\") ||\n    k.includes(\"qtd\") ||\n    k.includes(\"quantidade\") ||\n    k.includes(\"total\") ||\n    k.includes(\"economias\") ||\n    k.includes(\"registros\")\n  ) {\n    return formatIntegerBr(value);\n  }\n\n  return Number(value).toLocaleString(\"pt-BR\", {\n    maximumFractionDigits: 2,\n  });\n}\n\n\n// ==============================\n// 4. AMOSTRA DE DADOS (JSON COMPLETO)\n// ==============================\nlet amostraDados;\nif (data.length === 0) {\n  amostraDados = \"Nenhum registro retornado.\";\n} else {\n  amostraDados = JSON.stringify(data, null, 2);\n}\n\n\n// ==============================\n// 5. ACESSO AOS BLOCOS DO DIAGNÓSTICO\n// ==============================\nconst contexto =\n  d[\"🧭 contexto\"] ||\n  d[\"contexto\"] ||\n  \"—\";\n\nconst indicadoresRaw = d[\"📈 indicadores\"] || d[\"indicadores\"] || \"—\";\n\nlet indicadoresDescricao = \"—\";\nlet valores = {};\n\nif (typeof indicadoresRaw === \"string\") {\n  indicadoresDescricao = indicadoresRaw;\n} else if (indicadoresRaw && typeof indicadoresRaw === \"object\") {\n  indicadoresDescricao = toTextSafe(\n    indicadoresRaw[\"📝 descrição\"] ||\n      indicadoresRaw[\"📝 descricao\"] ||\n      indicadoresRaw.descricao\n  );\n  valores =\n    indicadoresRaw[\"🔢 valores\"] ||\n    indicadoresRaw[\"valores\"] ||\n    {};\n}\n\n// valor final de indicadores\nlet indicadores = toTextSafe(indicadoresDescricao);\n\n\n// 🔧 **AJUSTE CRÍTICO: transformar bullets \"•\" em lista markdown \"-\"**\nif (typeof indicadores === \"string\" && indicadores.includes(\"•\")) {\n  const partes = indicadores.split(\"•\");\n\n  const cabecalho = partes.shift().trimEnd();\n\n  const linhasBullets = partes\n    .map(p => p.trim())\n    .filter(p => p.length > 0)\n    .map(p => \"- \" + p)\n    .join(\"\\n\");\n\n  if (cabecalho && linhasBullets) {\n    indicadores = cabecalho + \"\\n\" + linhasBullets;\n  } else if (!cabecalho && linhasBullets) {\n    indicadores = linhasBullets;\n  } else {\n    indicadores = cabecalho || indicadores;\n  }\n}\n\n\n// ==============================\n// 5.1 CAPTURA ROBUSTA DA ANÁLISE\n// ==============================\nfunction extrairAnaliseInterpretativa(...objs) {\n  for (const obj of objs) {\n    if (!obj || typeof obj !== \"object\") continue;\n    for (const [k, v] of Object.entries(obj)) {\n      const kl = k.toLowerCase();\n      if (\n        kl.includes(\"análise_interpretativa\") ||\n        kl.includes(\"analise_interpretativa\")\n      ) {\n        if (typeof v === \"string\") return v;\n      }\n    }\n  }\n  return \"-\";\n}\n\nconst analise =\n  d[\"🧠 análise\"] ||\n  d[\"🧠 analise\"] ||\n  d[\"analise\"] ||\n  d[\"análise\"] ||\n  extrairAnaliseInterpretativa(d, valores) ||\n  \"-\";\n\nconst acoes = toArraySafe(d[\"⚙️ ações\"] || d[\"acoes\"] || d[\"ações\"]);\n\nconst resumoConsultivo = toTextSafe(\n  d[\"🧷 resumo_consultivo\"] || d[\"resumo_consultivo\"]\n);\n\n\n// ==============================\n// 7. TEXTO FINAL\n// ==============================\nconst texto =\n  `🧭 CONTEXTO\\n\\n` +\n  `${toTextSafe(contexto)}\\n\\n` +\n  `📈 INDICADORES\\n\\n` +\n  `${indicadores}\\n\\n` +\n  `📋 ANÁLISE\\n\\n` +\n  `${toTextSafe(analise)}\\n\\n` +\n  `⚙️ AÇÕES\\n\\n` +\n  `${\n    acoes.length\n      ? acoes.map((s) => \"- \" + s).join(\"\\n\")\n      : \"—\"\n  }\\n\\n` +\n  `🧷 RESUMO CONSULTIVO\\n\\n` +\n  `${resumoConsultivo}`;\n\n\n// ==============================\n// 8. RETORNO PARA O CHAT\n// ==============================\n\nreturn [\n  {\n    json: {\n      data,\n      analise: texto,\n      query: $json.query,\n      erro: $json.erro,\n      erros: $json.erros,\n      usage_GPT: $json.usage_GPT_Query,\n      usage_GPT_Diagnostico: $json.usage_GPT_Analista\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -48
+      ],
+      "id": "6195d476-8e88-4793-bf7a-efaa7affe135",
+      "name": "Formatar visualização",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "path": "analyticsIAAnalise",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryPropertyName": "data",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Solicitacao"
+              },
+              {
+                "name": "CNPJ"
+              },
+              {
+                "name": "CodigoManager"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4592,
+        -176
+      ],
+      "id": "4e6f0db3-4d67-417f-96be-a8cd296786ed",
+      "name": "Entrada",
+      "webhookId": "4d110ba1-2fc6-4d65-810a-362b2d518210"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        976,
+        -48
+      ],
+      "id": "ea24a73e-0486-483c-8d1e-54324c5214eb",
+      "name": "Respond to Webhook"
     }
   ],
   "connections": {
@@ -828,17 +837,6 @@
         ]
       ]
     },
-    "When chat message received": {
-      "main": [
-        [
-          {
-            "node": "Setar informações de Parâmetros",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "GPT gerar query": {
       "main": [
         [
@@ -939,7 +937,7 @@
       "main": [
         [
           {
-            "node": "Respond to Chat",
+            "node": "Formatar visualização",
             "type": "main",
             "index": 0
           }
@@ -959,7 +957,24 @@
     },
     "Formatar visualização": {
       "main": [
-        []
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Entrada": {
+      "main": [
+        [
+          {
+            "node": "Setar informações de Parâmetros",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
@@ -971,7 +986,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "89f091c7-3ff5-428a-8b8c-155eb4ee871c",
+  "versionId": "0103c419-98d2-4500-9c62-5740e5e45180",
   "triggerCount": 1,
   "shared": [
     {
