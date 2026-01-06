@@ -2,7 +2,7 @@
   "id": "aUQ5a37aB52gxN3K",
   "name": "Datamobil - Reader Web + Análise Embedded - Produção",
   "createdAt": "2025-12-10T14:28:12.451Z",
-  "updatedAt": "2026-01-05T19:58:36.000Z",
+  "updatedAt": "2026-01-06T11:17:46.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -70,30 +70,6 @@
         -1696,
         -16
       ],
-      "typeVersion": 3.4
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "f78c57d9-df13-43c7-89a7-5387e528107e",
-              "name": "chatinput",
-              "type": "string",
-              "value": "={{ $('When chat message received').item.json.chatInput }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "d97ea9c1-8a96-4e57-82b9-eaee2efc3688",
-      "name": "Combine schema data and chat input",
-      "type": "n8n-nodes-base.set",
-      "position": [
-        -2224,
-        -16
-      ],
-      "executeOnce": true,
       "typeVersion": 3.4
     },
     {
@@ -544,6 +520,36 @@
       "id": "4be89bce-b7ff-4ed6-90dc-84bd16ac0a97",
       "name": "Entrada",
       "webhookId": "ec34a03a-fef6-4a49-ba4f-5a347225c178"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "42abd24e-419a-47d6-bc8b-7146dd0b8314",
+              "name": "sessionId",
+              "type": "string",
+              "value": "={{ $('Entrada').item.json.query.CodigoIManager }}"
+            },
+            {
+              "id": "f78c57d9-df13-43c7-89a7-5387e528107e",
+              "name": "chatinput",
+              "type": "string",
+              "value": "={{ $('Entrada').item.json.query.Solicitacao }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9608ac95-bdf3-49cd-81cd-469144eecf5b",
+      "name": "Combine schema data and chat input",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -2224,
+        -16
+      ],
+      "executeOnce": true,
+      "typeVersion": 3.4
     }
   ],
   "connections": {
@@ -570,17 +576,6 @@
         [
           {
             "node": "Check if query exists",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Combine schema data and chat input": {
-      "main": [
-        [
-          {
-            "node": "GPT gerar query",
             "type": "main",
             "index": 0
           }
@@ -831,6 +826,17 @@
           }
         ]
       ]
+    },
+    "Combine schema data and chat input": {
+      "main": [
+        [
+          {
+            "node": "GPT gerar query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -841,7 +847,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "e6695bb4-66ad-489c-af76-bb845895fba3",
+  "versionId": "84afe6e6-f3eb-4bc8-94aa-ba44b60117ab",
   "triggerCount": 1,
   "shared": [
     {
