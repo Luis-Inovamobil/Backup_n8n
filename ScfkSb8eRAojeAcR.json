@@ -2,7 +2,7 @@
   "id": "ScfkSb8eRAojeAcR",
   "name": "Datamobil - VX + Análise Produção Embedded",
   "createdAt": "2025-12-24T13:52:39.045Z",
-  "updatedAt": "2026-01-06T20:12:48.000Z",
+  "updatedAt": "2026-01-07T12:42:16.000Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -113,7 +113,7 @@
               "id": "f78c57d9-df13-43c7-89a7-5387e528107e",
               "name": "chatinput",
               "type": "string",
-              "value": "={{ $('When chat message received').item.json.chatInput }}"
+              "value": "={{ $('Entrada').item.json.query.Solicitacao }}"
             },
             {
               "id": "e42b39eb-dfbd-48d9-94ed-d658bdd41454",
@@ -986,7 +986,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "0103c419-98d2-4500-9c62-5740e5e45180",
+  "versionId": "757c7830-7933-4ec2-bd7f-2615417c8f03",
   "triggerCount": 1,
   "shared": [
     {
