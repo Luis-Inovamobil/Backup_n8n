@@ -1,1 +1,704 @@
-{"createdAt":"2025-08-13T19:42:37.982Z","updatedAt":"2025-11-12T20:20:30.000Z","id":"xwVpzkGjbqbcvwOJ","name":"Datamobil - IManager - Produção","active":true,"isArchived":false,"nodes":[{"parameters":{"contextWindowLength":10},"id":"6d52feed-2a1b-4f3f-b0db-fcc5072cd523","name":"Window Buffer Memory","type":"@n8n/n8n-nodes-langchain.memoryBufferWindow","position":[-2992,-576],"typeVersion":1.2},{"parameters":{},"id":"3412a5f0-430c-45d5-b4ab-19557ed2be32","name":"No Operation, do nothing","type":"n8n-nodes-base.noOp","position":[-2112,-592],"typeVersion":1},{"parameters":{"operation":"fromJson","options":{}},"id":"93b2e7cc-4f8d-4fc1-8fe9-b513e3204d60","name":"Extract data from file","type":"n8n-nodes-base.extractFromFile","position":[-3600,-816],"typeVersion":1},{"parameters":{"public":true,"initialMessages":"Basta digitar o que deseja, como por exemplo: 'Listar todos os meus clientes contratuais'.\"\n\"O sistema interpretará sua solicitação, montará a query e trará os resultados.","options":{"subtitle":"Sua interface inteligente para transformar linguagem de negócio em resultados de dados.","title":"Bem-vindo(a) ao QueryBot !!!"}},"id":"66f9cee1-e675-4f09-8fb6-b41afbe20684","name":"Chat Trigger","type":"@n8n/n8n-nodes-langchain.chatTrigger","position":[-4048,-816],"webhookId":"c308dec7-655c-4b79-832e-991bd8ea891f","typeVersion":1.1},{"parameters":{"promptType":"define","text":"=Here is the database schema: {{ $json.schema }}\nHere is the user request: {{ $('Chat Trigger').item.json.chatInput }}","options":{"systemMessage":"Você é um gerador de SQL para MySQL 8.0+, guiado por um JSON chamado SCHEMA.\nSeu objetivo é gerar apenas consultas SELECT 100% válidas e coerentes com o SCHEMA.\nNunca produza instruções que criem, alterem, excluam ou modifiquem dados.\n\n⚙️ CONFIGURAÇÕES DE DIALETO E FORMATAÇÃO\n\nDialeto: MySQL 8.0+\n\nIdentificadores (tabelas e colunas): sempre entre crases → `...`\n\nStrings: entre aspas simples → 'texto'\n\nProibido:\n\nAspas duplas (\"...\")\n\nPrefixos de schema (ex.: public.)\n\nPonto e vírgula (;) ao final da query\n\nCase: respeitar exatamente o case do SCHEMA\n\nSeparador decimal: ponto .\n\nPalavras reservadas só podem ser usadas se estiverem entre crases.\n\n\n🔒 POLÍTICA DE SEGURANÇA\nSomente SELECT é permitido.\nNão posso criar, alterar, inserir ou deletar.\nReescreva seu pedido como um SELECT.\n\nComandos proibidos:\nINSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, TRUNCATE,\nGRANT, REVOKE, COMMENT, VACUUM, COPY, REFRESH, CALL, DO, BEGIN,\nCOMMIT, ROLLBACK, SET, LOCK, CLUSTER, REINDEX, DISCARD.\n\nSe o usuário pedir algo que envolva qualquer comando acima, responda somente com:\n\n❌ Somente SELECT é permitido. Não posso criar, alterar, inserir ou deletar. Reescreva seu pedido como um SELECT.\n\n\n\n🧩 REGRAS DE USO DO SCHEMA\n\nSó use colunas e tabelas que existem no SCHEMA JSON.\n\nRespeite os tipos, nomes e cases definidos.\n\nSe o campo solicitado não existir, responda:\n\n❌ Não é possível gerar a consulta porque o campo não existe no SCHEMA.\n\n\n🔁 USO DE METADADOS DO SCHEMA\n\nO SCHEMA JSON contém informações adicionais sobre cada tabela e coluna, incluindo:\n\nPolíticas de deduplicação (meta.deduplication)\n\nReferências mensais (meta.month_reference)\n\nEstrutura de pivot (meta.pivot)\n\nFunções de coluna (meta.role)\n\n🧮 COMPORTAMENTO GERAL\n\nGere apenas SELECTs legíveis e válidos.\n\nO foco é montar a query-base corretamente (sem regras de referência ou coorte).\n\nNão precisa aplicar as travas avançadas do modo anterior.\n\nPode usar agregações (SUM, AVG, COUNT, etc.) e WHERE, GROUP BY, ORDER BY, LIMIT.\n\n📤 SAÍDA\n\nRetorne apenas o SQL final, sem explicações, sem comentários, e sem ponto e vírgula no fim.\n\n","maxIterations":5,"returnIntermediateSteps":true}},"id":"f811a7e5-f901-4e79-9317-2bd13a440122","name":"AI Agent","type":"@n8n/n8n-nodes-langchain.agent","position":[-3088,-816],"typeVersion":1.6,"onError":"continueRegularOutput"},{"parameters":{"assignments":{"assignments":[{"id":"42abd24e-419a-47d6-bc8b-7146dd0b8314","name":"sessionId","type":"string","value":"={{ $('Chat Trigger').first().json.sessionId }}"},{"id":"39244192-a1a6-42fe-bc75-a6fba1f264df","name":"action","type":"string","value":"={{ $('Chat Trigger').first().json.action }}"},{"id":"f78c57d9-df13-43c7-89a7-5387e528107e","name":"chatinput","type":"string","value":"={{ $('Chat Trigger').first().json.chatInput }}"},{"id":"e42b39eb-dfbd-48d9-94ed-d658bdd41454","name":"schema","type":"string","value":"={{ $json.data }}"}]},"options":{}},"id":"458cdced-4b24-4e13-84b4-9955c818f053","name":"Combine schema data and chat input","type":"n8n-nodes-base.set","position":[-3360,-816],"executeOnce":true,"typeVersion":3.4},{"parameters":{"assignments":{"assignments":[{"id":"ebbe194a-4b8b-44c9-ac19-03cf69d353bf","name":"query","type":"string","value":"={{ ($json.output) }}"}]},"includeOtherFields":true,"options":{}},"id":"9e31a43d-d6f7-4f84-91ca-16c6e67a6fce","name":"Extract SQL query","type":"n8n-nodes-base.set","position":[-2704,-816],"typeVersion":3.4},{"parameters":{"conditions":{"options":{"version":2,"leftValue":"","caseSensitive":true,"typeValidation":"strict"},"conditions":[{"id":"2963d04d-9d79-49f9-b52a-dc8732aca781","operator":{"type":"string","operation":"notEmpty","singleValue":true},"leftValue":"={{ $json.query }}","rightValue":""}],"combinator":"and"},"options":{}},"id":"20a71b28-1d86-43af-bcc0-9fa0ad01c934","name":"Check if query exists","type":"n8n-nodes-base.if","position":[-2448,-816],"typeVersion":2.2},{"parameters":{"assignments":{"assignments":[{"id":"f944d21f-6aac-4842-8926-4108d6cad4bf","name":"sqloutput","type":"string","value":"={{ Object.keys($jmespath($input.all(),'[].json')[0]).join(' | ') }} \n{{ ($jmespath($input.all(),'[].json')).map(obj => Object.values(obj).join(' | ')).join('\\n') }}"}]},"options":{}},"id":"fa78efe9-fe4a-4dc5-935f-e8c4549fce1b","name":"Format query results","type":"n8n-nodes-base.set","position":[-1344,-976],"executeOnce":true,"typeVersion":3.4},{"parameters":{"operation":"executeQuery","query":"{{ $('Extract SQL query').item.json.query }}","options":{}},"id":"f45083ae-6752-466f-ac98-4d3884925421","name":"Run SQL query","type":"n8n-nodes-base.mySql","position":[-1536,-976],"typeVersion":2.4,"credentials":{"mySql":{"id":"ibMc1UUku1ELHHBe","name":"MySQL account 2"}},"onError":"continueRegularOutput"},{"parameters":{"assignments":{"assignments":[{"id":"aa55e186-1535-4923-aee4-e088ca69575b","name":"output","type":"string","value":"={{ $('Format query results').item.json.sqloutput }}\n\n\n\n\n\n📊 Resultado disponível também em HTML:\n👉 [Clique aqui para visualizar !!! ]({{$json.url}})"}]},"includeOtherFields":true,"options":{}},"id":"ad26ca96-009d-45f2-a610-71a2f82c8fc2","name":"Prepare final output","type":"n8n-nodes-base.set","position":[-544,-432],"typeVersion":3.4},{"parameters":{"model":"gpt-5-mini","options":{}},"id":"b6920e0e-4357-47d9-bf1f-0eb14ba0ec7b","name":"OpenAI Chat Model","type":"@n8n/n8n-nodes-langchain.lmChatOpenAi","position":[-3088,-576],"typeVersion":1,"credentials":{"openAiApi":{"id":"TYSxLrFJQF99nShO","name":"OpenAi Geral"}}},{"parameters":{"operation":"download","fileId":{"__rl":true,"value":"1C5s25zY9nNnaQ5-6G-wYkTsMJV4SXkue","mode":"list","cachedResultName":"IManager.json","cachedResultUrl":"https://drive.google.com/file/d/1C5s25zY9nNnaQ5-6G-wYkTsMJV4SXkue/view?usp=drivesdk"},"options":{"binaryPropertyName":"data"}},"type":"n8n-nodes-base.googleDrive","typeVersion":3,"position":[-3824,-816],"id":"b764c26a-9f68-4597-933f-b20553a89331","name":"Download file","credentials":{"googleDriveOAuth2Api":{"id":"A7dItjE7OWcTVPSQ","name":"Google Drive account"}}},{"parameters":{"jsCode":"// Gera ID e garante que o texto entre com o nome correto\nconst id = (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).toUpperCase();\n\n// Tenta achar o texto em vários campos, priorizando 'sqloutput'\nconst text =\n  String(\n    $input.first().json.sqloutput??\n    \"\"\n  );\n\nreturn [{\n  json: {\n    id,\n    text,            // <- daqui em diante usamos SEMPRE $json.text\n    sqloutput: text  // (opcional) mantém também em sqloutput pra sua resposta em texto\n  }\n}];\n"},"id":"0f5d684a-c969-46b0-bf1a-f647118981a7","name":"Code — Gerar ID + passar texto","type":"n8n-nodes-base.code","typeVersion":2,"position":[-992,-816]},{"parameters":{"jsCode":"// ===== ENTRADAS ESPERADAS =====\n// $json.id   -> gerado no nó \"Gerar ID + passar texto\"\n// $json.text -> texto com pipes (1ª linha = cabeçalhos)\n// $json.logoUrl (opcional) -> URL do logo a exibir\n\nconst id = String($input.first().json.id || \"\");\nconst rawText = String($input.first().json.text || \"\");\nconst logoUrl = \"https://inovamobil.com.br/wp-content/uploads/2023/06/Inovamobil-branco.svg\";\n\n// >>> ajuste aqui se sua instância usa base path (ex.: \"/n8n\")\nconst BASE_PATH = \"\"; // ex.: \"/n8n\"   | deixe \"\" se não houver base path\nconst HOST = \"https://n8n.srv954202.hstgr.cloud\"; // seu domínio público do n8n\n\n// funções utilitárias\nfunction escForTemplate(s) {\n  return String(s)\n    .replace(/\\\\/g, '\\\\\\\\')\n    .replace(/`/g, '\\\\`')\n    .replace(/\\$\\{/g, '\\\\${');\n}\nconst RAW = escForTemplate(rawText);\n\nconst fileName = `visualizador_${id}.html`;\nconst urlCsv = `${HOST}${BASE_PATH}/webhook/visualizar-csv?id=${id}`;\nconst urlXls = `${HOST}${BASE_PATH}/webhook/visualizar-xls?id=${id}`;\n\nconst html = `<!doctype html>\n<html lang=\"pt-br\">\n<head>\n  <meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Tabela — Visualização + Exportar</title>\n  <style>\n    :root{ --bg:#0b0e14; --card:#121826; --muted:#a5b1c2; --text:#e6edf3; --border:#273043; --highlight:#1e293b; }\n    html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; }\n    .wrap { max-width:1200px; margin:24px auto; padding:0 16px; }\n    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); }\n    .header { display:flex; align-items:center; gap:12px; margin-bottom:6px; }\n    .logo { width:36px; height:36px; border-radius:8px; object-fit:contain; background:#0f172a; border:1px solid var(--border); display:none; }\n    .title { font-size:20px; margin:0; }\n    .sub { font-size:12px; color:var(--muted); margin:0 0 12px; }\n    .toolbar { display:flex; gap:8px; align-items:center; margin:12px 0 16px; flex-wrap:wrap; }\n    .toolbar input[type=\"text\"]{ flex:1; min-width:220px; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:#0f172a; color:var(--text); outline:none; }\n    .btn{ padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:var(--highlight); color:var(--text); cursor:pointer; text-decoration:none; display:inline-block; }\n    .btn:hover{ filter:brightness(1.1); }\n    .pill { display:inline-block; background:#0f172a; border:1px solid var(--border); border-radius:999px; padding:4px 10px; font-size:12px; color:var(--muted); }\n    .table-wrap { max-height:65vh; overflow:auto; border:1px solid var(--border); border-radius:12px; }\n    table { width:100%; border-collapse:collapse; }\n    thead th { position:sticky; top:0; background:#0f172a; border-bottom:1px solid var(--border); text-align:left; padding:10px; font-weight:600; }\n    tbody td { border-bottom:1px solid var(--border); padding:10px; vertical-align:top; }\n    tbody tr:hover{ background:rgba(59,130,246,.08); }\n    .warn { margin-top:10px; color:#fbbf24; font-size:13px; }\n    .footer { display:flex; justify-content:space-between; align-items:center; margin-top:10px; color:var(--muted); font-size:12px; }\n  </style>\n</head>\n<body>\n  <div class=\"wrap\">\n    <div class=\"card\">\n      <div class=\"header\">\n        <img id=\"logo\" class=\"logo\" alt=\"Logo\">\n        <h1 class=\"title\">Visualização de Dados</h1>\n      </div>\n      <p class=\"sub\">Busca rápida e exportação via servidor (compatível com chat/iframe)</p>\n\n      <div class=\"toolbar\">\n        <input id=\"search\" type=\"text\" placeholder=\"Buscar em qualquer coluna…\">\n        <span class=\"pill\" id=\"countInfo\">0 linhas</span>\n\n        <!-- botões que apontam para endpoints do n8n -->\n        <a class=\"btn\" id=\"exportXls\" href=\"${urlXls}\" target=\"_blank\" rel=\"noopener\">Exportar Excel (.xls)</a>\n      </div>\n\n      <div class=\"table-wrap\">\n        <table id=\"tbl\">\n          <thead><tr id=\"theadRow\"></tr></thead>\n          <tbody id=\"tbody\"></tbody>\n        </table>\n      </div>\n\n      <div id=\"warn\" class=\"warn\" style=\"display:none\">⚠️ Não encontrei dados — verifique se a primeira linha tem cabeçalhos separados por “|”.</div>\n\n      <div class=\"footer\">\n        <span>O CSV/XLS é gerado no servidor com base nos dados filtrados originais.</span>\n        <span>HTML autônomo (sem libs).</span>\n      </div>\n    </div>\n  </div>\n\n<script>\n// ====== DADOS EMBUTIDOS ======\nconst RAW_TEXT = \\`${RAW}\\`;\nconst LOGO_URL = ${logoUrl ? '`' + escForTemplate(logoUrl) + '`' : '\"\"'};\n\n// ====== PARSER ======\nfunction parsePipeText(raw){\n  const lines = raw.split(/\\\\r?\\\\n/).map(s => s.trim()).filter(Boolean);\n  if (lines.length === 0) return { headers: [], rows: [] };\n  const split = s => s.split('|').map(x => x.trim());\n  const headers = split(lines[0]);\n  const rows = lines.slice(1).map(l => {\n    const cols = split(l);\n    while (cols.length < headers.length) cols.push(\"\");\n    return cols.slice(0, headers.length);\n  });\n  return { headers, rows };\n}\nconst { headers, rows } = parsePipeText(RAW_TEXT);\n\n// ====== DOM ======\nconst theadRow = document.getElementById('theadRow');\nconst tbody = document.getElementById('tbody');\nconst countInfo = document.getElementById('countInfo');\nconst warn = document.getElementById('warn');\n\n// ====== LOGO ======\n(function setupLogo(){\n  if (!LOGO_URL) return;\n  const img = document.getElementById('logo');\n  img.src = LOGO_URL;\n  img.style.display = 'block';\n})();\n\n// ====== RENDER ======\nfunction renderTable(hds, rws){\n  theadRow.innerHTML = \"\";\n  hds.forEach(h => { const th = document.createElement('th'); th.textContent = h; theadRow.appendChild(th); });\n  tbody.innerHTML = \"\";\n  rws.forEach(cols => {\n    const tr = document.createElement('tr');\n    cols.forEach(c => { const td = document.createElement('td'); td.textContent = c; tr.appendChild(td); });\n    tbody.appendChild(tr);\n  });\n  countInfo.textContent = rws.length + ' linhas';\n  warn.style.display = (!hds.length || rws.length === 0) ? '' : 'none';\n}\n\nlet filtered = rows.slice();\nrenderTable(headers, filtered);\n\n// ====== BUSCA ======\ndocument.getElementById('search').addEventListener('input', (e)=>{\n  const q = e.target.value.toLowerCase();\n  filtered = !q ? rows.slice() : rows.filter(cols => cols.some(c => (c||\"\").toLowerCase().includes(q)));\n  renderTable(headers, filtered);\n});\n</script>\n</body>\n</html>`;\n\n// ==== IMPORTANTE: além do HTML, vamos salvar também o .TXT no servidor ====\n// isso é necessário para os endpoints /visualizar-csv e /visualizar-xls gerarem os arquivos.\n// Portanto, este node retorna DOIS binários: \"data\" (HTML) e \"raw\" (TXT).\nconst base64Html = Buffer.from(html, 'utf8').toString('base64');\nconst base64Txt  = Buffer.from(rawText, 'utf8').toString('base64');\n\nreturn [{\n  json: {\n    fileName,\n    txtName: `visualizador_${id}.txt`,\n    html,\n    text: rawText,\n    id\n  },\n  binary: {\n    data: { data: base64Html, fileName, mimeType: 'text/html' },\n    raw:  { data: base64Txt,  fileName: `visualizador_${id}.txt`, mimeType: 'text/plain; charset=utf-8' }\n  }\n}];\n"},"id":"3fa96620-d330-478f-8b7b-d838ce49decd","name":"Code — Montar HTML + binário","type":"n8n-nodes-base.code","typeVersion":2,"position":[-816,-816]},{"parameters":{"fileName":"=/tmp/{{$json.fileName}}","options":{"append":false}},"id":"9b0d5e84-7823-43f3-92a6-13c68ab13708","name":"Write Binary File — /tmp","type":"n8n-nodes-base.writeBinaryFile","typeVersion":1,"position":[-672,-704]},{"parameters":{"fields":{"values":[{"name":"url","stringValue":"={{`https://n8n.srv954202.hstgr.cloud/webhook/visualizar-html?id=` + $('Code — Gerar ID + passar texto').item.json.id}}"}]},"include":"none","options":{}},"id":"b3050d5d-8ac3-4355-9d96-b333154a0c54","name":"Set — Montar URL Ver em HTML","type":"n8n-nodes-base.set","typeVersion":3,"position":[-816,-448]},{"parameters":{"fileName":"=/tmp/{{$json.txtName}}","options":{"append":false}},"id":"2a4d067f-6bfc-453c-976c-1e63ce1f3f24","name":"Write Binary File — /tmp1","type":"n8n-nodes-base.writeBinaryFile","typeVersion":1,"position":[-1024,-432]},{"parameters":{"jsCode":"// Entrada: { sql: \"SELECT ...\", userPrompt: \"...\" }  (ajuste nomes se preciso)\nlet sql = ($('Extract SQL query').first().json.query || \"\").trim();\n\n// 1) Remove comentários (-- e /* */) e normaliza espaços\nconst stripComments = s => {\n  // remove /* ... */ (multilinha)\n  s = s.replace(/\\/\\*[\\s\\S]*?\\*\\//g, ' ');\n  // remove -- até o fim da linha\n  s = s.replace(/--.*$/gm, ' ');\n  return s;\n};\nconst cleaned = stripComments(sql).replace(/\\s+/g, ' ').trim();\n\nconst forbidden = /\\b(SOMENTE|INSERT|PROVIDED|UPDATE|DELETE|MERGE|CREATE|ALTER|DROP|TRUNCATE|GRANT|REVOKE|COMMENT|VACUUM|COPY|REFRESH|CALL|DO|BEGIN|COMMIT|ROLLBACK|SET|LOCK|CLUSTER|REINDEX|DISCARD)\\b/i;\nif (forbidden.test(cleaned)) {\n  return [{ \n    allowed: false, \n    reason: \"Contém comando proibido.\", \n    message: \"Somente SELECT é permitido. Não posso executar DDL/DML.\" \n  }];\n}\n\nreturn [{ allowed: true, sql }];\n"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[-1952,-960],"id":"c50d9e63-a816-462f-b116-50fc730af478","name":"Code in JavaScript"},{"parameters":{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"id":"f8f105fa-8e7c-4309-9cd9-9a5c987ed77f","leftValue":"={{ $json.allowed }}","rightValue":"","operator":{"type":"boolean","operation":"true","singleValue":true}}],"combinator":"and"},"options":{}},"type":"n8n-nodes-base.if","typeVersion":2.2,"position":[-1776,-960],"id":"b209f80c-54ee-4c3c-98db-f1474b134ecb","name":"If"},{"parameters":{"jsCode":"let raw = ($('Extract SQL query').first().json.query || \"\").trim();\nif (typeof raw !== \"string\") raw = String(raw);\n\n// tira blocos markdown\nraw = raw.replace(/```sql|```/gi, \"\");\n\n// captura apenas a query (SELECT/WITH até ;)\nconst m = raw.match(/(SELECT|WITH)\\b[\\s\\S]*?;/i);\nif (!m) {\n  return [{ json: { Erro: \"Saída não contém SQL pura\", SaidaOriginal: raw } }];\n}\n\nreturn [{ json: { sql: m[0].trim() } }];\n"},"type":"n8n-nodes-base.code","typeVersion":2,"position":[-2128,-960],"id":"cbdf39c5-4e55-4266-be0b-0732ebe9a410","name":"Limpar query"}],"connections":{"AI Agent":{"main":[[{"node":"Extract SQL query","type":"main","index":0}]]},"Chat Trigger":{"main":[[{"node":"Download file","type":"main","index":0}]]},"Run SQL query":{"main":[[{"node":"Format query results","type":"main","index":0}]]},"Extract SQL query":{"main":[[{"node":"Check if query exists","type":"main","index":0}]]},"Format query results":{"main":[[{"node":"Code — Gerar ID + passar texto","type":"main","index":0}]]},"Window Buffer Memory":{"ai_memory":[[{"node":"AI Agent","type":"ai_memory","index":0}]]},"Check if query exists":{"main":[[{"node":"Limpar query","type":"main","index":0}],[{"node":"No Operation, do nothing","type":"main","index":0}]]},"Extract data from file":{"main":[[{"node":"Combine schema data and chat input","type":"main","index":0}]]},"Combine schema data and chat input":{"main":[[{"node":"AI Agent","type":"main","index":0}]]},"OpenAI Chat Model":{"ai_languageModel":[[{"node":"AI Agent","type":"ai_languageModel","index":0}]]},"Download file":{"main":[[{"node":"Extract data from file","type":"main","index":0}]]},"Code — Gerar ID + passar texto":{"main":[[{"node":"Code — Montar HTML + binário","type":"main","index":0}]]},"Code — Montar HTML + binário":{"main":[[{"node":"Write Binary File — /tmp","type":"main","index":0}]]},"Write Binary File — /tmp":{"main":[[{"node":"Write Binary File — /tmp1","type":"main","index":0}]]},"Set — Montar URL Ver em HTML":{"main":[[{"node":"Prepare final output","type":"main","index":0}]]},"Write Binary File — /tmp1":{"main":[[{"node":"Set — Montar URL Ver em HTML","type":"main","index":0}]]},"Code in JavaScript":{"main":[[{"node":"If","type":"main","index":0}]]},"If":{"main":[[{"node":"Run SQL query","type":"main","index":0}]]},"Limpar query":{"main":[[{"node":"Code in JavaScript","type":"main","index":0}]]}},"settings":{"executionOrder":"v1"},"staticData":null,"meta":{"templateCredsSetupCompleted":true},"pinData":{},"versionId":"3ed9fd20-cc05-40df-90ce-4d9c43f5e9e7","triggerCount":1,"shared":[{"createdAt":"2025-08-13T19:42:37.987Z","updatedAt":"2025-08-13T19:42:37.987Z","role":"workflow:owner","workflowId":"xwVpzkGjbqbcvwOJ","projectId":"bDUBly1zU3yziLIn"}],"tags":[]}
+{
+  "id": "xwVpzkGjbqbcvwOJ",
+  "name": "Datamobil - IManager - Produção",
+  "createdAt": "2025-08-13T19:42:37.982Z",
+  "updatedAt": "2026-01-22T20:29:38.022Z",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "id": "9138a00a-2056-4f94-865e-10243a133b24",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        -6096,
+        -560
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {},
+      "id": "c8f999e5-3798-4d3b-adbf-03016c10aa0b",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        -5200,
+        -528
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "id": "08252e07-4bf0-4232-ac36-d0f48b7f13be",
+      "name": "Extract data from file",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -6688,
+        -752
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "42abd24e-419a-47d6-bc8b-7146dd0b8314",
+              "name": "sessionId",
+              "type": "string",
+              "value": "={{ $('Chat').item.json.sessionId }}"
+            },
+            {
+              "id": "39244192-a1a6-42fe-bc75-a6fba1f264df",
+              "name": "action",
+              "type": "string",
+              "value": "={{ $('Chat').item.json.action }}"
+            },
+            {
+              "id": "f78c57d9-df13-43c7-89a7-5387e528107e",
+              "name": "chatinput",
+              "type": "string",
+              "value": "={{ $('Chat').item.json.chatInput }}"
+            },
+            {
+              "id": "e42b39eb-dfbd-48d9-94ed-d658bdd41454",
+              "name": "schema",
+              "type": "string",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "71022533-09d8-4705-9472-74ee9c57b4fa",
+      "name": "Combine schema data and chat input",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -6448,
+        -752
+      ],
+      "executeOnce": true,
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebbe194a-4b8b-44c9-ac19-03cf69d353bf",
+              "name": "query",
+              "type": "string",
+              "value": "={{ ($json.output) }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "aa715b98-e94e-48a0-b4c9-9b1238822e7d",
+      "name": "Extract SQL query",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -5792,
+        -752
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "2963d04d-9d79-49f9-b52a-dc8732aca781",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.query }}",
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bd0816f8-0b3b-49f9-8a5c-3b3920f4bc7b",
+      "name": "Check if query exists",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -5536,
+        -752
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f944d21f-6aac-4842-8926-4108d6cad4bf",
+              "name": "sqloutput",
+              "type": "string",
+              "value": "={{ Object.keys($jmespath($input.all(),'[].json')[0]).join(' | ') }} \n{{ ($jmespath($input.all(),'[].json')).map(obj => Object.values(obj).join(' | ')).join('\\n') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "016f0603-65ee-4888-8fce-a43f8f0a4693",
+      "name": "Format query results",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -4432,
+        -912
+      ],
+      "executeOnce": true,
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $('Extract SQL query').item.json.query }}",
+        "options": {}
+      },
+      "id": "a4585bd4-8240-4fe2-8a7b-2ca0fde0b602",
+      "name": "Run SQL query",
+      "type": "n8n-nodes-base.mySql",
+      "position": [
+        -4624,
+        -912
+      ],
+      "typeVersion": 2.4,
+      "credentials": {
+        "mySql": {
+          "id": "ibMc1UUku1ELHHBe",
+          "name": "MySQL account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aa55e186-1535-4923-aee4-e088ca69575b",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $('Format query results').item.json.sqloutput }}\n\n\n\n\n\n📊 Resultado disponível também em HTML:\n👉 [Clique aqui para visualizar !!! ]({{$json.url}})"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "e929cef6-a6ab-4cfb-9d73-7db0a70a2eb4",
+      "name": "Prepare final output",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -3856,
+        -240
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {}
+      },
+      "id": "e09c71dd-caba-4005-894d-c645e9cdf313",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -6224,
+        -592
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openAiApi": {
+          "id": "TYSxLrFJQF99nShO",
+          "name": "OpenAi Geral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1C5s25zY9nNnaQ5-6G-wYkTsMJV4SXkue",
+          "mode": "list",
+          "cachedResultName": "IManager.json",
+          "cachedResultUrl": "https://drive.google.com/file/d/1C5s25zY9nNnaQ5-6G-wYkTsMJV4SXkue/view?usp=drivesdk"
+        },
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -6912,
+        -752
+      ],
+      "id": "c49ea8db-9878-4676-9f34-2ab37f8b98ce",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "A7dItjE7OWcTVPSQ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gera ID e garante que o texto entre com o nome correto\nconst id = (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).toUpperCase();\n\n// Tenta achar o texto em vários campos, priorizando 'sqloutput'\nconst text =\n  String(\n    $input.first().json.sqloutput??\n    \"\"\n  );\n\nreturn [{\n  json: {\n    id,\n    text,            // <- daqui em diante usamos SEMPRE $json.text\n    sqloutput: text  // (opcional) mantém também em sqloutput pra sua resposta em texto\n  }\n}];\n"
+      },
+      "id": "202c9907-2e04-4ee6-80da-e0c397544ffe",
+      "name": "Code — Gerar ID + passar texto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4192,
+        -848
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== ENTRADAS ESPERADAS =====\n// $json.id   -> gerado no nó \"Gerar ID + passar texto\"\n// $json.text -> texto com pipes (1ª linha = cabeçalhos)\n// $json.logoUrl (opcional) -> URL do logo a exibir\n\nconst id = String($input.first().json.id || \"\");\nconst rawText = String($input.first().json.text || \"\");\nconst logoUrl = \"https://inovamobil.com.br/wp-content/uploads/2023/06/Inovamobil-branco.svg\";\n\n// >>> ajuste aqui se sua instância usa base path (ex.: \"/n8n\")\nconst BASE_PATH = \"\"; // ex.: \"/n8n\"   | deixe \"\" se não houver base path\nconst HOST = \"https://n8n.srv954202.hstgr.cloud\"; // seu domínio público do n8n\n\n// funções utilitárias\nfunction escForTemplate(s) {\n  return String(s)\n    .replace(/\\\\/g, '\\\\\\\\')\n    .replace(/`/g, '\\\\`')\n    .replace(/\\$\\{/g, '\\\\${');\n}\nconst RAW = escForTemplate(rawText);\n\nconst fileName = `visualizador_${id}.html`;\nconst urlCsv = `${HOST}${BASE_PATH}/webhook/visualizar-csv?id=${id}`;\nconst urlXls = `${HOST}${BASE_PATH}/webhook/visualizar-xls?id=${id}`;\n\nconst html = `<!doctype html>\n<html lang=\"pt-br\">\n<head>\n  <meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Tabela — Visualização + Exportar</title>\n  <style>\n    :root{ --bg:#0b0e14; --card:#121826; --muted:#a5b1c2; --text:#e6edf3; --border:#273043; --highlight:#1e293b; }\n    html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; }\n    .wrap { max-width:1200px; margin:24px auto; padding:0 16px; }\n    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); }\n    .header { display:flex; align-items:center; gap:12px; margin-bottom:6px; }\n    .logo { width:36px; height:36px; border-radius:8px; object-fit:contain; background:#0f172a; border:1px solid var(--border); display:none; }\n    .title { font-size:20px; margin:0; }\n    .sub { font-size:12px; color:var(--muted); margin:0 0 12px; }\n    .toolbar { display:flex; gap:8px; align-items:center; margin:12px 0 16px; flex-wrap:wrap; }\n    .toolbar input[type=\"text\"]{ flex:1; min-width:220px; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:#0f172a; color:var(--text); outline:none; }\n    .btn{ padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:var(--highlight); color:var(--text); cursor:pointer; text-decoration:none; display:inline-block; }\n    .btn:hover{ filter:brightness(1.1); }\n    .pill { display:inline-block; background:#0f172a; border:1px solid var(--border); border-radius:999px; padding:4px 10px; font-size:12px; color:var(--muted); }\n    .table-wrap { max-height:65vh; overflow:auto; border:1px solid var(--border); border-radius:12px; }\n    table { width:100%; border-collapse:collapse; }\n    thead th { position:sticky; top:0; background:#0f172a; border-bottom:1px solid var(--border); text-align:left; padding:10px; font-weight:600; }\n    tbody td { border-bottom:1px solid var(--border); padding:10px; vertical-align:top; }\n    tbody tr:hover{ background:rgba(59,130,246,.08); }\n    .warn { margin-top:10px; color:#fbbf24; font-size:13px; }\n    .footer { display:flex; justify-content:space-between; align-items:center; margin-top:10px; color:var(--muted); font-size:12px; }\n  </style>\n</head>\n<body>\n  <div class=\"wrap\">\n    <div class=\"card\">\n      <div class=\"header\">\n        <img id=\"logo\" class=\"logo\" alt=\"Logo\">\n        <h1 class=\"title\">Visualização de Dados</h1>\n      </div>\n      <p class=\"sub\">Busca rápida e exportação via servidor (compatível com chat/iframe)</p>\n\n      <div class=\"toolbar\">\n        <input id=\"search\" type=\"text\" placeholder=\"Buscar em qualquer coluna…\">\n        <span class=\"pill\" id=\"countInfo\">0 linhas</span>\n\n        <!-- botões que apontam para endpoints do n8n -->\n        <a class=\"btn\" id=\"exportXls\" href=\"${urlXls}\" target=\"_blank\" rel=\"noopener\">Exportar Excel (.xls)</a>\n      </div>\n\n      <div class=\"table-wrap\">\n        <table id=\"tbl\">\n          <thead><tr id=\"theadRow\"></tr></thead>\n          <tbody id=\"tbody\"></tbody>\n        </table>\n      </div>\n\n      <div id=\"warn\" class=\"warn\" style=\"display:none\">⚠️ Não encontrei dados — verifique se a primeira linha tem cabeçalhos separados por “|”.</div>\n\n      <div class=\"footer\">\n        <span>O CSV/XLS é gerado no servidor com base nos dados filtrados originais.</span>\n        <span>HTML autônomo (sem libs).</span>\n      </div>\n    </div>\n  </div>\n\n<script>\n// ====== DADOS EMBUTIDOS ======\nconst RAW_TEXT = \\`${RAW}\\`;\nconst LOGO_URL = ${logoUrl ? '`' + escForTemplate(logoUrl) + '`' : '\"\"'};\n\n// ====== PARSER ======\nfunction parsePipeText(raw){\n  const lines = raw.split(/\\\\r?\\\\n/).map(s => s.trim()).filter(Boolean);\n  if (lines.length === 0) return { headers: [], rows: [] };\n  const split = s => s.split('|').map(x => x.trim());\n  const headers = split(lines[0]);\n  const rows = lines.slice(1).map(l => {\n    const cols = split(l);\n    while (cols.length < headers.length) cols.push(\"\");\n    return cols.slice(0, headers.length);\n  });\n  return { headers, rows };\n}\nconst { headers, rows } = parsePipeText(RAW_TEXT);\n\n// ====== DOM ======\nconst theadRow = document.getElementById('theadRow');\nconst tbody = document.getElementById('tbody');\nconst countInfo = document.getElementById('countInfo');\nconst warn = document.getElementById('warn');\n\n// ====== LOGO ======\n(function setupLogo(){\n  if (!LOGO_URL) return;\n  const img = document.getElementById('logo');\n  img.src = LOGO_URL;\n  img.style.display = 'block';\n})();\n\n// ====== RENDER ======\nfunction renderTable(hds, rws){\n  theadRow.innerHTML = \"\";\n  hds.forEach(h => { const th = document.createElement('th'); th.textContent = h; theadRow.appendChild(th); });\n  tbody.innerHTML = \"\";\n  rws.forEach(cols => {\n    const tr = document.createElement('tr');\n    cols.forEach(c => { const td = document.createElement('td'); td.textContent = c; tr.appendChild(td); });\n    tbody.appendChild(tr);\n  });\n  countInfo.textContent = rws.length + ' linhas';\n  warn.style.display = (!hds.length || rws.length === 0) ? '' : 'none';\n}\n\nlet filtered = rows.slice();\nrenderTable(headers, filtered);\n\n// ====== BUSCA ======\ndocument.getElementById('search').addEventListener('input', (e)=>{\n  const q = e.target.value.toLowerCase();\n  filtered = !q ? rows.slice() : rows.filter(cols => cols.some(c => (c||\"\").toLowerCase().includes(q)));\n  renderTable(headers, filtered);\n});\n</script>\n</body>\n</html>`;\n\n// ==== IMPORTANTE: além do HTML, vamos salvar também o .TXT no servidor ====\n// isso é necessário para os endpoints /visualizar-csv e /visualizar-xls gerarem os arquivos.\n// Portanto, este node retorna DOIS binários: \"data\" (HTML) e \"raw\" (TXT).\nconst base64Html = Buffer.from(html, 'utf8').toString('base64');\nconst base64Txt  = Buffer.from(rawText, 'utf8').toString('base64');\n\nreturn [{\n  json: {\n    fileName,\n    txtName: `visualizador_${id}.txt`,\n    html,\n    text: rawText,\n    id\n  },\n  binary: {\n    data: { data: base64Html, fileName, mimeType: 'text/html' },\n    raw:  { data: base64Txt,  fileName: `visualizador_${id}.txt`, mimeType: 'text/plain; charset=utf-8' }\n  }\n}];\n"
+      },
+      "id": "c3035361-fb55-4060-86fb-2e536d792e82",
+      "name": "Code — Montar HTML + binário",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3968,
+        -816
+      ]
+    },
+    {
+      "parameters": {
+        "fileName": "=/tmp/{{$json.fileName}}",
+        "options": {
+          "append": false
+        }
+      },
+      "id": "c02d1ac9-d7c0-4d59-b7b2-615134852d11",
+      "name": "Write Binary File — /tmp",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        -4432,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "url",
+              "stringValue": "={{`https://n8n.srv954202.hstgr.cloud/webhook/visualizar-html?id=` + $('Code — Gerar ID + passar texto').item.json.id}}"
+            }
+          ]
+        },
+        "include": "none",
+        "options": {}
+      },
+      "id": "3b9de29e-4eea-49f5-81bb-49e4005d8a89",
+      "name": "Set — Montar URL Ver em HTML",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -4048,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "fileName": "=/tmp/{{$json.txtName}}",
+        "options": {
+          "append": false
+        }
+      },
+      "id": "1bd83bfd-2b94-4c6b-97f9-b08e91c27ae4",
+      "name": "Write Binary File — /tmp1",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        -4240,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Entrada: { sql: \"SELECT ...\", userPrompt: \"...\" }  (ajuste nomes se preciso)\nlet sql = ($('Extract SQL query').first().json.query || \"\").trim();\n\n// 1) Remove comentários (-- e /* */) e normaliza espaços\nconst stripComments = s => {\n  // remove /* ... */ (multilinha)\n  s = s.replace(/\\/\\*[\\s\\S]*?\\*\\//g, ' ');\n  // remove -- até o fim da linha\n  s = s.replace(/--.*$/gm, ' ');\n  return s;\n};\nconst cleaned = stripComments(sql).replace(/\\s+/g, ' ').trim();\n\nconst forbidden = /\\b(SOMENTE|INSERT|PROVIDED|UPDATE|DELETE|MERGE|CREATE|ALTER|DROP|TRUNCATE|GRANT|REVOKE|COMMENT|VACUUM|COPY|REFRESH|CALL|DO|BEGIN|COMMIT|ROLLBACK|SET|LOCK|CLUSTER|REINDEX|DISCARD)\\b/i;\nif (forbidden.test(cleaned)) {\n  return [{ \n    allowed: false, \n    reason: \"Contém comando proibido.\", \n    message: \"Somente SELECT é permitido. Não posso executar DDL/DML.\" \n  }];\n}\n\nreturn [{ allowed: true, sql }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5040,
+        -896
+      ],
+      "id": "13d537d4-7f5d-4358-b8f3-6d8450720320",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f8f105fa-8e7c-4309-9cd9-9a5c987ed77f",
+              "leftValue": "={{ $json.allowed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4864,
+        -896
+      ],
+      "id": "90d5e2ce-cf34-4f90-a368-0253c2d70a2c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = ($('Extract SQL query').first().json.query || \"\").trim();\nif (typeof raw !== \"string\") raw = String(raw);\n\n// tira blocos markdown\nraw = raw.replace(/```sql|```/gi, \"\");\n\n// captura apenas a query (SELECT/WITH até ;)\nconst m = raw.match(/(SELECT|WITH)\\b[\\s\\S]*?;/i);\nif (!m) {\n  return [{ json: { Erro: \"Saída não contém SQL pura\", SaidaOriginal: raw } }];\n}\n\nreturn [{ json: { sql: m[0].trim() } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5216,
+        -896
+      ],
+      "id": "a76846bb-bdaa-4216-a253-4c164cec30c0",
+      "name": "Limpar query"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the database schema: {{ $json.schema }}\nHere is the user request: {{ $json.chatinput }}",
+        "options": {
+          "systemMessage": "Você é um gerador de SQL para MySQL 8.0+, guiado por um JSON chamado SCHEMA.\nSeu objetivo é gerar apenas consultas SELECT 100% válidas e coerentes com o SCHEMA.\nNunca produza instruções que criem, alterem, excluam ou modifiquem dados.\n\n⚙️ CONFIGURAÇÕES DE DIALETO E FORMATAÇÃO\n\nDialeto: MySQL 8.0+\n\nIdentificadores (tabelas e colunas): sempre entre crases → `...`\n\nStrings: entre aspas simples → 'texto'\n\nProibido:\n\nAspas duplas (\"...\")\n\nPrefixos de schema (ex.: public.)\n\nPonto e vírgula (;) ao final da query\n\nCase: respeitar exatamente o case do SCHEMA\n\nSeparador decimal: ponto .\n\nPalavras reservadas só podem ser usadas se estiverem entre crases.\n\n\n🔒 POLÍTICA DE SEGURANÇA\nSomente SELECT é permitido.\nNão posso criar, alterar, inserir ou deletar.\nReescreva seu pedido como um SELECT.\n\nComandos proibidos:\nINSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, TRUNCATE,\nGRANT, REVOKE, COMMENT, VACUUM, COPY, REFRESH, CALL, DO, BEGIN,\nCOMMIT, ROLLBACK, SET, LOCK, CLUSTER, REINDEX, DISCARD.\n\nSe o usuário pedir algo que envolva qualquer comando acima, responda somente com:\n\n❌ Somente SELECT é permitido. Não posso criar, alterar, inserir ou deletar. Reescreva seu pedido como um SELECT.\n\n\n\n🧩 REGRAS DE USO DO SCHEMA\n\nSó use colunas e tabelas que existem no SCHEMA JSON.\n\nRespeite os tipos, nomes e cases definidos.\n\nSe o campo solicitado não existir, responda:\n\n❌ Não é possível gerar a consulta porque o campo não existe no SCHEMA.\n\n\n🔁 USO DE METADADOS DO SCHEMA\n\nO SCHEMA JSON contém informações adicionais sobre cada tabela e coluna, incluindo:\n\nPolíticas de deduplicação (meta.deduplication)\n\nReferências mensais (meta.month_reference)\n\nEstrutura de pivot (meta.pivot)\n\nFunções de coluna (meta.role)\n\n🧮 COMPORTAMENTO GERAL\n\nGere apenas SELECTs legíveis e válidos.\n\nO foco é montar a query-base corretamente (sem regras de referência ou coorte).\n\nNão precisa aplicar as travas avançadas do modo anterior.\n\nPode usar agregações (SUM, AVG, COUNT, etc.) e WHERE, GROUP BY, ORDER BY, LIMIT.\n\n📤 SAÍDA\n\nRetorne apenas o SQL final, sem explicações, sem comentários, e sem ponto e vírgula no fim.\n\n",
+          "maxIterations": 5,
+          "returnIntermediateSteps": true,
+          "enableStreaming": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -6160,
+        -752
+      ],
+      "id": "2c2b0fc5-b0b8-49a5-abf1-bca4e388312f",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Quais dados iremos trabalhar hoje ?",
+        "options": {
+          "subtitle": "A inteligência para gerar dados !!!",
+          "title": "Olá, sou o DataMobil da solução IManager",
+          "customCss": ":root {\n  /* Colors */\n  --chat--color-primary: #e74266;\n  --chat--color-primary-shade-50: #db4061;\n  --chat--color-primary-shade-100: #cf3c5c;\n  --chat--color-secondary: #20b69e;\n  --chat--color-secondary-shade-50: #1ca08a;\n  --chat--color-white: #ffffff;\n  --chat--color-light: #f2f4f8;\n  --chat--color-light-shade-50: #e6e9f1;\n  --chat--color-light-shade-100: #c2c5cc;\n  --chat--color-medium: #d2d4d9;\n  --chat--color-dark: #101330;\n  --chat--color-disabled: #d2d4d9;\n  --chat--color-typing: #404040;\n\n  /* Base Layout */\n  --chat--spacing: 1rem;\n  --chat--border-radius: 0.25rem;\n  --chat--transition-duration: 0.15s;\n  --chat--font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;\n\n  /* Window Dimensions */\n  --chat--window--width: 400px;\n  --chat--window--height: 600px;\n  --chat--window--bottom: var(--chat--spacing);\n  --chat--window--right: var(--chat--spacing);\n  --chat--window--z-index: 9999;\n  --chat--window--border: 1px solid var(--chat--color-light-shade-50);\n  --chat--window--border-radius: var(--chat--border-radius);\n  --chat--window--margin-bottom: var(--chat--spacing);\n\n  /* Header Styles */\n  --chat--header-height: auto;\n  --chat--header--padding: var(--chat--spacing);\n  --chat--header--background: var(--chat--color-dark);\n  --chat--header--color: var(--chat--color-light);\n  --chat--header--border-top: none;\n  --chat--header--border-bottom: none;\n  --chat--header--border-left: none;\n  --chat--header--border-right: none;\n  --chat--heading--font-size: 2em;\n  --chat--subtitle--font-size: inherit;\n  --chat--subtitle--line-height: 1.8;\n\n  /* Message Styles */\n  --chat--message--font-size: 1rem;\n  --chat--message--padding: var(--chat--spacing);\n  --chat--message--border-radius: var(--chat--border-radius);\n  --chat--message-line-height: 1.5;\n  --chat--message--margin-bottom: calc(var(--chat--spacing) * 1);\n  --chat--message--bot--background: var(--chat--color-white);\n  --chat--message--bot--color: var(--chat--color-dark);\n  --chat--message--bot--border: none;\n  --chat--message--user--background: var(--chat--color-secondary);\n  --chat--message--user--color: var(--chat--color-white);\n  --chat--message--user--border: none;\n  --chat--message--pre--background: rgba(0, 0, 0, 0.05);\n  --chat--messages-list--padding: var(--chat--spacing);\n\n  /* Toggle Button */\n  --chat--toggle--size: 64px;\n  --chat--toggle--width: var(--chat--toggle--size);\n  --chat--toggle--height: var(--chat--toggle--size);\n  --chat--toggle--border-radius: 50%;\n  --chat--toggle--background: var(--chat--color-primary);\n  --chat--toggle--hover--background: var(--chat--color-primary-shade-50);\n  --chat--toggle--active--background: var(--chat--color-primary-shade-100);\n  --chat--toggle--color: var(--chat--color-white);\n\n  /* Input Area */\n  --chat--textarea--height: 50px;\n  --chat--textarea--max-height: 30rem;\n  --chat--input--font-size: inherit;\n  --chat--input--border: 0;\n  --chat--input--border-radius: 0;\n  --chat--input--padding: 0.8rem;\n  --chat--input--background: var(--chat--color-white);\n  --chat--input--text-color: initial;\n  --chat--input--line-height: 1.5;\n  --chat--input--placeholder--font-size: var(--chat--input--font-size);\n  --chat--input--border-active: 0;\n  --chat--input--left--panel--width: 2rem;\n\n  /* Button Styles */\n  --chat--button--color: var(--chat--color-light);\n  --chat--button--background: var(--chat--color-primary);\n  --chat--button--padding: calc(var(--chat--spacing) * 1 / 2) var(--chat--spacing);\n  --chat--button--border-radius: var(--chat--border-radius);\n  --chat--button--hover--color: var(--chat--color-light);\n  --chat--button--hover--background: var(--chat--color-primary-shade-50);\n  --chat--close--button--color-hover: var(--chat--color-primary);\n\n  /* Send and File Buttons */\n  --chat--input--send--button--background: var(--chat--color-white);\n  --chat--input--send--button--color: var(--chat--color-secondary);\n  --chat--input--send--button--background-hover: var(--chat--color-primary-shade-50);\n  --chat--input--send--button--color-hover: var(--chat--color-secondary-shade-50);\n  --chat--input--file--button--background: var(--chat--color-white);\n  --chat--input--file--button--color: var(--chat--color-secondary);\n  --chat--input--file--button--background-hover: var(--chat--input--file--button--background);\n  --chat--input--file--button--color-hover: var(--chat--color-secondary-shade-50);\n  --chat--files-spacing: 0.25rem;\n\n  /* Body and Footer */\n  --chat--body--background: var(--chat--color-light);\n  --chat--footer--background: var(--chat--color-light);\n  --chat--footer--color: var(--chat--color-dark);\n}\n\n\n/* You can override any class styles, too. Right-click inspect in Chat UI to find class to override. */\n.chat-message {\n\tmax-width: 50%;\n}",
+          "responseMode": "lastNode"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -7216,
+        -736
+      ],
+      "id": "b097f2ef-f043-493d-acf3-ed436152a20a",
+      "name": "Chat",
+      "webhookId": "6b552a90-2478-41fb-a764-3452b19eb416"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $json[\"html\"] || \"\";\n\n// Etapa 1: extrair o RAW_TEXT de dentro do HTML\nconst rawTextMatch = html.match(/const RAW_TEXT = `([\\s\\S]*?)`;/);\nif (!rawTextMatch) {\n  throw new Error(\"RAW_TEXT não encontrado no HTML.\");\n}\n\nconst rawText = rawTextMatch[1];\n\n// Etapa 2: transforma o rawText em linhas e colunas\nconst lines = rawText\n  .split(/\\r?\\n/)\n  .map(line => line.trim())\n  .filter(Boolean);\n\nif (lines.length < 2) {\n  throw new Error(\"Texto não contém dados suficientes.\");\n}\n\nconst headers = lines[0].split('|').map(h => h.trim());\nconst dataRows = lines.slice(1).map(line => {\n  const values = line.split('|').map(v => v.trim());\n  const obj = {};\n  headers.forEach((key, i) => {\n    obj[key] = values[i] || \"\";\n  });\n  return obj;\n});\n\n// Etapa 3: gerar tabela em Markdown\nlet markdown = `| ${headers.join(' | ')} |\\n`;\nmarkdown += `| ${headers.map(() => '---').join(' | ')} |\\n`;\n\ndataRows.forEach(row => {\n  const rowLine = headers.map(h => row[h]).join(' | ');\n  markdown += `| ${rowLine} |\\n`;\n});\n\nreturn [\n  {\n    json: {\n      message: markdown\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3680,
+        -656
+      ],
+      "id": "6ed1dac3-f3a6-44c6-8e62-3cd626b03b2b",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "connections": {
+    "Run SQL query": {
+      "main": [
+        [
+          {
+            "node": "Format query results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract SQL query": {
+      "main": [
+        [
+          {
+            "node": "Check if query exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format query results": {
+      "main": [
+        [
+          {
+            "node": "Code — Gerar ID + passar texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if query exists": {
+      "main": [
+        [
+          {
+            "node": "Limpar query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract data from file": {
+      "main": [
+        [
+          {
+            "node": "Combine schema data and chat input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine schema data and chat input": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract data from file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — Gerar ID + passar texto": {
+      "main": [
+        [
+          {
+            "node": "Code — Montar HTML + binário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — Montar HTML + binário": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Binary File — /tmp": {
+      "main": [
+        [
+          {
+            "node": "Write Binary File — /tmp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set — Montar URL Ver em HTML": {
+      "main": [
+        [
+          {
+            "node": "Prepare final output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Binary File — /tmp1": {
+      "main": [
+        [
+          {
+            "node": "Set — Montar URL Ver em HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Run SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpar query": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Extract SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "430cf967-641b-40ce-822e-4a8933393036",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-08-13T19:42:37.987Z",
+      "createdAt": "2025-08-13T19:42:37.987Z",
+      "role": "workflow:owner",
+      "workflowId": "xwVpzkGjbqbcvwOJ",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
