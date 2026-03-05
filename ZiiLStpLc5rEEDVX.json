@@ -2,7 +2,7 @@
   "id": "ZiiLStpLc5rEEDVX",
   "name": "BILL - Gestao_ZApi",
   "createdAt": "2025-11-24T18:16:30.276Z",
-  "updatedAt": "2025-11-24T18:25:23.000Z",
+  "updatedAt": "2026-02-24T13:01:45.781Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -24,7 +24,7 @@
     {
       "parameters": {
         "chatId": "-4839166523",
-        "text": "=Atenção : Link : {{ $json.url }} está fora !!!",
+        "text": "=Atenção : Número : {{ $json.query.Numero }} foi desconectado !!! Favor acessar as configurações da ZApi e reestabelecer a conexão !!!",
         "additionalFields": {
           "appendAttribution": false
         }
@@ -60,6 +60,19 @@
       "id": "d0210352-359d-4858-aba3-9e38c62003e8",
       "name": "Webhook",
       "webhookId": "2befb3d6-0541-4fc8-af06-2e0f23ead956"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        80,
+        -64
+      ],
+      "id": "d0148376-e592-4773-b769-e84198625b1c",
+      "name": "Respond to Webhook"
     }
   ],
   "connections": {
@@ -84,6 +97,17 @@
           }
         ]
       ]
+    },
+    "Discord": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -92,12 +116,12 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "6fcf6584-9a5c-4380-8e9d-4197a878099b",
+  "versionId": "f39b7247-acd7-4775-99dd-52d6b2a786bb",
   "triggerCount": 1,
   "shared": [
     {
-      "createdAt": "2025-11-24T18:16:30.292Z",
       "updatedAt": "2025-11-24T18:16:30.292Z",
+      "createdAt": "2025-11-24T18:16:30.292Z",
       "role": "workflow:owner",
       "workflowId": "ZiiLStpLc5rEEDVX",
       "projectId": "bDUBly1zU3yziLIn"
