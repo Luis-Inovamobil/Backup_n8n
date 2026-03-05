@@ -603,8 +603,8 @@
   "triggerCount": 1,
   "shared": [
     {
-      "createdAt": "2025-11-07T15:09:15.842Z",
       "updatedAt": "2025-11-07T15:09:15.842Z",
+      "createdAt": "2025-11-07T15:09:15.842Z",
       "role": "workflow:owner",
       "workflowId": "Tj0Uf6dt1NECUibN",
       "projectId": "bDUBly1zU3yziLIn"
