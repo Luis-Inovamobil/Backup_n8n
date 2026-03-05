@@ -2,7 +2,7 @@
   "id": "S4TgLV9paFnDMr2R",
   "name": "Backup n8n GitHub",
   "createdAt": "2025-08-14T17:17:15.986Z",
-  "updatedAt": "2025-11-17T17:11:17.000Z",
+  "updatedAt": "2026-03-05T11:24:10.260Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -274,7 +274,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const results = [];\n\nfor (const item of items) {\n  const json = item.json;\n\n  const workflowId        = json.workflowId ?? json.id ?? null;\n  const workflowName      = json.workflowName ?? json.name ?? null;\n  const workflowUpdatedAt = json.workflowUpdatedAt ?? json.updatedAt ?? null;\n\n  const hasBackup = json.hasBackup === true;\n\n  const backupUpdatedAt =\n    json.backupUpdatedAt ||\n    (hasBackup && json.backupData && json.backupData.updatedAt) ||\n    null;\n\n  let status;\n\n  if (!hasBackup) {\n    status = 'CRIAR';\n  } else if (!workflowUpdatedAt) {\n    status = 'CRIAR';\n  } else if (!backupUpdatedAt) {\n    status = 'ATUALIZAR';\n  } else {\n    const currentDate = new Date(workflowUpdatedAt);\n    const backupDate  = new Date(backupUpdatedAt);\n    status = currentDate > backupDate ? 'ATUALIZAR' : 'JA_ATUALIZADO';\n  }\n\n  const filePath =\n    json.filePath ||\n    (workflowId != null ? `${workflowId}.json` : null);\n\n  results.push({\n    json: {\n      ...json,\n      workflowId,\n      workflowName,\n      filePath,\n      workflowUpdatedAt,\n      backupUpdatedAt,\n      status,\n    },\n  });\n}\n\nreturn results;\n"
+        "jsCode": "const results = [];\n\nfor (const item of items) {\n  const json = item.json;\n\n  const workflowId        = json.workflowId ?? json.id ?? null;\n  const workflowName      = json.workflowName ?? json.name ?? null;\n  const workflowUpdatedAt = json.workflowUpdatedAt ?? json.updatedAt ?? null;\n\n  const hasBackup = json.hasBackup === true;\n\n  const backupUpdatedAt =\n    json.backupUpdatedAt ||\n    (hasBackup && json.backupData && json.backupData.updatedAt) ||\n    null;\n\n  let status;\n\n   if (!backupUpdatedAt) {\n    status = 'ATUALIZAR';}\n  else if (!hasBackup) {\n    status = 'CRIAR';\n  } else if (!workflowUpdatedAt) {\n    status = 'CRIAR';\n  } else {\n    const currentDate = new Date(workflowUpdatedAt);\n    const backupDate  = new Date(backupUpdatedAt);\n    status = currentDate > backupDate ? 'ATUALIZAR' : 'JA_ATUALIZADO';\n  }\n\n  const filePath =\n    json.filePath ||\n    (workflowId != null ? `${workflowId}.json` : null);\n\n  results.push({\n    json: {\n      ...json,\n      workflowId,\n      workflowName,\n      filePath,\n      workflowUpdatedAt,\n      backupUpdatedAt,\n      status,\n    },\n  });\n}\n\nreturn results;\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -471,7 +471,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "e1a14425-360a-409b-8905-95439d1f48ee",
+  "versionId": "2cae7eb4-e15b-4165-9dbd-468721f29a21",
   "triggerCount": 1,
   "shared": [
     {
