@@ -452,8 +452,8 @@
   "triggerCount": 1,
   "shared": [
     {
-      "createdAt": "2025-11-18T11:19:26.754Z",
       "updatedAt": "2025-11-18T11:19:26.754Z",
+      "createdAt": "2025-11-18T11:19:26.754Z",
       "role": "workflow:owner",
       "workflowId": "jfZ7MdizdCPzXbbK",
       "projectId": "bDUBly1zU3yziLIn"
