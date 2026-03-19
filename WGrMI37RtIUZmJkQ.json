@@ -2,7 +2,7 @@
   "id": "WGrMI37RtIUZmJkQ",
   "name": "Datamobil - VX Embedded - Homologação",
   "createdAt": "2025-09-19T11:54:07.405Z",
-  "updatedAt": "2025-11-27T12:22:16.000Z",
+  "updatedAt": "2026-03-19T19:09:05.284Z",
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -30,8 +30,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -6112,
-        272
+        -7136,
+        352
       ],
       "id": "bb9bef77-e7b6-40de-927b-b84adcea4a0f",
       "name": "Entrada",
@@ -217,8 +217,8 @@
       "executeOnce": false,
       "credentials": {
         "postgres": {
-          "id": "6iqsLXZTqf2rK4YA",
-          "name": "Postgres account"
+          "id": "AdA4VPtEfmn26VwT",
+          "name": "Postgres account 3"
         }
       },
       "onError": "continueRegularOutput"
@@ -246,8 +246,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -5808,
-        272
+        -6832,
+        352
       ],
       "id": "bee3880a-faff-42df-ad64-f93c07647382",
       "name": "Setar informações de Parâmetros"
@@ -342,13 +342,13 @@
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoPorCliente = {\n  \"0001\": {\n    CNPJ: $input.first().json.CNPJ,\n    host: \"52.45.149.188\",\n    database: \"icommercial_faturamento_teste_luis\",\n    user: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"3738\": {\n    CNPJ: $input.first().json.CNPJ,\n    host: \"52.45.149.188\",\n    database: \"icommercial_faturamento_teste_luis\",\n    user: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  \"testedev2\": {\n    CNPJ: $input.first().json.CNPJ,\n    host: \"rabbitmq.icommercial002.inovamobil.com.br\",\n    database: \"icommercial_faturamento_testedev2\",\n    user: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n};\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? \"testedev2\");\nconst selected = configuracaoPorCliente[codigoIManager];\nif (!selected) {\n  throw new Error(\n    `Cliente ` + codigoIManager + ` não informado, favor validar para utilização do módulo.`\n  );\n}\n\n\nj.configuracao = {\n    host: selected.host,\n    database: selected.database,\n    user: selected.user,\n    password: selected.senha,\n    port: selected.porta,\n  };\n\nreturn item;\n"
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst codigoIManager = j.CodigoIManager ?? \"\";\n\nif (!codigoIManager) {\n  throw new Error(\"CodigoIManager não informado\");\n}\n\n// 🔁 Lista de servidores possíveis\nconst servidores = [\n  {\n    host: \"52.45.149.188\",\n    password: \"idb#inov@19#\"\n  },\n  {\n    host: \"rabbitmq.icommercial001.inovamobil.com.br\",\n    password: \"idb#inov@19#\"\n  },\n  {\n    host: \"OUTRO_HOST\",\n    password: \"OUTRA_SENHA\"\n  }\n];\n\n// 🔥 Gera múltiplas tentativas\nreturn servidores.map(s => ({\n  json: {\n    ...j,\n    configuracao: {\n      host: s.host,\n      database: \"icommercial_faturamento_\" + codigoIManager,\n      user: \"postgres\",\n      password: s.password,\n      port: 5432\n    }\n  }\n}));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -5568,
-        272
+        -6592,
+        352
       ],
       "id": "322290f6-798c-44f8-b942-f0875876090a",
       "name": "Constantes"
@@ -383,6 +383,147 @@
       ],
       "id": "b0180397-df79-40bf-bd85-c908e7ba6d65",
       "name": "GPT gerar query"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -6352,
+        368
+      ],
+      "id": "e0803fa1-bf30-47e7-8039-002c77709019",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -6000,
+        304
+      ],
+      "id": "28eb0dc5-5344-4d6e-a8ab-63e144a2c98f",
+      "name": "Teste conexão",
+      "credentials": {
+        "postgres": {
+          "id": "BFzRFDh8cKlilhhJ",
+          "name": "Postgres account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nreturn {\n  json: {\n      erro: \"Nenhuma conexão válida encontrada\"\n  }\n};\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5824,
+        640
+      ],
+      "id": "cd09509f-bc8d-40cc-8083-778caee327dc",
+      "name": "Mensagem de conexão inválida"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3ae0002d-e17d-4578-adf6-4252440a0c3a",
+              "leftValue": "={{$json.configuracao}}",
+              "rightValue": "undefined",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -6144,
+        656
+      ],
+      "id": "323697a6-b5af-44c7-ad94-5599b7876cc7",
+      "name": "If  - Nenhuma config"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "75d63d59-9f09-4ba8-bb0a-08f19019cb3e",
+              "leftValue": "={{$json.error}}",
+              "rightValue": " undefined",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -5776,
+        368
+      ],
+      "id": "c27824c2-17b7-4ad7-ab5e-247964c1ec1d",
+      "name": "If - Conexão realizada com sucesso"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2f02c21b-bd49-4f1a-82b0-f0dd82214301",
+              "name": "configuracao",
+              "value": "={{$json.configuracao}}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5584,
+        320
+      ],
+      "id": "9c6734a6-8b26-4682-bd80-4e7cbdd42a2e",
+      "name": "Setar conexão"
     }
   ],
   "connections": {
@@ -547,7 +688,7 @@
       "main": [
         [
           {
-            "node": "Download file",
+            "node": "Loop Over Items",
             "type": "main",
             "index": 0
           }
@@ -564,6 +705,86 @@
           }
         ]
       ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "If  - Nenhuma config",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Teste conexão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Teste conexão": {
+      "main": [
+        [
+          {
+            "node": "If - Conexão realizada com sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If  - Nenhuma config": {
+      "main": [
+        [
+          {
+            "node": "Mensagem de conexão inválida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Conexão realizada com sucesso": {
+      "main": [
+        [
+          {
+            "node": "Setar conexão",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setar conexão": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de conexão inválida": {
+      "main": [
+        [
+          {
+            "node": "Repassar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -574,7 +795,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "a00aafd7-c08e-43a9-92a8-aaddb8915772",
+  "versionId": "0cd696e3-1dab-4d9d-9957-4f08c50bc23d",
   "triggerCount": 1,
   "shared": [
     {
