@@ -2,7 +2,7 @@
   "id": "WGrMI37RtIUZmJkQ",
   "name": "Datamobil - VX Embedded - Homologação",
   "createdAt": "2025-09-19T11:54:07.405Z",
-  "updatedAt": "2026-03-19T19:09:05.284Z",
+  "updatedAt": "2026-03-20T10:58:52.239Z",
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -462,7 +462,7 @@
       "typeVersion": 2.3,
       "position": [
         -6144,
-        656
+        800
       ],
       "id": "323697a6-b5af-44c7-ad94-5599b7876cc7",
       "name": "If  - Nenhuma config"
@@ -743,6 +743,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Setar conexão",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -795,7 +802,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "0cd696e3-1dab-4d9d-9957-4f08c50bc23d",
+  "versionId": "189f40d9-dbbc-4d62-9ef1-438fc52457be",
   "triggerCount": 1,
   "shared": [
     {
