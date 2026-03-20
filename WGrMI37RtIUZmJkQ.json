@@ -2,7 +2,7 @@
   "id": "WGrMI37RtIUZmJkQ",
   "name": "Datamobil - VX Embedded - Homologação",
   "createdAt": "2025-09-19T11:54:07.405Z",
-  "updatedAt": "2026-03-20T10:58:52.239Z",
+  "updatedAt": "2026-03-20T11:36:37.397Z",
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -157,7 +157,7 @@
               "id": "f78c57d9-df13-43c7-89a7-5387e528107e",
               "name": "chatinput",
               "type": "string",
-              "value": "={{ $('When chat message received').item.json.chatInput }}"
+              "value": "={{ $('Entrada').item.json.chatInput }}     "
             },
             {
               "id": "e42b39eb-dfbd-48d9-94ed-d658bdd41454",
@@ -222,35 +222,6 @@
         }
       },
       "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "b86f4807-aff3-42fb-a110-f43653368396",
-              "name": "Solicitacao",
-              "value": "={{ $json.chatInput }}",
-              "type": "string"
-            },
-            {
-              "id": "66447438-499c-4ab3-88ee-e20835aa7618",
-              "name": "CodigoIManager",
-              "value": "=testedev2",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -6832,
-        352
-      ],
-      "id": "bee3880a-faff-42df-ad64-f93c07647382",
-      "name": "Setar informações de Parâmetros"
     },
     {
       "parameters": {
@@ -386,19 +357,6 @@
     },
     {
       "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        -6352,
-        368
-      ],
-      "id": "e0803fa1-bf30-47e7-8039-002c77709019",
-      "name": "Loop Over Items"
-    },
-    {
-      "parameters": {
         "operation": "executeQuery",
         "query": "SELECT 1;",
         "options": {}
@@ -506,10 +464,16 @@
         "assignments": {
           "assignments": [
             {
-              "id": "2f02c21b-bd49-4f1a-82b0-f0dd82214301",
+              "id": "583629f2-d7ba-4871-9826-a0d22ed0eb34",
               "name": "configuracao",
-              "value": "={{$json.configuracao}}",
+              "value": "={{ $('Loop').item.json.configuracao }}",
               "type": "object"
+            },
+            {
+              "id": "cccceb4f-cda7-482c-abca-f6ce768780fa",
+              "name": "Solicitacao",
+              "value": "={{ $('Loop').item.json.Solicitacao }}",
+              "type": "string"
             }
           ]
         },
@@ -524,6 +488,48 @@
       ],
       "id": "9c6734a6-8b26-4682-bd80-4e7cbdd42a2e",
       "name": "Setar conexão"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -6352,
+        368
+      ],
+      "id": "e0803fa1-bf30-47e7-8039-002c77709019",
+      "name": "Loop"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b86f4807-aff3-42fb-a110-f43653368396",
+              "name": "Solicitacao",
+              "value": "={{ $json.query.Solicitacao }}",
+              "type": "string"
+            },
+            {
+              "id": "66447438-499c-4ab3-88ee-e20835aa7618",
+              "name": "CodigoIManager",
+              "value": "={{ $json.query.CodigoIManager }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6832,
+        352
+      ],
+      "id": "7883edb9-5d4a-4f5c-9fec-60a875e1500d",
+      "name": "Setar informações de Parâmetros"
     }
   ],
   "connections": {
@@ -611,17 +617,6 @@
         ]
       ]
     },
-    "Setar informações de Parâmetros": {
-      "main": [
-        [
-          {
-            "node": "Constantes",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "If1": {
       "main": [
         [
@@ -688,7 +683,7 @@
       "main": [
         [
           {
-            "node": "Loop Over Items",
+            "node": "Loop",
             "type": "main",
             "index": 0
           }
@@ -700,24 +695,6 @@
         [
           {
             "node": "Extract SQL query",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop Over Items": {
-      "main": [
-        [
-          {
-            "node": "If  - Nenhuma config",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Teste conexão",
             "type": "main",
             "index": 0
           }
@@ -744,13 +721,7 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Setar conexão",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "If - Conexão realizada com sucesso": {
@@ -764,7 +735,7 @@
         ],
         [
           {
-            "node": "Loop Over Items",
+            "node": "Loop",
             "type": "main",
             "index": 0
           }
@@ -792,6 +763,35 @@
           }
         ]
       ]
+    },
+    "Loop": {
+      "main": [
+        [
+          {
+            "node": "If  - Nenhuma config",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Teste conexão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setar informações de Parâmetros": {
+      "main": [
+        [
+          {
+            "node": "Constantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -802,7 +802,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "189f40d9-dbbc-4d62-9ef1-438fc52457be",
+  "versionId": "5c1808ce-9a2f-413b-b400-1efaa635a10b",
   "triggerCount": 1,
   "shared": [
     {
