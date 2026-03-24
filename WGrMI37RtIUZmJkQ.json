@@ -2,7 +2,7 @@
   "id": "WGrMI37RtIUZmJkQ",
   "name": "Datamobil - VX Embedded - Homologação",
   "createdAt": "2025-09-19T11:54:07.405Z",
-  "updatedAt": "2026-03-23T14:33:01.625Z",
+  "updatedAt": "2026-03-24T11:25:57.990Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -128,7 +128,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoProducao = [\n  {\n    servidor: \"joinville-postgres-producao-3.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    usuario: \"postgres\",\n    senha: \"7g0Iv5xK{z\",\n    porta: 5432,\n  },\n  {\n    servidor: \"joinville-postgres-producao-2.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  {\n    servidor: \"joinville-postgres-producao.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n];\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? undefined);\nif (!codigoIManager) {\n  throw new Error(\n    \"Código IManager não informado.\"\n  );\n}\nconst conexao = configuracaoProducao.find(c => c.servidor == j.Host);\nif (!conexao) {\n  switch (codigoIManager) {\n      case \"teste1\":\n      case \"teste2\":\n      case \"teste3\":\n      case \"teste4\":\n      case \"teste5\":\n      case \"teste20\":\n      case \"teste21\":\n        conexao = {\n          servidor: \"rabbitmq.icommercial001.inovamobil.com.br\",\n          usuario: \"postgres\",\n          senha: \"idb#inov@19#\",\n          porta: 5432,\n        };\n      break;\n      case \"teste6\":\n      case \"teste8\":\n      case \"teste9\":\n      case \"teste10\":\n      case \"teste11\":\n      case \"teste12\":\n      case \"teste13\":\n      case \"teste14\":\n      case \"testedev\":\n      case \"testedev2\":\n      case \"testedev3\":\n        conexao = {\n          servidor: \"rabbitmq.icommercial002.inovamobil.com.br\",\n          usuario: \"postgres\",\n          senha: \"idb#inov@19#\",\n          porta: 5432,\n        };\n      break;\n  }\n}\n\nif (!conexao) {\n  throw new Error(\n    `Conexão do cliente ` + codigoIManager + ` não inexistente, favor entrar em contato com o suporte para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: conexao.servidor,\n    database: \"icommercial_faturamento_\" + codigoIManager,\n    user: conexao.usuario,\n    password: conexao.senha,\n    port: conexao.porta,\n};\n\nreturn item;\n"
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst configuracaoProducao = [\n  {\n    servidor: \"joinville-postgres-producao-3.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    usuario: \"postgres\",\n    senha: \"7g0Iv5xK{z\",\n    porta: 5432,\n  },\n  {\n    servidor: \"joinville-postgres-producao-2.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n  {\n    servidor: \"joinville-postgres-producao.crn36nipjstz.us-east-1.rds.amazonaws.com\",\n    usuario: \"postgres\",\n    senha: \"idb#inov@19#\",\n    porta: 5432,\n  },\n];\n\n// ==== OBRIGATÓRIO TER código do IManager ====\nconst codigoIManager = (j.CodigoIManager ?? undefined);\nif (!codigoIManager) {\n  throw new Error(\n    \"Código IManager não informado.\"\n  );\n}\nlet conexao = configuracaoProducao.find(c => c.servidor == j.Host);\nif (!conexao) {\n  switch (codigoIManager) {\n      case \"teste1\":\n      case \"teste2\":\n      case \"teste3\":\n      case \"teste4\":\n      case \"teste5\":\n      case \"teste20\":\n      case \"teste21\":\n        conexao = {\n          servidor: \"rabbitmq.icommercial001.inovamobil.com.br\",\n          usuario: \"postgres\",\n          senha: \"idb#inov@19#\",\n          porta: 5432,\n        };\n      break;\n      case \"teste6\":\n      case \"teste8\":\n      case \"teste9\":\n      case \"teste10\":\n      case \"teste11\":\n      case \"teste12\":\n      case \"teste13\":\n      case \"teste14\":\n      case \"testedev\":\n      case \"testedev2\":\n      case \"testedev3\":\n        conexao = {\n          servidor: \"rabbitmq.icommercial002.inovamobil.com.br\",\n          usuario: \"postgres\",\n          senha: \"idb#inov@19#\",\n          porta: 5432,\n        };\n      break;\n  }\n}\n\nif (!conexao) {\n  throw new Error(\n    `Conexão do cliente ` + codigoIManager + ` não inexistente, favor entrar em contato com o suporte para utilização do módulo.`\n  );\n}\n\nj.configuracao = {\n    host: conexao.servidor,\n    database: \"icommercial_faturamento_\" + codigoIManager,\n    user: conexao.usuario,\n    password: conexao.senha,\n    port: conexao.porta,\n};\n\nreturn item;\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1298,7 +1298,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "d157438a-4c62-4536-93b9-6944dc6f072a",
+  "versionId": "bdc03cbc-d965-4db9-a491-474f221c6e9a",
   "triggerCount": 1,
   "shared": [
     {
