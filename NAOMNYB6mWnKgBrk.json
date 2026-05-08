@@ -2,14 +2,14 @@
   "id": "NAOMNYB6mWnKgBrk",
   "name": "BILL - Produção",
   "createdAt": "2025-09-10T17:02:15.330Z",
-  "updatedAt": "2026-05-06T18:12:06.215Z",
+  "updatedAt": "2026-05-08T17:30:24.001Z",
   "active": true,
   "isArchived": false,
   "nodes": [
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// alguns parametros é melhor montar com javascript,\n// facilita o entendimento e manutenção\n\n// nao confundir montagem de objetos javascript com mensagens json\n// tem diferenças, mas o n8n converte automaticamente para json\n\nitem.json.reply = $json.reply;\n\nitem.json.optionList = {\n  title: \"Serviços disponíveis !\",\n  buttonLabel: \"Abrir lista de opções\",\n  options: [\n    {\n      id: \"1\",\n      description: \"\",\n      title: \"📄 Faturas em aberto\",\n    },\n    {\n      id: \"2\",\n      description: \"\",\n      title: \"✅ Faturas pagas\",\n    },    \n    {\n      id: \"3\",\n      description: \"\",\n      title: \"📊 Histórico de consumo\",\n    },\n    {\n      id: \"4\",\n      description: \"\",\n      title: \"📝 Denúncia\",\n    },\n    {\n      id: \"5\",\n      description: \"\",\n      title: \"🌍 Localização\",\n    },\n    {\n      id: \"6\",\n      description: \"\",\n      title: \"🔄 Trocar ligação\",\n    },\n    {\n      id: \"7\",\n      description: \"\",\n      title: \"🧑🏻‍💼 Falar com Atendente\",\n    },\n    {\n      id: \"8\",\n      description: \"\",\n      title: \"🖐🏻 Sair\",\n    },\n  ],\n};\n\nif ($json.phone == '558888856714') {\n  item.json.optionList.options = item.json.optionList.options.filter(\n    option => option.id !== \"7\"\n  );\n}\n\nreturn item;\n"
+        "jsCode": "// alguns parametros é melhor montar com javascript,\n// facilita o entendimento e manutenção\n\n// nao confundir montagem de objetos javascript com mensagens json\n// tem diferenças, mas o n8n converte automaticamente para json\n\nitem.json.reply = $json.reply;\n\nitem.json.optionList = {\n  title: \"Serviços disponíveis !\",\n  buttonLabel: \"Abrir lista de opções\",\n  options: [\n    {\n      id: \"1\",\n      description: \"\",\n      title: \"📄 Faturas em aberto\",\n    },\n    {\n      id: \"2\",\n      description: \"\",\n      title: \"✅ Faturas pagas\",\n    },    \n    {\n      id: \"3\",\n      description: \"\",\n      title: \"📊 Histórico de consumo\",\n    },\n    {\n      id: \"4\",\n      description: \"\",\n      title: \"📝 Denúncia\",\n    },\n    {\n      id: \"5\",\n      description: \"\",\n      title: \"🌍 Localização\",\n    },\n    {\n      id: \"6\",\n      description: \"\",\n      title: \"🔄 Trocar ligação\",\n    },\n    // {\n    //   id: \"7\",\n    //   description: \"\",\n    //   title: \"🧑🏻‍💼 Falar com Atendente\",\n    // },\n    {\n      id: \"8\",\n      description: \"\",\n      title: \"🖐🏻 Sair\",\n    },\n  ],\n};\n\nif ($json.session.phoneconectado == '558888856714') {\n  item.json.optionList.options = item.json.optionList.options.filter(\n    option => option.id !== \"7\"\n  );\n}\n\nreturn item;\n"
       },
       "id": "50fc484d-d740-477f-ac02-e8c0de0713d9",
       "name": "Monta lista recursos",
@@ -23,7 +23,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// alguns parametros é melhor montar com javascript,\n// facilita o entendimento e manutenção\n\n// nao confundir montagem de objetos javascript com mensagens json\n// tem diferenças, mas o n8n converte automaticamente para json\n\nitem.json.reply = \"Que bom ter você por aqui 👋🏻\\n\\nEm que posso lhe ajudar ?\";\n\nitem.json.optionList = {\n  title: \"Serviços disponíveis !\",\n  buttonLabel: \"Abrir lista de opções\",\n  options: [\n    {\n      id: \"1\",\n      description: \"\",\n      title: \"📄 Faturas em aberto\",\n    },\n    {\n      id: \"2\",\n      description: \"\",\n      title: \"✅ Faturas pagas\",\n    },    \n    {\n      id: \"3\",\n      description: \"\",\n      title: \"📊 Histórico de consumo\",\n    },\n    {\n      id: \"4\",\n      description: \"\",\n      title: \"📝 Denúncia\",\n    },\n    {\n      id: \"5\",\n      description: \"\",\n      title: \"🌍 Localização\",\n    },\n    {\n      id: \"6\",\n      description: \"\",\n      title: \"🔄 Trocar ligação\",\n    },\n    {\n      id: \"7\",\n      description: \"\",\n      title: \"🧑🏻‍💼 Falar com Atendente\",\n    },\n    {\n      id: \"8\",\n      description: \"\",\n      title: \"🖐🏻 Sair\",\n    },\n  ],\n};\n\nif (item.json.phone == '558888856714') {\n  item.json.optionList.options = item.json.optionList.options.filter(\n    option => option.id !== \"7\"\n  );\n}\n\nreturn item;\n"
+        "jsCode": "// alguns parametros é melhor montar com javascript,\n// facilita o entendimento e manutenção\n\n// nao confundir montagem de objetos javascript com mensagens json\n// tem diferenças, mas o n8n converte automaticamente para json\n\nitem.json.reply = \"Que bom ter você por aqui 👋🏻\\n\\nEm que posso lhe ajudar ?\";\n\nitem.json.optionList = {\n  title: \"Serviços disponíveis !\",\n  buttonLabel: \"Abrir lista de opções\",\n  options: [\n    {\n      id: \"1\",\n      description: \"\",\n      title: \"📄 Faturas em aberto\",\n    },\n    {\n      id: \"2\",\n      description: \"\",\n      title: \"✅ Faturas pagas\",\n    },    \n    {\n      id: \"3\",\n      description: \"\",\n      title: \"📊 Histórico de consumo\",\n    },\n    {\n      id: \"4\",\n      description: \"\",\n      title: \"📝 Denúncia\",\n    },\n    {\n      id: \"5\",\n      description: \"\",\n      title: \"🌍 Localização\",\n    },\n    {\n      id: \"6\",\n      description: \"\",\n      title: \"🔄 Trocar ligação\",\n    },\n    {\n      id: \"7\",\n      description: \"\",\n      title: \"🧑🏻‍💼 Falar com Atendente\",\n    },\n    {\n      id: \"8\",\n      description: \"\",\n      title: \"🖐🏻 Sair\",\n    },\n  ],\n};\n\nif (item.json.phoneconectado == '558888856714') {\n  item.json.optionList.options = item.json.optionList.options.filter(\n    option => option.id !== \"7\"\n  );\n}\n\nreturn item;\n"
       },
       "id": "a3098f39-46fc-443a-ad60-d9306ac01b7d",
       "name": "Monta lista",
@@ -4248,7 +4248,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "c21be033-0aa8-4a7a-8afd-a3b9ebeeb16d",
+  "versionId": "363acdfa-1c2c-484d-8c42-77f929fb0d33",
   "triggerCount": 1,
   "shared": [
     {
