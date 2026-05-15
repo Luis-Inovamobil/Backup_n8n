@@ -2,7 +2,7 @@
   "id": "NAOMNYB6mWnKgBrk",
   "name": "BILL - Produção",
   "createdAt": "2025-09-10T17:02:15.330Z",
-  "updatedAt": "2026-05-15T15:08:08.882Z",
+  "updatedAt": "2026-05-15T20:07:29.175Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -2805,7 +2805,7 @@
             {
               "id": "1e7c390c-8aa0-4323-9201-d13107f5b4fc",
               "leftValue": "={{ $('Receber mensagem').item.json.body.text.message.toLowerCase() }}",
-              "rightValue": "sair",
+              "rightValue": "=sair",
               "operator": {
                 "type": "string",
                 "operation": "notEquals"
@@ -4248,7 +4248,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "df2155ac-8b79-4f99-8426-2aea293beb9f",
+  "versionId": "99c8c3a2-24af-4973-9d88-8f92a6a6043a",
   "triggerCount": 1,
   "shared": [
     {
