@@ -2,36 +2,36 @@
   "id": "zovCAFtobSZXYXXY",
   "name": "BILL - Homologação",
   "createdAt": "2025-09-18T17:40:49.995Z",
-  "updatedAt": "2026-05-15T15:14:11.061Z",
+  "updatedAt": "2026-05-15T20:39:11.826Z",
   "active": true,
   "isArchived": false,
   "nodes": [
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// alguns parametros é melhor montar com javascript,\n// facilita o entendimento e manutenção\n\n// nao confundir montagem de objetos javascript com mensagens json\n// tem diferenças, mas o n8n converte automaticamente para json\n\nitem.json.reply = $json.reply;\n\nitem.json.optionList = {\n  title: \"Serviços disponíveis !\",\n  buttonLabel: \"Abrir lista de opções\",\n  options: [\n    {\n      id: \"1\",\n      description: \"\",\n      title: \"📄 Faturas em aberto\",\n    },\n    {\n      id: \"2\",\n      description: \"\",\n      title: \"✅ Faturas pagas\",\n    },    \n    {\n      id: \"3\",\n      description: \"\",\n      title: \"📊 Histórico de consumo\",\n    },\n    {\n      id: \"4\",\n      description: \"\",\n      title: \"📝 Denúncia\",\n    },\n    {\n      id: \"5\",\n      description: \"\",\n      title: \"🌍 Localização\",\n    },\n    {\n      id: \"6\",\n      description: \"\",\n      title: \"🔄 Trocar ligação\",\n    },\n    {\n      id: \"7\",\n      description: \"\",\n      title: \"🧑🏻‍💼 Falar com Atendente\",\n    },\n    {\n      id: \"8\",\n      description: \"\",\n      title: \"🖐🏻 Sair\",\n    },\n  ],\n};\n\nreturn item;\n"
+        "jsCode": "// alguns parametros é melhor montar com javascript,\n// facilita o entendimento e manutenção\n\n// nao confundir montagem de objetos javascript com mensagens json\n// tem diferenças, mas o n8n converte automaticamente para json\n\nitem.json.reply = $json.reply;\n\nitem.json.optionList = {\n  title: \"Serviços disponíveis !\",\n  buttonLabel: \"Abrir lista de opções\",\n  options: [\n    {\n      id: \"1\",\n      description: \"\",\n      title: \"📄 Faturas em aberto\",\n    },\n    {\n      id: \"2\",\n      description: \"\",\n      title: \"✅ Faturas pagas\",\n    },    \n    {\n      id: \"3\",\n      description: \"\",\n      title: \"📊 Histórico de consumo\",\n    },\n    {\n      id: \"4\",\n      description: \"\",\n      title: \"📝 Denúncia\",\n    },\n    {\n      id: \"5\",\n      description: \"\",\n      title: \"🌍 Localização\",\n    },\n    {\n      id: \"6\",\n      description: \"\",\n      title: \"🔄 Trocar ligação\",\n    },\n    // {\n    //   id: \"7\",\n    //   description: \"\",\n    //   title: \"🧑🏻‍💼 Falar com Atendente\",\n    // },\n    {\n      id: \"8\",\n      description: \"\",\n      title: \"🖐🏻 Sair\",\n    },\n  ],\n};\n\nif ($json.session.phoneconectado == '558888856714') {\n  item.json.optionList.options = item.json.optionList.options.filter(\n    option => option.id !== \"7\"\n  );\n}\n\nreturn item;\n"
       },
-      "id": "d87d1b9a-efbd-47a6-be6c-4c5d47db20fa",
+      "id": "998a69f1-e3d7-4c84-9a99-0ae5ffe73bac",
       "name": "Monta lista recursos",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        320,
-        1024
+        -1200,
+        3200
       ]
     },
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// alguns parametros é melhor montar com javascript,\n// facilita o entendimento e manutenção\n\n// nao confundir montagem de objetos javascript com mensagens json\n// tem diferenças, mas o n8n converte automaticamente para json\n\nitem.json.reply = \"Que bom ter você por aqui 👋🏻\\n\\nEm que posso lhe ajudar ?\";\n\nitem.json.optionList = {\n  title: \"Serviços disponíveis !\",\n  buttonLabel: \"Abrir lista de opções\",\n  options: [\n    {\n      id: \"1\",\n      description: \"\",\n      title: \"📄 Faturas em aberto\",\n    },\n    {\n      id: \"2\",\n      description: \"\",\n      title: \"✅ Faturas pagas\",\n    },    \n    {\n      id: \"3\",\n      description: \"\",\n      title: \"📊 Histórico de consumo\",\n    },\n    {\n      id: \"4\",\n      description: \"\",\n      title: \"📝 Denúncia\",\n    },\n    {\n      id: \"5\",\n      description: \"\",\n      title: \"🌍 Localização\",\n    },\n    {\n      id: \"6\",\n      description: \"\",\n      title: \"🔄 Trocar ligação\",\n    },\n    {\n      id: \"7\",\n      description: \"\",\n      title: \"🧑🏻‍💼 Falar com Atendente\",\n    },\n    {\n      id: \"8\",\n      description: \"\",\n      title: \"🖐🏻 Sair\",\n    },\n  ],\n};\n\nreturn item;\n"
+        "jsCode": "// alguns parametros é melhor montar com javascript,\n// facilita o entendimento e manutenção\n\n// nao confundir montagem de objetos javascript com mensagens json\n// tem diferenças, mas o n8n converte automaticamente para json\n\nitem.json.reply = \"Que bom ter você por aqui 👋🏻\\n\\nEm que posso lhe ajudar ?\";\n\nitem.json.optionList = {\n  title: \"Serviços disponíveis !\",\n  buttonLabel: \"Abrir lista de opções\",\n  options: [\n    {\n      id: \"1\",\n      description: \"\",\n      title: \"📄 Faturas em aberto\",\n    },\n    {\n      id: \"2\",\n      description: \"\",\n      title: \"✅ Faturas pagas\",\n    },    \n    {\n      id: \"3\",\n      description: \"\",\n      title: \"📊 Histórico de consumo\",\n    },\n    {\n      id: \"4\",\n      description: \"\",\n      title: \"📝 Denúncia\",\n    },\n    {\n      id: \"5\",\n      description: \"\",\n      title: \"🌍 Localização\",\n    },\n    {\n      id: \"6\",\n      description: \"\",\n      title: \"🔄 Trocar ligação\",\n    },\n    {\n      id: \"7\",\n      description: \"\",\n      title: \"🧑🏻‍💼 Falar com Atendente\",\n    },\n    {\n      id: \"8\",\n      description: \"\",\n      title: \"🖐🏻 Sair\",\n    },\n  ],\n};\n\nif (item.json.phoneconectado == '558888856714') {\n  item.json.optionList.options = item.json.optionList.options.filter(\n    option => option.id !== \"7\"\n  );\n}\n\nreturn item;\n"
       },
-      "id": "ff01dff4-c7ba-46a3-b612-9b7b596523f5",
+      "id": "9392c360-e2f3-4571-9639-796e212b9aad",
       "name": "Monta lista",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1360,
-        1584
+        -160,
+        3760
       ]
     },
     {
@@ -42,10 +42,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2320,
-        608
+        -3840,
+        2784
       ],
-      "id": "47203426-956c-4e9c-a535-31306fc55d68",
+      "id": "e5c30e5e-b4ae-4bf2-a5fe-b39c0cd20ef7",
       "name": "Get Payload"
     },
     {
@@ -89,10 +89,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        2512,
-        976
+        992,
+        3152
       ],
-      "id": "91a6dc28-f2d4-4225-a667-88408c9b8bca",
+      "id": "7fe7df35-d2f2-4465-bd61-b5fe9f95c7b4",
       "alwaysOutputData": true
     },
     {
@@ -104,10 +104,6 @@
             {
               "name": "matricula",
               "value": "={{ $('Precisa Validar Ligação ?').item.json.session.data.codigoLigacao }}"
-            },
-            {
-              "name": "chaveDigital",
-              "value": "={{ $('Precisa Validar Ligação ?').item.json._session.data_json.chavedigital }}"
             }
           ]
         },
@@ -116,10 +112,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1088,
-        1344
+        -2608,
+        3520
       ],
-      "id": "6c51d933-b4fc-41f2-8cc6-d5ce7e3d62a5",
+      "id": "78da06b6-54f3-4759-9800-02753961f02b",
       "name": "Validar LIgação",
       "onError": "continueErrorOutput"
     },
@@ -146,10 +142,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2080,
-        1488
+        560,
+        3664
       ],
-      "id": "6a648d05-f117-4e3c-97ec-cbb0fe992ee8",
+      "id": "0c5a1c76-8c34-4498-bdcf-74abfb58a2d8",
       "name": "Histórico de consumo",
       "alwaysOutputData": true,
       "onError": "continueRegularOutput"
@@ -161,10 +157,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2304,
-        1488
+        784,
+        3664
       ],
-      "id": "208c3d71-826e-4fcc-8043-4af530f9a0ec",
+      "id": "e0c6de77-596a-4dfe-9ae4-281fdbac52c2",
       "name": "Formatar histórico de consumo"
     },
     {
@@ -191,13 +187,13 @@
         },
         "options": {}
       },
-      "id": "5ce2ff34-b144-4c0d-a076-ba8b081b707c",
+      "id": "e2de1cd1-5777-4e82-9b67-dbd7a021550e",
       "name": "Deletar sessão",
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2,
       "position": [
-        -1472,
-        768
+        -2992,
+        2944
       ],
       "credentials": {
         "mySql": {
@@ -244,10 +240,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        2000,
-        2288
+        480,
+        4464
       ],
-      "id": "5225873b-44e8-4d69-b2d1-a1f3d2cd3627"
+      "id": "a74478c9-d589-49b8-9546-44b52dd4ec5d"
     },
     {
       "parameters": {
@@ -273,13 +269,13 @@
         },
         "options": {}
       },
-      "id": "8d68b2a8-2ab4-4690-a4f2-b3fdd82dba41",
+      "id": "c57f2105-3c5c-4185-9a4a-c08b8282df31",
       "name": "Processa Ouvidoria ?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        208,
-        2112
+        -1312,
+        4288
       ]
     },
     {
@@ -289,10 +285,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5056,
-        624
+        3536,
+        2800
       ],
-      "id": "0a53318a-45df-4ad2-a097-5d8499f2129e",
+      "id": "1e73f5a3-acba-4620-89f0-15e0ead9f59e",
       "name": "Recriar session"
     },
     {
@@ -304,10 +300,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        4800,
-        624
+        3280,
+        2800
       ],
-      "id": "972b0821-cedc-4d87-ad61-484310879ce2",
+      "id": "64257200-2bb9-497a-b5fc-e3f5c6860b0c",
       "name": "Merge"
     },
     {
@@ -317,10 +313,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4544,
-        400
+        3024,
+        2576
       ],
-      "id": "9b6082de-e742-4a4c-a38f-9fbcd9ee6eb7",
+      "id": "732642b1-daae-4e42-a983-e11dfb0e5427",
       "name": "Snapshot Sessão (Confirm)"
     },
     {
@@ -340,7 +336,7 @@
             },
             {
               "name": "delayMessage",
-              "value": "2"
+              "value": "5"
             }
           ]
         },
@@ -361,10 +357,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        -1984,
-        896
+        -3504,
+        3072
       ],
-      "id": "dfb519a6-9e65-44fd-a50a-89669e7faeed"
+      "id": "ec11d3d5-5377-421a-9822-c474e0d21773"
     },
     {
       "parameters": {
@@ -394,10 +390,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -2304,
-        1072
+        -3824,
+        3248
       ],
-      "id": "949dee77-7a63-4104-9f57-cf031d78650d",
+      "id": "fd784ef4-d6cc-4bb1-9eb1-e1499022cad1",
       "name": "Encerrar Atendimento ?"
     },
     {
@@ -428,10 +424,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        48,
-        1072
+        -1472,
+        3248
       ],
-      "id": "b75bfddd-4575-4e0c-9c93-2ac9ee36ebb7",
+      "id": "85a70ab7-8040-42ab-a151-7b2ac14b3f2e",
       "name": "Abrir Menu ?"
     },
     {
@@ -439,13 +435,13 @@
         "mode": "runOnceForEachItem",
         "jsCode": "const item = $input.item || {};\n\nconst receberMensagem = $(\"Receber mensagem\").first().json || {};\nconst receberBody = receberMensagem.body || {};\n\n// Cria um JSON final seguro\nconst j = {\n  ...(item.json || {}),\n  ...receberMensagem\n};\n\n// Resolve phone de forma robusta\nconst rxPhone =\n  j.phone ??\n  j.body?.phone ??\n  receberMensagem.phone ??\n  receberBody.phone ??\n  null;\n\n// Resolve telefone conectado de forma robusta\nconst rxPhoneconectado =\n  j.phoneconectado ??\n  j.connectedPhone ??\n  j.body?.connectedPhone ??\n  receberMensagem.phoneconectado ??\n  receberMensagem.connectedPhone ??\n  receberBody.connectedPhone ??\n  null;\n\n// Aplica no JSON principal\nj.phone = rxPhone;\nj.phoneconectado = rxPhoneconectado;\n\n// Preserva sessão existente e NUNCA zera data\nj.session = j.session || {};\n\nj.session.phone = j.session.phone ?? rxPhone;\nj.session.phoneconectado = j.session.phoneconectado ?? rxPhoneconectado;\nj.session.flow = \"confirm\";\nj.session.step = 1;\nj.session.data = j.session.data || {};\nj.session.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n\nj.reply = \"Posso lhe ajudar em algo mais?\";\n\nj.buttonList = {\n  buttons: [\n    { id: \"Sim\", label: \"Sim\", type: \"REPLY\" },\n    { id: \"Não\", label: \"Não\", type: \"REPLY\" }\n  ]\n};\n\nreturn {\n  json: j\n};"
       },
-      "id": "e2705655-6f23-4bf3-9fea-09f730b3c68b",
+      "id": "35eee3e0-973c-4c66-9cc1-e1e6d2320568",
       "name": "Encerramento/Voltar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4288,
-        608
+        2768,
+        2784
       ]
     },
     {
@@ -476,10 +472,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1168,
-        1488
+        -352,
+        3664
       ],
-      "id": "1a4515c5-3926-4020-b7a1-f4fdf6db7767",
+      "id": "63ecb2db-ae3b-4d0a-a859-819456133671",
       "name": "Resposta vem de Lista"
     },
     {
@@ -516,10 +512,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        560,
-        864
+        -960,
+        3040
       ],
-      "id": "b595f567-8355-49bc-9cfa-742fbf169e46"
+      "id": "c6083fa9-7883-4ba2-9c44-9e1c902e814f"
     },
     {
       "parameters": {
@@ -528,10 +524,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -176,
-        864
+        -1696,
+        3040
       ],
-      "id": "d76479b9-4192-4a54-bbfb-c4290961b5c1",
+      "id": "008d0b1a-4083-4614-9d59-d6e1d148f3c4",
       "name": "Snapshot Sessão Lista"
     },
     {
@@ -541,10 +537,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1856,
-        1824
+        -3376,
+        4000
       ],
-      "id": "5dfe6d37-b895-41ec-9d9c-6691b195d4cf",
+      "id": "bc4a73b7-1212-4ca5-ac29-3d538fa08f8d",
       "name": "Snapshot Sessão Texto"
     },
     {
@@ -556,10 +552,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        608,
-        1568
+        -912,
+        3744
       ],
-      "id": "38b894c3-b177-4ae5-826b-6387fe20a22c",
+      "id": "93864773-d8d4-4b26-8304-de45719477b8",
       "name": "Merge Texto + Sessão"
     },
     {
@@ -571,10 +567,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        848,
-        544
+        -672,
+        2720
       ],
-      "id": "2303c6cf-45c1-4d18-bba0-c1b8151cdbd9",
+      "id": "b23b7b66-7bea-483e-8416-8fdf1a0e4b1b",
       "name": "Merge Lista + Sessão",
       "onError": "continueRegularOutput"
     },
@@ -595,7 +591,7 @@
             },
             {
               "name": "delayMessage",
-              "value": "2"
+              "value": "5"
             }
           ]
         },
@@ -612,10 +608,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        2528,
-        1488
+        1008,
+        3664
       ],
-      "id": "7a0d6947-df83-49a8-b3d8-c26c5b4ae69b"
+      "id": "5ae92825-144d-4dc5-a51a-ab4718999314"
     },
     {
       "parameters": {
@@ -626,10 +622,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -816,
-        848
+        -2336,
+        3024
       ],
-      "id": "97ff5236-30a6-4724-aeae-9711615a156d",
+      "id": "60b42352-3af0-40c5-b73a-f7bd44526613",
       "name": "Passar Session"
     },
     {
@@ -657,23 +653,23 @@
         },
         "options": {}
       },
-      "id": "118b8fa3-0685-4b6c-9150-c783402f4fcc",
+      "id": "74c1c1b7-b1d0-43c8-b279-581232cc53bb",
       "name": "Autenticado ?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -1360,
-        2256
+        -2880,
+        4432
       ]
     },
     {
       "parameters": {},
-      "id": "42847c50-413b-4341-a811-4411ed785fef",
+      "id": "e8c9dee4-bf72-42bb-819e-7aebcf605e2c",
       "name": "No Operation, do nothing3",
       "type": "n8n-nodes-base.noOp",
       "position": [
-        -1168,
-        2848
+        -2688,
+        5024
       ],
       "typeVersion": 1,
       "alwaysOutputData": false
@@ -686,10 +682,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1952,
-        608
+        -3472,
+        2784
       ],
-      "id": "2a1d4d7a-910c-44fe-bf23-518384b060d9",
+      "id": "a47fcd1f-31cb-4afe-b262-6e1f349f9d0d",
       "name": "Router"
     },
     {
@@ -699,10 +695,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1328,
-        992
+        -2848,
+        3168
       ],
-      "id": "84c173fb-a05e-4c28-bda4-352ec3dd7208",
+      "id": "b92f72ff-3f15-461f-b6f9-0561420b26c0",
       "name": "Setar Codigo"
     },
     {
@@ -749,26 +745,26 @@
         },
         "options": {}
       },
-      "id": "24996983-f9c0-496f-bb3c-258fda7b8aa4",
+      "id": "f0120a22-d4e9-425e-812e-6391490cadf8",
       "name": "Precisa Validar Ligação ?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -1936,
-        1120
+        -3456,
+        3296
       ]
     },
     {
       "parameters": {
-        "jsCode": "// -------- Processa Validação (após MERGE) --------\nconst j = $input.item.json || {};\nconst sess = j.session || {};\nconst phone = j.phone || sess.phone || null;\n\nconst found = Number(j.found ?? j.matricula != null) === 1;\nconst nome = sess?.data?.nome || \"cliente\";\nconst codigo = sess?.data?.codigoLigacao || j.codigo || \"\";\n\nif (found) {\n  sess.data = sess.data || {};\n  sess.data.authOk = true;\n  sess.flow = \"menu\";\n  sess.step = 0;\n  sess.needValidateLigacao = false;\n  sess.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n  sess.data.codigoLigacao = codigo;\n  sess.data.nome = nome;\n\nconst cab = `Tudo certo, *` + nome + `*!✅\\n\\nValidei a ligação *` + codigo + `*.\\n\\nEsta ligação está vinculada ao endereço : *` + $input.first().json.rua + `*, número *XXX*, *` + $input.first().json.bairro + `*.\\n\\nQue bom ter você por aqui !\\nEm que posso lhe ajudar ?`;\n  return [{ json: { phone, session: sess, showMenu: true, reply: cab } }];\n}\n\n// NÃO ENCONTROU → sempre devolve texto\nsess.step = 2;\nsess.needValidateLigacao = true;\nsess.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n\nconst msg =\n  \"Parece que o código da ligação ou a chave digital não conferem, confirme as informações.\\n\\nPor favor, digite novamente o *código da ligação* (apenas os números, sem o dígito). 🔁\";\nreturn [{ json: { phone, session: sess, showMenu: false, reply: msg } }];\n"
+        "jsCode": "// -------- Processa Validação (após MERGE) --------\nconst j = $input.item.json || {};\nconst sess = j.session || {};\nconst phone = j.phone || sess.phone || null;\n\nconst found = Number(j.found ?? j.matricula != null) === 1;\nconst nome = sess?.data?.nome || \"cliente\";\nconst codigo = sess?.data?.codigoLigacao || j.codigo || \"\";\n\nif (found) {\n  sess.data = sess.data || {};\n  sess.data.authOk = true;\n  sess.flow = \"menu\";\n  sess.step = 0;\n  sess.needValidateLigacao = false;\n  sess.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n  sess.data.codigoLigacao = codigo;\n  sess.data.nome = nome;\n\nconst cab = `Tudo certo, *` + nome + `*!✅\\n\\nValidei a ligação *` + codigo + `*.\\n\\nEsta ligação está vinculada ao endereço : *` + $input.first().json.rua + `*, número *XXX*, *` + $input.first().json.bairro + `*.\\n\\nQue bom ter você por aqui !\\nEm que posso lhe ajudar ?`;\n  return [{ json: { phone, session: sess, showMenu: true, reply: cab } }];\n}\n\n// NÃO ENCONTROU → sempre devolve texto\nsess.step = 2;\nsess.needValidateLigacao = true;\nsess.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n\nconst msg =\n  \"Não consegui validar os dados informados.\\n\\nPor favor, digite novamente o *código da ligação* (apenas os números, sem o dígito). 🔁\";\nreturn [{ json: { phone, session: sess, showMenu: false, reply: msg } }];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -528,
-        848
+        -2048,
+        3024
       ],
-      "id": "d4af80ec-a594-40f1-b9c2-0682e29b3a8b",
+      "id": "b07b0298-fc32-4c39-8ef6-06f481815ce0",
       "name": "Processa Validação"
     },
     {
@@ -788,7 +784,7 @@
             },
             {
               "name": "delayTyping",
-              "value": "2"
+              "value": "6"
             }
           ]
         },
@@ -805,10 +801,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        320,
-        1328
+        -1200,
+        3504
       ],
-      "id": "407a3311-1607-437e-ba9e-d23f7023cfa6",
+      "id": "567aaef3-1261-48ad-a3e3-91d8fc1c0a19",
       "alwaysOutputData": false
     },
     {
@@ -836,13 +832,13 @@
         },
         "options": {}
       },
-      "id": "5186027c-16dc-4f20-9a72-6dac851ad217",
+      "id": "ae25fea1-3e9f-4cd6-9086-2721e8b4ddc2",
       "name": "Tem reply?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -1648,
-        1568
+        -3168,
+        3744
       ]
     },
     {
@@ -851,13 +847,13 @@
         "query": "SELECT phone, flow, step, expected_ref, data_json, expires_at,phoneconectado\nFROM sessions\nWHERE phone = {{ $json.Phone }} and phoneconectado = {{ $json.PhoneConnected }}\n\nUNION ALL\n\nSELECT {{ $json.Phone }} AS phone, NULL AS flow, NULL AS step, NULL AS expected_ref, NULL AS data_json, NULL AS expires_at, {{ $json.PhoneConnected }} AS phoneconectado\nWHERE NOT EXISTS (SELECT 1 FROM sessions WHERE phone = {{ $json.Phone }} and phoneconectado = {{ $json.PhoneConnected }} )\nLIMIT 1;",
         "options": {}
       },
-      "id": "d2496262-9b5f-4d07-9e60-63ccdb9a320c",
+      "id": "c743852a-2706-430f-aef8-7e2dcbf6f021",
       "name": "Select Sessão",
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2,
       "position": [
-        -1392,
-        272
+        -2912,
+        2448
       ],
       "credentials": {
         "mySql": {
@@ -904,23 +900,23 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        4560,
-        848
+        3040,
+        3024
       ],
-      "id": "7d6158f0-bf3b-4018-943f-5d5904543722"
+      "id": "fc3bf745-f425-44af-b75d-1f1de18186d5"
     },
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const item = $input.item;\nconst j = item.json;\n\n// ==== ENTRADA / CAMPOS ÚTEIS (mantidos) ====\nconst b = j.body ?? {};\nj.phone = j.phone ?? b.phone ?? null;\n\n// veio resposta de lista/botão?\nj.listResponse = !!(b.listResponseMessage || b.listResponse || b.buttonReply);\n\n// flag “encerrar atendimento” quando clicado em “Não”\nconst btnMsg = (b?.buttonReply?.message ?? \"\").trim().toLowerCase();\nj.encerraratendimento = btnMsg === \"não\";\n\n// ==== CONFIGURAÇÃO POR NÚMERO (adicione seus números aqui) ====\n// Use apenas dígitos no índice, exatamente como chega em j.PhoneConnected\nconst phonesConfig = {\n  553798334700: {\n    idInstanceZapi: \"3EA6B3979B12E1B6EDC772620DC9C8F4\",\n    tokenInstanceZapi: \"86D7C5F85892C2570C026339\",\n    clientTokenHeaderZapi: \"Fdc4b6b51b6d942db941b9e00a4991740S\",\n    rotaPrincipalDados: \"https://demonstracao.agenciavirtual.api.gestaosaneamentoweb.com.br/api/chatbot\",\n    title: \"Inovação Computação Móvel\",\n    address: \"Avenida Paraná, 1348, Sidil, Divinopolis, MG, 35501-660\",\n    lat: \"-20.135580\",\n    long: \"-44.896239\",\n    tipoRequerimento: 103,\n  },\n  553798603941: {\n    idInstanceZapi: \"3E8020BFCB6F329C7878B2948C7C07B3\",\n    tokenInstanceZapi: \"7FAEC497FAA217714D1F22C7\",\n    clientTokenHeaderZapi: \"Fdc4b6b51b6d942db941b9e00a4991740S\",\n    rotaPrincipalDados:\n      \"https://tdev-ag.icommercial002.inovamobil.com.br/api/chatbot\",\n    title: \"Residência\",\n    address: \"Rua Itapecerica, 1060, Sidil, Divinopolis, MG, 35500-018\",\n    lat: \"-20.13889\",\n    long: \"-44.88389\",\n    tipoRequerimento: 22,\n  },\n};\n\n// ==== OBRIGATÓRIO TER PhoneConnected ====\nconst phoneConnected = (j.PhoneConnected ?? \"\").replace(/\\D+/g, \"\");\nconst selected = phonesConfig[phoneConnected];\nif (!selected) {\n  throw new Error(\n    `PhoneConnected (${phoneConnected || \"vazio\"}) não mapeado em phonesConfig`,\n  );\n}\n\n// ==== PARAMS (nomes mantidos, sem impacto) ====\nconst idInstanceZapi = selected.idInstanceZapi;\nconst tokenInstanceZapi = selected.tokenInstanceZapi;\nconst clientTokenHeaderZapi = selected.clientTokenHeaderZapi;\nconst rotaPrincipalDados = selected.rotaPrincipalDados;\n\nconst baseUrl = \"https://api.z-api.io\";\nconst extensionDocument = \"pdf\";\n\n// ==== ENV / ENDPOINTS ====\nconst endpointZapi = `${baseUrl}/instances/${idInstanceZapi}/token/${tokenInstanceZapi}`;\nj.env = {\n  baseUrl,\n  idInstanceZapi,\n  tokenInstanceZapi,\n  clientTokenHeaderZapi,\n  endpoints: {\n    sendOptionList: `${endpointZapi}/send-option-list`,\n    sendButtonList: `${endpointZapi}/send-button-list`,\n    sendCarousel: `${endpointZapi}/send-carousel`,\n    sendText: `${endpointZapi}/send-text`,\n    sendLink: `${endpointZapi}/send-link`,\n    sendAudio: `${endpointZapi}/send-audio`,\n    sendVideo: `${endpointZapi}/send-video`,\n    sendImage: `${endpointZapi}/send-image`,\n    sendDocument: `${endpointZapi}/send-document/${extensionDocument}`,\n    sendLocation: `${endpointZapi}/send-location`,\n  },\n  phoneConnected,\n};\n\nj.env.api = {\n  rotaPrincipalDados,\n  endpoints: {\n    historicoConsumo: `${rotaPrincipalDados}/historico-consumo`,\n    ultimasFaturas: `${rotaPrincipalDados}/faturas-abertas`,\n    faturasPagas: `${rotaPrincipalDados}/faturas-concluidas`,\n    retornarUsuario: `${rotaPrincipalDados}/retornar-usuario`,\n    gerarFatura: `${rotaPrincipalDados}/fatura-pdf`,\n    ouvidoria: `${rotaPrincipalDados}/denuncia`,\n    auditoria: `${rotaPrincipalDados}/auditoria`,\n  },\n  location: {\n    title: selected.title,\n    address: selected.address,\n    lat: selected.lat,\n    long: selected.long,\n  },\n  configuracao: {\n    tipoRequerimento: selected.tipoRequerimento,\n    HorarioAtendimentoHumanoInicio : \"08:00\",\n    HorarioAtendimentoHumanoFim : \"17:00\"\n  },\n};\n\nreturn item;\n"
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\n// ==== ENTRADA / CAMPOS ÚTEIS (mantidos) ====\nconst b = j.body ?? {};\nj.phone = j.phone ?? b.phone ?? null;\n\n// veio resposta de lista/botão?\nj.listResponse = !!(b.listResponseMessage || b.listResponse || b.buttonReply);\n\n// flag “encerrar atendimento” quando clicado em “Não”\nconst btnMsg = (b?.buttonReply?.message ?? \"\").trim().toLowerCase();\nj.encerraratendimento = btnMsg === \"não\";\n\n// ==== CONFIGURAÇÃO POR NÚMERO (adicione seus números aqui) ====\n// Use apenas dígitos no índice, exatamente como chega em j.PhoneConnected\nconst phonesConfig = {\n  553798334700: {\n    idInstanceZapi: \"3EA6B3979B12E1B6EDC772620DC9C8F4\",\n    tokenInstanceZapi: \"86D7C5F85892C2570C026339\",\n    clientTokenHeaderZapi: \"Fdc4b6b51b6d942db941b9e00a4991740S\",\n    rotaPrincipalDados:\n      \"https://tdev3-ag.icommercial002.inovamobil.com.br/api/chatbot\",\n    title: \"Inovação Computação Móvel\",\n    address: \"Avenida Paraná, 1348, Sidil, Divinopolis, MG, 35501-660\",\n    lat: \"-20.135580\",\n    long: \"-44.896239\",\n    tipoRequerimento: 54,\n  },\n  553798603941: {\n    idInstanceZapi: \"3E8020BFCB6F329C7878B2948C7C07B3\",\n    tokenInstanceZapi: \"7FAEC497FAA217714D1F22C7\",\n    clientTokenHeaderZapi: \"Fdc4b6b51b6d942db941b9e00a4991740S\",\n    rotaPrincipalDados:\n      \"https://tdev-ag.icommercial002.inovamobil.com.br/api/chatbot\",\n    title: \"Residência\",\n    address: \"Rua Itapecerica, 1060, Sidil, Divinopolis, MG, 35500-018\",\n    lat: \"-20.13889\",\n    long: \"-44.88389\",\n    tipoRequerimento: 22,\n  },\n  558888856714: {\n    idInstanceZapi: \"3F0B6E59D6D191247F543ACD7F66CB7B\",\n    tokenInstanceZapi: \"661363E3532CCDF926D32F90\",\n    clientTokenHeaderZapi: \"Fdc4b6b51b6d942db941b9e00a4991740S\",\n    rotaPrincipalDados: \"https://sobral.agenciavirtual.api.gestaosaneamentoweb.com.br/api/chatbot\",\n    title: \"SAAE - Serviço Autônomo de Água e Esgoto de Sobral\",\n    address: \"Doutor Monte, 563, Centro, Sobral, CE, 62011-200\",\n    lat: \"-3.6869546268913265\",\n    long: \"-40.348599721104776\",\n    tipoRequerimento: 0,\n  },\n};\n\n// ==== OBRIGATÓRIO TER PhoneConnected ====\nconst phoneConnected = (j.PhoneConnected ?? \"\").replace(/\\D+/g, \"\");\nconst selected = phonesConfig[phoneConnected];\nif (!selected) {\n  throw new Error(\n    `PhoneConnected (${phoneConnected || \"vazio\"}) não mapeado em phonesConfig`,\n  );\n}\n\n// ==== PARAMS (nomes mantidos, sem impacto) ====\nconst idInstanceZapi = selected.idInstanceZapi;\nconst tokenInstanceZapi = selected.tokenInstanceZapi;\nconst clientTokenHeaderZapi = selected.clientTokenHeaderZapi;\nconst rotaPrincipalDados = selected.rotaPrincipalDados;\n\nconst baseUrl = \"https://api.z-api.io\";\nconst extensionDocument = \"pdf\";\n\n// ==== ENV / ENDPOINTS ====\nconst endpointZapi = `${baseUrl}/instances/${idInstanceZapi}/token/${tokenInstanceZapi}`;\nj.env = {\n  baseUrl,\n  idInstanceZapi,\n  tokenInstanceZapi,\n  clientTokenHeaderZapi,\n  endpoints: {\n    sendOptionList: `${endpointZapi}/send-option-list`,\n    sendButtonList: `${endpointZapi}/send-button-list`,\n    sendCarousel: `${endpointZapi}/send-carousel`,\n    sendText: `${endpointZapi}/send-text`,\n    sendLink: `${endpointZapi}/send-link`,\n    sendAudio: `${endpointZapi}/send-audio`,\n    sendVideo: `${endpointZapi}/send-video`,\n    sendImage: `${endpointZapi}/send-image`,\n    sendDocument: `${endpointZapi}/send-document/${extensionDocument}`,\n    sendLocation: `${endpointZapi}/send-location`,\n  },\n  phoneConnected,\n};\n\nj.env.api = {\n  rotaPrincipalDados,\n  endpoints: {\n    historicoConsumo: `${rotaPrincipalDados}/historico-consumo`,\n    ultimasFaturas: `${rotaPrincipalDados}/faturas-abertas`,\n    faturasPagas: `${rotaPrincipalDados}/faturas-concluidas`,\n    retornarUsuario: `${rotaPrincipalDados}/retornar-usuario`,\n    gerarFatura: `${rotaPrincipalDados}/fatura-pdf`,\n    ouvidoria: `${rotaPrincipalDados}/denuncia`,\n    auditoria: `${rotaPrincipalDados}/auditoria`,\n  },\n  location: {\n    title: selected.title,\n    address: selected.address,\n    lat: selected.lat,\n    long: selected.long,\n  },\n  configuracao: {\n    tipoRequerimento: selected.tipoRequerimento,\n    HorarioAtendimentoHumanoInicio : \"08:00\",\n    HorarioAtendimentoHumanoFim : \"17:00\"\n  },\n};\n\nreturn item;\n"
       },
-      "id": "0ceb2f46-7ee6-437f-856b-62847e47fbfe",
+      "id": "6b611c09-1927-4af9-8fb3-dcbef985dfac",
       "name": "Constantes",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1648,
-        272
+        -3168,
+        2448
       ]
     },
     {
@@ -965,32 +961,32 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        2112,
-        624
+        592,
+        2800
       ],
-      "id": "a647dc49-73c7-4a26-94e2-6ca452e0dc1b",
+      "id": "d2578bf5-5e51-4e6a-8344-94ff47cefb5e",
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {},
-      "id": "e8844080-6119-47b6-8bad-f8c564317804",
+      "id": "ecfaceea-a113-4ac0-987e-019bc0ecbb4e",
       "name": "No Operation, do nothing1",
       "type": "n8n-nodes-base.noOp",
       "position": [
-        1264,
-        1856
+        -256,
+        4032
       ],
       "typeVersion": 1,
       "alwaysOutputData": false
     },
     {
       "parameters": {},
-      "id": "0f8b1ae6-f96e-4fbe-b5cd-65575888d932",
+      "id": "acb00a26-7bc0-4292-8a67-82d6917ef6f1",
       "name": "No Operation, do nothing",
       "type": "n8n-nodes-base.noOp",
       "position": [
-        976,
-        2048
+        -544,
+        4224
       ],
       "typeVersion": 1,
       "alwaysOutputData": false
@@ -1005,11 +1001,11 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        -2320,
-        272
+        -3840,
+        2448
       ],
       "webhookId": "c3d709c3-6fc7-4d09-bd0b-6791ddbf81f5",
-      "id": "75abcf1a-2c8b-4466-b32c-3fd89b64a886"
+      "id": "b0d532a7-507c-4358-859f-ad6788f7e8ed"
     },
     {
       "parameters": {
@@ -1088,10 +1084,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1888,
-        272
+        -3408,
+        2448
       ],
-      "id": "8655f643-622d-417c-85e6-d971484b4495",
+      "id": "f37dc11a-d57f-45bb-baec-ecbd928a6040",
       "name": "Dados"
     },
     {
@@ -1122,10 +1118,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        928,
-        1760
+        -592,
+        3936
       ],
-      "id": "0f2edb56-863d-4f90-a4f1-51877ab1f2be",
+      "id": "f0910ef5-5c97-4d30-a281-a50d2cea3040",
       "name": "Mensagem enviada pelo Bot"
     },
     {
@@ -1156,10 +1152,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        592,
-        1920
+        -928,
+        4096
       ],
-      "id": "82a2ac73-0247-4b99-832a-60284614bfc4",
+      "id": "a329bf04-214a-4958-b8b5-f15823e7948f",
       "name": "Mensagem Individual"
     },
     {
@@ -1189,10 +1185,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        2080,
-        976
+        560,
+        3152
       ],
-      "id": "03447dc1-d5dd-482b-889e-3cbb8287d710",
+      "id": "d3478c05-ed48-4897-8bc3-7e9ec44bc4fa",
       "alwaysOutputData": true
     },
     {
@@ -1222,10 +1218,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        304,
-        2384
+        -1216,
+        4560
       ],
-      "id": "af57e439-8a0c-4280-b790-a5cf201b946c",
+      "id": "c21649c1-2c92-4b0a-88fb-691bf2e84d27",
       "name": "Gerar Fatura ?"
     },
     {
@@ -1235,10 +1231,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2096,
-        272
+        -3616,
+        2448
       ],
-      "id": "6fde388f-addf-4f03-9ab2-b6ddcb731e40",
+      "id": "73882009-82e3-42f9-abc4-9ab253964e04",
       "name": "Normalizador de Clique"
     },
     {
@@ -1272,10 +1268,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        976,
-        2768
+        -544,
+        4944
       ],
-      "id": "df2e931c-dc0d-4d35-a425-8c918d475bee",
+      "id": "ed24314c-d783-40ee-b458-4402facc9e4b",
       "alwaysOutputData": true
     },
     {
@@ -1286,10 +1282,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1408,
-        2784
+        -112,
+        4960
       ],
-      "id": "7c933693-2aa1-4c29-816f-1629bd6c518f",
+      "id": "c6965ff0-495a-47c4-a309-a25c64ecc721",
       "name": "Montar resposta Pix/Barras"
     },
     {
@@ -1330,10 +1326,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1984,
-        2816
+        464,
+        4992
       ],
-      "id": "9f39dcda-123c-48f5-b469-9d858ea17549"
+      "id": "166db4b5-92ed-4e81-83ef-d845989d38de"
     },
     {
       "parameters": {
@@ -1375,10 +1371,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1856,
-        976
+        336,
+        3152
       ],
-      "id": "92cb6406-1259-41bc-8665-98141194dd95",
+      "id": "da5c53aa-d093-417b-8b42-c39e6ea4cd6c",
       "alwaysOutputData": true
     },
     {
@@ -1415,10 +1411,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1600,
-        1664
+        80,
+        3840
       ],
-      "id": "18b0d73b-d985-4b63-a709-5eff62d13760"
+      "id": "daac6097-6b84-42c5-8ed6-23d0b01e236d"
     },
     {
       "parameters": {
@@ -1439,7 +1435,7 @@
             },
             {
               "name": "delayTyping",
-              "value": "2"
+              "value": "5"
             }
           ]
         },
@@ -1460,10 +1456,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        544,
-        2560
+        -976,
+        4736
       ],
-      "id": "9c5f1abd-367e-457a-a483-bcf14165dc51",
+      "id": "adbd0c35-7f4f-4be4-bafd-3e592a7798ab",
       "alwaysOutputData": true
     },
     {
@@ -1504,10 +1500,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1856,
-        1488
+        336,
+        3664
       ],
-      "id": "0a004956-49ec-4769-a90e-edb60adc21f6",
+      "id": "dbb7355f-4318-48c1-9d1f-ea04a1e0a560",
       "alwaysOutputData": true
     },
     {
@@ -1529,7 +1525,7 @@
             },
             {
               "name": "delayTyping",
-              "value": "4"
+              "value": "6"
             }
           ]
         },
@@ -1550,10 +1546,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        -1408,
-        1216
+        -2928,
+        3392
       ],
-      "id": "4baaa956-0721-4057-a05a-401b2994a614",
+      "id": "3631cb65-ab9c-416c-9852-28759a6fa1f2",
       "alwaysOutputData": true
     },
     {
@@ -1564,10 +1560,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2752,
-        1488
+        1232,
+        3664
       ],
-      "id": "62de61d3-0f50-4ed6-9de5-930cba2d71c1",
+      "id": "90c07c68-8e4c-4379-8d77-cb1662f68169",
       "name": "Gravar - Histórico de Consumo"
     },
     {
@@ -1578,10 +1574,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2336,
-        624
+        816,
+        2800
       ],
-      "id": "8e07dcee-c276-4f2a-bca2-4a9f2fd37e6d",
+      "id": "43243298-b3de-4802-a300-0ca8bca8eed0",
       "name": "Gravar - Localização"
     },
     {
@@ -1592,10 +1588,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2672,
-        2272
+        1152,
+        4448
       ],
-      "id": "c29cb94b-5518-4ee1-94e4-473467993f6f",
+      "id": "cdc0aed9-8abe-4dcc-8926-8cf15565ba75",
       "name": "Gravar - Ouvidoria"
     },
     {
@@ -1606,10 +1602,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2656,
-        2768
+        1136,
+        4944
       ],
-      "id": "d8488bf4-6094-478b-b750-d464c3756ba5",
+      "id": "99f540d6-fc8a-4ce0-9983-a35cfad5fc67",
       "name": "Gravar - PIX ou Barras"
     },
     {
@@ -1637,10 +1633,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1520,
-        2320
+        0,
+        4496
       ],
-      "id": "03e23091-4a42-4a58-b600-bb0e96943558",
+      "id": "6171d2b5-aef1-4cb0-b50d-c9869bfad9be",
       "alwaysOutputData": true
     },
     {
@@ -1670,10 +1666,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2720,
-        976
+        1200,
+        3152
       ],
-      "id": "f9b295c9-1870-4f50-b71f-77bb3a70c725",
+      "id": "2b002a4a-af95-410f-8efd-2f45b00e0c27",
       "name": "Não há faturas em aberto ?"
     },
     {
@@ -1716,10 +1712,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1856,
-        1200
+        336,
+        3376
       ],
-      "id": "f40e56d8-064b-4803-ba3f-41986c6f129b",
+      "id": "e8fa36fa-0ac2-4e61-bfb1-554f7dd14bfd",
       "alwaysOutputData": true
     },
     {
@@ -1749,10 +1745,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        2080,
-        1200
+        560,
+        3376
       ],
-      "id": "148a394a-a6b6-4d4d-8924-e0524c541f5d",
+      "id": "6f6054fd-7f63-4120-8895-0001a11dbf77",
       "alwaysOutputData": true
     },
     {
@@ -1762,10 +1758,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2304,
-        1200
+        784,
+        3376
       ],
-      "id": "74245678-e9ba-4ec1-94c8-70ca22d80add",
+      "id": "3f0414c5-3610-4977-a262-fb02d9297b07",
       "name": "Preparar Lista - Faturas Pagas"
     },
     {
@@ -1809,10 +1805,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        2512,
-        1200
+        992,
+        3376
       ],
-      "id": "736ae42b-c2b0-4954-9161-5c5eee2682d4",
+      "id": "9422a9f4-20cb-455c-908c-8447899363d0",
       "alwaysOutputData": true
     },
     {
@@ -1842,10 +1838,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2720,
-        1200
+        1200,
+        3376
       ],
-      "id": "aa717cc0-e595-4271-b284-bf00b6dfa26d",
+      "id": "0ceebca7-f780-46bb-8314-4fe77d422c09",
       "name": "Não há faturas pagas ?",
       "onError": "continueRegularOutput"
     },
@@ -1874,13 +1870,13 @@
         },
         "options": {}
       },
-      "id": "fd816f5c-683c-41d3-ad78-ee81e88a3e4f",
+      "id": "a6e9aa59-2195-4f5a-b2e6-25429ba5e033",
       "name": "É clique de faturas em aberto",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -896,
-        2672
+        -2416,
+        4848
       ]
     },
     {
@@ -1890,10 +1886,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2304,
-        976
+        784,
+        3152
       ],
-      "id": "a011936c-b8c3-483a-8896-1a1f1dc9229e",
+      "id": "9751cca3-4eea-4020-86af-40df8ed1fe7a",
       "name": "Preparar Lista - Faturas em Aberto"
     },
     {
@@ -1921,13 +1917,13 @@
         },
         "options": {}
       },
-      "id": "9d66f124-3052-4759-b0f4-d27d62d236bb",
+      "id": "035c3855-9a4a-4ae3-9642-c957355e1d32",
       "name": "É clique de faturas pagas",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -528,
-        2592
+        -2048,
+        4768
       ]
     },
     {
@@ -1937,10 +1933,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -176,
-        2672
+        -1696,
+        4848
       ],
-      "id": "4f2c827a-4d49-4099-aa38-e46009c0ec0e",
+      "id": "17265211-d4bc-46ac-9623-1afed9af8dce",
       "name": "Montar lista de faturas pagas"
     },
     {
@@ -1951,10 +1947,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        192,
-        2848
+        -1328,
+        5024
       ],
-      "id": "20b4dc14-cab2-4ee5-ab28-0916a6c546d3",
+      "id": "1c693e87-2fd9-44f3-b332-ec63bd5c63e7",
       "name": "Ações das faturas pagas"
     },
     {
@@ -1965,10 +1961,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -288,
-        3008
+        -1808,
+        5184
       ],
-      "id": "3b621d1e-7f12-4493-a89a-ec8cbd386e97",
+      "id": "123e3655-435c-4703-9d06-732a12410a52",
       "name": "Ações das faturas em aberto"
     },
     {
@@ -1978,10 +1974,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -592,
-        2928
+        -2112,
+        5104
       ],
-      "id": "6d1e4b57-6f97-47ad-9006-3c04e699ca6c",
+      "id": "58a0aa47-88fe-45c9-b6ee-f2560866c8bf",
       "name": "Montar lista de faturas em aberto"
     },
     {
@@ -2025,10 +2021,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        48,
-        3120
+        -1472,
+        5296
       ],
-      "id": "e63c3d3b-834e-466a-956d-52cadc54d3e6",
+      "id": "eaad8631-8e46-473b-9d6a-264e0ba94dd1",
       "alwaysOutputData": true
     },
     {
@@ -2056,13 +2052,13 @@
         },
         "options": {}
       },
-      "id": "0ab85fd7-7048-4018-ae14-0a912e6cacad",
+      "id": "56d6f3d9-a58d-46b8-ab0c-255bfe8d59d0",
       "name": "É clique de ação de faturas em aberto",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -224,
-        2336
+        -1744,
+        4512
       ]
     },
     {
@@ -2073,10 +2069,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        64,
-        2368
+        -1456,
+        4544
       ],
-      "id": "3ff61803-5e48-4f0a-a80c-655b7275703c",
+      "id": "dc33d951-55d4-49be-882d-589eec245f1c",
       "name": "Montar opções da fatura selecionada (Em Aberto)"
     },
     {
@@ -2087,10 +2083,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1408,
-        3024
+        -112,
+        5200
       ],
-      "id": "2925afcc-6bf4-4289-9491-4c07d76a6c2b",
+      "id": "827f5157-586e-4a40-a971-6c871fdb140d",
       "name": "Montar PDF de fatura paga"
     },
     {
@@ -2101,10 +2097,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1408,
-        2544
+        -112,
+        4720
       ],
-      "id": "6f4f5fdc-175d-4fd9-839d-514ac1d38308",
+      "id": "50ffabb6-4646-419b-b992-46526f8abdb7",
       "name": "Montar PDF de fatura em aberto"
     },
     {
@@ -2137,10 +2133,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        976,
-        3008
+        -544,
+        5184
       ],
-      "id": "98d8f2e4-8a67-42be-8311-1ef9a9e43d08",
+      "id": "85f15600-4b2a-489a-9e4f-ea962df1ea41",
       "alwaysOutputData": true
     },
     {
@@ -2173,10 +2169,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        976,
-        2464
+        -544,
+        4640
       ],
-      "id": "52f7e3b7-eb42-479c-993e-9fd848bd0296",
+      "id": "2adbb759-a4a7-4e01-91fd-126d7f2088b0",
       "alwaysOutputData": true
     },
     {
@@ -2219,10 +2215,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        544,
-        2368
+        -976,
+        4544
       ],
-      "id": "bfa3e469-382f-438d-9f35-ec1ad0078f8e",
+      "id": "f436cc19-9db2-4aa6-88d7-2ea8be3c2a5c",
       "alwaysOutputData": true
     },
     {
@@ -2265,10 +2261,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        576,
-        2976
+        -944,
+        5152
       ],
-      "id": "f10fb3a0-ef4d-47c3-bfde-64664e46159a",
+      "id": "fb6322a4-262e-406f-8b31-4b2103e5d147",
       "alwaysOutputData": true
     },
     {
@@ -2279,13 +2275,13 @@
           "queryReplacement": "={{$json.session.phone}}  {{$json.session.flow}}  {{$json.session.step}}  {{$json.session.expectedRef ?? null}}  {{ JSON.stringify($json.session.data ?? {}) }}  {{$json.session.expiresAt}}"
         }
       },
-      "id": "cba15b02-374c-4d49-8949-e2135562c65b",
+      "id": "70960512-5cf9-4410-8dfc-ccb9ae2e6ccb",
       "name": "Alterar Sessao 2",
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2,
       "position": [
-        5552,
-        640
+        4032,
+        2816
       ],
       "credentials": {
         "mySql": {
@@ -2302,13 +2298,13 @@
           "queryReplacement": "={{$json.session.phone}}  {{$json.session.flow}}  {{$json.session.step}}  {{$json.session.expectedRef ?? null}}  {{ JSON.stringify($json.session.data ?? {}) }}  {{$json.session.expiresAt}}"
         }
       },
-      "id": "8bad2aae-5056-4031-a8cf-3045d950d0bf",
+      "id": "f77ae700-6c57-40e9-b2c6-275a8db7fda1",
       "name": "Alterar Sessão 3",
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2,
       "position": [
-        1376,
-        720
+        -144,
+        2896
       ],
       "credentials": {
         "mySql": {
@@ -2325,10 +2321,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1136,
-        944
+        -384,
+        3120
       ],
-      "id": "540a73c8-cc6f-4d7d-a710-d6475c4177d0",
+      "id": "cb7924df-f361-4aed-b3e6-d90530b73440",
       "name": "Repassar sessão"
     },
     {
@@ -2339,10 +2335,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5296,
-        624
+        3776,
+        2800
       ],
-      "id": "6fc31bee-1843-43dc-a1ec-5c06d4aaadca",
+      "id": "76b9483e-33f9-4f39-9c27-c99c058551a0",
       "name": "Repassar sessão 2"
     },
     {
@@ -2353,10 +2349,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2656,
-        3008
+        1136,
+        5184
       ],
-      "id": "c9844e06-c473-4abb-9989-5f4db196c2a7",
+      "id": "101df4bd-cbcb-4630-88a1-5d69e57a37ea",
       "name": "Gravar - Segunda via - Paga"
     },
     {
@@ -2367,10 +2363,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2672,
-        2544
+        1152,
+        4720
       ],
-      "id": "7a9082c6-9fd7-45de-b792-2c8f8178201e",
+      "id": "301b28c4-944b-43b8-9229-b76278903d1b",
       "name": "Gravar - Segunda Via - em aberto"
     },
     {
@@ -2410,10 +2406,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        3984,
-        992
+        2464,
+        3168
       ],
-      "id": "dac9e825-fbaa-495c-8eb1-66fb63397b0a",
+      "id": "69850471-8fbe-43bc-8d88-b7f002b385db",
       "alwaysOutputData": true
     },
     {
@@ -2424,10 +2420,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2096,
-        784
+        576,
+        2960
       ],
-      "id": "8a25f0f0-6105-4191-a7fa-4430ec6a9070",
+      "id": "78fef516-d162-4c8b-b7f5-82bbefc5c32d",
       "name": "Montar sessão para trocar ligação"
     },
     {
@@ -2438,13 +2434,13 @@
           "queryReplacement": "={{$json.session.phone}}  {{$json.session.flow}}  {{$json.session.step}}  {{$json.session.expectedRef ?? null}}  {{ JSON.stringify($json.session.data ?? {}) }}  {{$json.session.expiresAt}}"
         }
       },
-      "id": "612a7795-bfb2-4ab6-9e71-232a02c91f87",
+      "id": "a9d728ff-0008-4986-b3a9-c44773904305",
       "name": "Alterar sessão para trocar ligação",
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2,
       "position": [
-        2320,
-        784
+        800,
+        2960
       ],
       "credentials": {
         "mySql": {
@@ -2476,7 +2472,7 @@
             },
             {
               "name": "delayMessage",
-              "value": "2"
+              "value": "5"
             }
           ]
         },
@@ -2497,10 +2493,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        2512,
-        784
+        992,
+        2960
       ],
-      "id": "5f633050-155e-4df5-8c0f-84ac997e916d",
+      "id": "f365b015-3202-4e09-945d-dc1386ef8c3b",
       "alwaysOutputData": true
     },
     {
@@ -2548,10 +2544,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1984,
-        2576
+        464,
+        4752
       ],
-      "id": "ae9eb2fe-8c81-4c60-806c-faac33869c6c",
+      "id": "32038c4d-0165-408c-84c5-84a661ac3c85",
       "alwaysOutputData": true
     },
     {
@@ -2599,10 +2595,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1984,
-        3024
+        464,
+        5200
       ],
-      "id": "aa2e9a68-7533-479c-ba6f-0816de24d2fc",
+      "id": "eac2f73c-40ba-4fa8-bfdc-4802ae076efc",
       "alwaysOutputData": true
     },
     {
@@ -2634,10 +2630,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
       "position": [
-        1456,
-        1136
+        -64,
+        3312
       ],
-      "id": "26ef4ea9-e379-4c5c-8614-857ab28af10b"
+      "id": "566d8111-100c-45d2-9962-fadf243d5349"
     },
     {
       "parameters": {
@@ -2668,10 +2664,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
       "position": [
-        1776,
-        736
+        256,
+        2912
       ],
-      "id": "c8099a8a-e49b-423c-a115-841900fd3df6"
+      "id": "b40d3996-1180-414e-9b35-2148fd038e78"
     },
     {
       "parameters": {
@@ -2695,10 +2691,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
       "position": [
-        2096,
-        352
+        576,
+        2528
       ],
-      "id": "ecd16d1d-b2e8-4b92-b266-bbfc166962a5"
+      "id": "a77497cb-46a4-4714-9763-b2802d294725"
     },
     {
       "parameters": {
@@ -2719,11 +2715,11 @@
             },
             {
               "name": "delayTyping",
-              "value": "2"
+              "value": "7"
             },
             {
               "name": "delayMessage",
-              "value": "2"
+              "value": "6"
             }
           ]
         },
@@ -2744,10 +2740,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        2944,
-        208
+        1424,
+        2384
       ],
-      "id": "0622606e-aa16-43ed-8dab-7d23d3ce546b",
+      "id": "2ce21e58-7b08-4464-a93d-de8447ea089a",
       "alwaysOutputData": true
     },
     {
@@ -2758,10 +2754,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3296,
-        320
+        1776,
+        2496
       ],
-      "id": "5c01e23f-2650-4e6e-ba74-544d6587e892",
+      "id": "d154a2e1-bd2b-4702-8c12-f3df2834b5b0",
       "name": "Montar sessão para Atendimento Humano"
     },
     {
@@ -2772,13 +2768,13 @@
           "queryReplacement": "={{$json.session.phone}}  {{$json.session.flow}}  {{$json.session.step}}  {{$json.session.expectedRef ?? null}}  {{ JSON.stringify($json.session.data ?? {}) }}  {{$json.session.expiresAt}}"
         }
       },
-      "id": "ecdfc925-e5a4-4a96-a79f-dc8d8e494bc2",
+      "id": "556c418d-5d84-4e9e-b005-bd1dae5f920c",
       "name": "Alterar sessão para atendimento Humano",
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2,
       "position": [
-        3536,
-        320
+        2016,
+        2496
       ],
       "credentials": {
         "mySql": {
@@ -2809,7 +2805,7 @@
             {
               "id": "1e7c390c-8aa0-4323-9201-d13107f5b4fc",
               "leftValue": "={{ $('Receber mensagem').item.json.body.text.message.toLowerCase() }}",
-              "rightValue": "sair",
+              "rightValue": "=sair",
               "operator": {
                 "type": "string",
                 "operation": "notEquals"
@@ -2823,10 +2819,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -848,
-        272
+        -2368,
+        2448
       ],
-      "id": "e08b0c78-40f6-42d5-8c89-251180c83a88",
+      "id": "d1e82861-3afd-44a6-b75f-010c36b4920c",
       "name": "Sessão de atendimento humano ?"
     },
     {
@@ -2857,10 +2853,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        688,
-        272
+        -832,
+        2448
       ],
-      "id": "86ac8254-1ecb-4cee-849a-cada86b65169",
+      "id": "375b754c-4d7c-44ee-a5fd-fdca21253b70",
       "name": "Mensagem do bot ?"
     },
     {
@@ -2892,10 +2888,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2624,
-        336
+        1104,
+        2512
       ],
-      "id": "23cca906-be02-455b-bf17-43b0d4e8e5e6",
+      "id": "7eeb8924-e321-485e-8c2f-e9cd1475404e",
       "name": "Horário dentro do expediente humano ?"
     },
     {
@@ -2905,10 +2901,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2384,
-        336
+        864,
+        2512
       ],
-      "id": "b1b9257c-e5db-429e-af5c-f59d18b9d40f",
+      "id": "38d9e174-81f1-43f4-8e3e-b9856c7f3a84",
       "name": "Consistir horário de atendimento humano"
     },
     {
@@ -2930,11 +2926,11 @@
             },
             {
               "name": "delayTyping",
-              "value": "2"
+              "value": "6"
             },
             {
               "name": "delayMessage",
-              "value": "2"
+              "value": "6"
             }
           ]
         },
@@ -2955,10 +2951,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        2944,
-        416
+        1424,
+        2592
       ],
-      "id": "16cf9441-252f-4fbf-913d-d87683cef280",
+      "id": "a7c95166-482c-4698-a26d-6708040ddf2e",
       "alwaysOutputData": true
     },
     {
@@ -2989,10 +2985,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -496,
-        96
+        -2016,
+        2272
       ],
-      "id": "bd5629b5-6f8e-4d08-bfd8-e500409de51c",
+      "id": "86403f61-ddc7-45a2-acd3-d2e4aebb350d",
       "name": "Verificar se fluxo irá voltar para o BILL"
     },
     {
@@ -3007,13 +3003,13 @@
         },
         "options": {}
       },
-      "id": "b3893767-803d-425e-ba84-9ce2bf8a7ac0",
+      "id": "4a716f6d-a60f-4a90-b38b-0418b80ae689",
       "name": "Setar sessão",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        -1120,
-        272
+        -2640,
+        2448
       ]
     }
   ],
@@ -4251,7 +4247,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "ee837915-8600-4cf6-ab67-d9fc3d566d71",
+  "versionId": "80a7f697-cc8f-4f47-a577-da505d667b85",
   "triggerCount": 1,
   "shared": [
     {
