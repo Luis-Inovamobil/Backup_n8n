@@ -2,7 +2,7 @@
   "id": "NAOMNYB6mWnKgBrk",
   "name": "BILL - Produção",
   "createdAt": "2025-09-10T17:02:15.330Z",
-  "updatedAt": "2026-05-15T20:07:29.175Z",
+  "updatedAt": "2026-05-18T11:49:52.955Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -2819,7 +2819,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        704,
+        768,
         -208
       ],
       "id": "863dd629-0e06-48bf-872c-1c2d07a46bde",
@@ -2853,8 +2853,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2240,
-        -208
+        1504,
+        -224
       ],
       "id": "737ef7e2-b99b-4448-ab7f-ccea81a09ce3",
       "name": "Mensagem do bot ?"
@@ -2985,7 +2985,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1056,
+        1184,
         -384
       ],
       "id": "7f38528d-28b6-4eb6-a048-7437790e5083",
@@ -3011,6 +3011,52 @@
         432,
         -208
       ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f6a291f2-ed97-4d5e-84e5-34c26d3c4732",
+              "leftValue": "={{ [\n'553791238358',\n'558888856714',\n'553798334700',\n'553798603941'\n].includes(String($json.phone).replace('@c.us','')) }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2032,
+        -208
+      ],
+      "id": "6b3eed53-17f9-4efe-aba3-dc24c3a75cfb",
+      "name": "Desconsiderar mensagens entre BOTs"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2576,
+        -400
+      ],
+      "id": "c269886a-ef73-4b5c-a55f-2c0651a2baf6",
+      "name": "No Operation, do nothing2"
     }
   ],
   "connections": {
@@ -4170,7 +4216,7 @@
         [],
         [
           {
-            "node": "Get Payload",
+            "node": "Desconsiderar mensagens entre BOTs",
             "type": "main",
             "index": 0
           }
@@ -4238,6 +4284,24 @@
           }
         ]
       ]
+    },
+    "Desconsiderar mensagens entre BOTs": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -4248,7 +4312,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "99c8c3a2-24af-4973-9d88-8f92a6a6043a",
+  "versionId": "c2f19f3e-d218-45a6-8878-1478a27787ba",
   "triggerCount": 1,
   "shared": [
     {
