@@ -2,7 +2,7 @@
   "id": "4Cbp8nuWCXZ41h1Y",
   "name": "Gestão Sessão BILL",
   "createdAt": "2025-10-06T12:33:57.175Z",
-  "updatedAt": "2025-11-18T19:32:44.000Z",
+  "updatedAt": "2026-05-27T16:55:09.391Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -12,7 +12,7 @@
           "interval": [
             {
               "field": "minutes",
-              "minutesInterval": 10
+              "minutesInterval": 30
             }
           ]
         }
@@ -298,7 +298,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "8fd9c850-8a07-4d17-81fd-f5f195ab5f67",
+  "versionId": "a9acb985-090a-4440-ac02-05cd31e1ffcc",
   "triggerCount": 1,
   "shared": [
     {
