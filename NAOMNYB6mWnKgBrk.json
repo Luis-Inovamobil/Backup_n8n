@@ -2,7 +2,7 @@
   "id": "NAOMNYB6mWnKgBrk",
   "name": "BILL - Produção",
   "createdAt": "2025-09-10T17:02:15.330Z",
-  "updatedAt": "2026-05-27T18:51:57.048Z",
+  "updatedAt": "2026-05-28T11:53:15.203Z",
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -104,6 +104,10 @@
             {
               "name": "matricula",
               "value": "={{ $('Precisa Validar Ligação ?').item.json.session.data.codigoLigacao }}"
+            },
+            {
+              "name": "chaveDigital",
+              "value": "={{ $('Precisa Validar Ligação ?').item.json.session.data.chavedigital }}"
             }
           ]
         },
@@ -4312,7 +4316,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "5ed62175-3363-43b1-8dae-b20594099f6c",
+  "versionId": "46f0abaf-6253-4ec8-8a78-bed72b520a3e",
   "triggerCount": 1,
   "shared": [
     {
