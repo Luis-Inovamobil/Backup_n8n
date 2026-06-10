@@ -1,0 +1,85 @@
+{
+  "id": "yjimpwvBSAw2Qdc-EW2dV",
+  "name": "WhatsApp - Oficial",
+  "createdAt": "2026-05-12T17:36:04.008Z",
+  "updatedAt": "2026-05-26T17:02:42.000Z",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1117415971453075",
+        "recipientPhoneNumber": "+5537991238358",
+        "textBody": "{{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -496,
+        -176
+      ],
+      "id": "191e27a2-2602-4f1d-a9e5-c7e41bed7c0d",
+      "name": "Send message",
+      "webhookId": "fc881a94-9c34-4985-90a5-07fe85602e15",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        -144
+      ],
+      "id": "fae9ec70-470e-49fa-b9d1-2aa6a1408c24",
+      "name": "WhatsApp Trigger",
+      "webhookId": "13ffd0f4-e935-45ef-b048-ecfeaffb182b",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "N66cyM4WDqpigPHb",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "b40b1221-bbdf-48b0-b761-917a956fa240",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-12T17:36:04.034Z",
+      "createdAt": "2026-05-12T17:36:04.034Z",
+      "role": "workflow:owner",
+      "workflowId": "yjimpwvBSAw2Qdc-EW2dV",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
