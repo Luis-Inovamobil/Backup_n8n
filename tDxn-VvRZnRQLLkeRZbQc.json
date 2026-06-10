@@ -1,0 +1,55 @@
+{
+  "id": "tDxn-VvRZnRQLLkeRZbQc",
+  "name": "WhatsApp - Oficial",
+  "createdAt": "2026-05-26T17:02:53.041Z",
+  "updatedAt": "2026-05-26T18:44:42.000Z",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -224
+      ],
+      "id": "9e0cc299-4949-49bb-a537-5364a53d591f",
+      "name": "WhatsApp Trigger",
+      "webhookId": "f3b42662-34d9-4abe-8c0f-2be4b63ca9ee",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "N66cyM4WDqpigPHb",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    }
+  ],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "e6fe48ae-2577-4d5c-b897-597e27655c52",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-26T17:02:53.045Z",
+      "createdAt": "2026-05-26T17:02:53.045Z",
+      "role": "workflow:owner",
+      "workflowId": "tDxn-VvRZnRQLLkeRZbQc",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
