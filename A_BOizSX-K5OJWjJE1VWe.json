@@ -1,0 +1,429 @@
+{
+  "id": "A_BOizSX-K5OJWjJE1VWe",
+  "name": "Enviar Audio Z-API",
+  "createdAt": "2026-05-15T18:00:07.837Z",
+  "updatedAt": "2026-05-25T17:52:24.748Z",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 2,
+              "triggerAtMinute": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1040,
+        -448
+      ],
+      "id": "d61bf203-01a6-489c-aa80-29f62d55030e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "input_text",
+              "stringValue": "={{ (() => {\n\nconst msgs = [\n\n/* 2-4 segundos */\n\"Bom dia!\",\n\"Tudo bem por aí?\",\n\"Ótimo dia para você.\",\n\"Passando para desejar paz.\",\n\"Bom dia meu amigo.\",\n\"Que hoje seja leve.\",\n\"Dia abençoado para você.\",\n\"Muita paz hoje.\",\n\"Bom dia com alegria.\",\n\"Que tudo dê certo.\",\n\n/* 5-10 segundos */\n\"Bom dia meu amigo, tudo certo por aí?\",\n\"Passando para desejar um excelente dia.\",\n\"Que hoje seja tranquilo e produtivo.\",\n\"Bom dia! Desejo muita paz hoje.\",\n\"Que seu dia seja leve e feliz.\",\n\"Espero que esteja tudo bem hoje.\",\n\"Bom dia! Que venham boas notícias.\",\n\"Passando apenas para desejar sucesso.\",\n\"Que sua manhã seja maravilhosa.\",\n\"Um ótimo dia cheio de paz.\",\n\n/* 10-20 segundos */\n\"Bom dia meu amigo! Espero que seu dia comece muito bem e com boas energias.\",\n\"Olá! Passando para desejar muita paz, saúde e tranquilidade para você hoje.\",\n\"Bom dia! Que você tenha uma manhã produtiva e cheia de coisas positivas.\",\n\"Meu amigo, desejo um excelente dia com muita calma e boas notícias.\",\n\"Bom dia! Que tudo flua da melhor maneira possível para você hoje.\",\n\"Passando aqui para lhe desejar um dia leve, tranquilo e muito abençoado.\",\n\"Olá meu amigo! Que hoje você tenha muita força, paz e motivação.\",\n\"Bom dia! Espero que sua rotina hoje seja leve e cheia de produtividade.\",\n\"Que sua manhã seja cheia de energia positiva e muita tranquilidade.\",\n\"Bom dia! Desejo um dia maravilhoso e cheio de boas oportunidades.\",\n\n/* 20-40 segundos */\n\"Bom dia, meu amigo! Tudo bem por aí? Estou passando para desejar um excelente dia, cheio de paz, tranquilidade e boas energias. Que tudo aquilo que você precisa resolver hoje aconteça da melhor maneira possível.\",\n\"Olá meu amigo, bom dia! Espero que esteja tudo bem com você e sua família. Desejo muita saúde, paz, produtividade e que hoje seja um dia cheio de boas notícias e momentos felizes.\",\n\"Bom dia! Que sua manhã comece bem, que sua tarde seja produtiva e que sua noite termine tranquila. Desejo muita serenidade, clareza e coisas boas no seu caminho hoje.\",\n\"Meu amigo, passando para lhe desejar um ótimo dia. Que você tenha disposição, saúde, bons pensamentos e que consiga resolver tudo com tranquilidade e sabedoria.\",\n\"Bom dia! Espero que hoje seja um daqueles dias leves, onde as coisas acontecem naturalmente e com tranquilidade. Desejo muita paz e sucesso para você.\",\n\"Olá! Que sua caminhada hoje seja tranquila, cheia de energia positiva e boas oportunidades. Desejo um excelente dia e muitas bênçãos para você.\",\n\"Bom dia meu amigo! Que hoje você tenha motivação para seguir firme, paz para lidar com os desafios e alegria para aproveitar as pequenas coisas do dia.\",\n\"Passando para desejar muita saúde, paz e sucesso. Que hoje você receba boas notícias e tenha um dia extremamente produtivo e feliz.\",\n\"Bom dia! Desejo que tudo aquilo que você está planejando hoje aconteça da melhor forma possível. Muita paz, equilíbrio e serenidade para você.\",\n\"Olá meu amigo! Espero que esteja tudo certo por aí. Que hoje seja um dia cheio de boas energias, tranquilidade e realizações.\",\n\n/* 40-80 segundos */\n\"Bom dia, meu amigo! Tudo bem com você? Estou passando aqui apenas para desejar que seu dia seja extremamente abençoado, tranquilo e cheio de boas energias. Que você tenha saúde, paz no coração, clareza nas decisões e força para enfrentar qualquer desafio que surgir hoje. Que tudo aquilo que você estiver planejando aconteça da melhor maneira possível e que não faltem boas notícias ao longo do seu dia.\",\n\"Olá meu amigo, bom dia! Espero sinceramente que esteja tudo bem por aí. Desejo que esta manhã comece de forma leve, com tranquilidade, boas ideias e muita disposição. Que seu dia seja produtivo, mas sem correria excessiva, e que você consiga resolver tudo com calma e serenidade. Que venham boas oportunidades, pessoas positivas e muitos motivos para sorrir hoje.\",\n\"Bom dia! Passando aqui rapidinho para lhe desejar um excelente dia. Que sua caminhada hoje seja protegida, que seus planos avancem e que você tenha muita sabedoria para lidar com tudo. Desejo muita saúde, paz, equilíbrio emocional e momentos felizes durante todo o seu dia. Que as preocupações sejam leves e que boas notícias apareçam no seu caminho.\",\n\"Meu amigo, bom dia! Espero que sua manhã esteja começando bem e com boas energias. Quero desejar muita tranquilidade, produtividade e sucesso para você hoje. Que cada compromisso aconteça no tempo certo, que você tenha paciência para resolver os desafios e que consiga terminar o dia com aquela sensação boa de dever cumprido e coração tranquilo.\",\n\"Olá! Bom dia para você. Que hoje seja um dia muito especial, cheio de paz, saúde e boas oportunidades. Que tudo aquilo que estiver difícil fique mais leve e que sua mente permaneça tranquila durante toda a sua rotina. Desejo que você tenha um dia produtivo, equilibrado e cercado de coisas positivas do começo ao fim.\"\n];\n\nreturn msgs[Math.floor(Math.random() * msgs.length)];\n\n})() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "72db5fda-511b-4d5e-b500-bacdb3441cc0",
+      "name": "Texto do audio a ser enviado",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -560,
+        -208
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/speech",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer $OPENAI_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "tts-1"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.input_text }}"
+            },
+            {
+              "name": "voice",
+              "value": "=alloy"
+            },
+            {
+              "name": "response_format",
+              "value": "opus"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa0027d2-897c-4638-94e2-bad794492641",
+      "name": "Gerar Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -352,
+        -208
+      ],
+      "typeVersion": 4.1,
+      "credentials": {
+        "openAiApi": {
+          "id": "TYSxLrFJQF99nShO",
+          "name": "OpenAi Geral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "phone": "5527996040608",
+        "delayMessage": 15,
+        "audio": "={{ $json.data }}"
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -368
+      ],
+      "id": "18a38430-0acd-412f-9c44-a314da0c5f3b",
+      "name": "Send an audio",
+      "credentials": {
+        "zapiApi": {
+          "id": "I4IJZZKVmvEvX9dc",
+          "name": "Zapi_Sobral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "phone": "5537991238358",
+        "delayMessage": 15,
+        "audio": "={{ $json.data }}"
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -144
+      ],
+      "id": "fc02b343-f0da-49f3-8b95-db2ac32393ef",
+      "name": "Send an audio1",
+      "credentials": {
+        "zapiApi": {
+          "id": "I4IJZZKVmvEvX9dc",
+          "name": "Zapi_Sobral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        -208
+      ],
+      "id": "0bc85740-626d-40f1-a6ed-b655b64ae618",
+      "name": "Converter audio para base64"
+    },
+    {
+      "parameters": {
+        "phone": "5537991238358",
+        "message": "={{ [\n\"Olá 👋\",\n\"Bom dia ☀️\",\n\"Tudo certo? 😊\",\n\"Paz hoje 🙏\",\n\"Excelente manhã ✨\",\n\"Como você está? 😊\",\n\"Que seu dia renda 🚀\",\n\"Muita tranquilidade hoje 🍃\",\n\"Espero que esteja bem 🙌\",\n\"Tenha uma ótima manhã ☀️\",\n\"Seu dia será incrível ✨\",\n\"Passando para desejar paz 🙏\",\n\"Que tudo flua naturalmente 🌊\",\n\"Uma tarde leve para você 🍃\",\n\"Hoje vai dar certo 🚀\",\n\"Espero que esteja tranquilo 😊\",\n\"Que venham boas notícias 📩\",\n\"Seu esforço valerá muito 💪\",\n\"Uma manhã cheia de energia ⚡\",\n\"Passando para deixar abraço 🤝\",\n\"Que seu coração fique leve 🙏\",\n\"Boas vibrações para hoje ✨\",\n\"Seu dia será produtivo 📈\",\n\"Que tudo aconteça tranquilamente 🍃\",\n\"Uma semana cheia de conquistas 🚀\",\n\"Espero que esteja descansando bem 🌙\",\n\"Que sua manhã seja especial ☀️\",\n\"Passando apenas para cumprimentar 😊\",\n\"Hoje será muito positivo ✨\",\n\"Seu caminho será iluminado 🌞\",\n\"Que nunca falte esperança 🙌\",\n\"Uma rotina tranquila hoje 🍃\",\n\"Grandes oportunidades aparecerão 🚀\",\n\"Seu dia merece tranquilidade 🙏\",\n\"Que sua tarde seja produtiva 📈\",\n\"Passando para desejar serenidade ✨\",\n\"Você merece coisas boas 😊\",\n\"Uma jornada leve hoje 🍃\",\n\"Espero que tudo esteja fluindo 🌊\",\n\"Que hoje existam bons momentos ☀️\",\n\"Seu esforço trará resultados 🚀\",\n\"Que sua noite seja tranquila 🌙\",\n\"Passando para desejar alegria 😄\",\n\"Hoje será cheio de oportunidades ✨\",\n\"Que seu sorriso permaneça sempre 😊\",\n\"Uma manhã maravilhosa para você ☀️\",\n\"Espero que seu dia prospere 🚀\",\n\"Que tudo fique mais leve 🍃\",\n\"Passando para deixar energia positiva ⚡\",\n\"Seu dia será abençoado 🙏\"\n][Math.floor(Math.random() * 50)] }}\n",
+        "delayMessage": 9
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -160
+      ],
+      "id": "d7bbddb5-2fb0-42e3-a6e7-afc2496050a4",
+      "name": "Send text message",
+      "credentials": {
+        "zapiApi": {
+          "id": "I4IJZZKVmvEvX9dc",
+          "name": "Zapi_Sobral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phone": "5527996040608",
+        "message": "={{ [\n\"Olá 👋\",\n\"Bom dia ☀️\",\n\"Tudo certo? 😊\",\n\"Paz hoje 🙏\",\n\"Excelente manhã ✨\",\n\"Como você está? 😊\",\n\"Que seu dia renda 🚀\",\n\"Muita tranquilidade hoje 🍃\",\n\"Espero que esteja bem 🙌\",\n\"Tenha uma ótima manhã ☀️\",\n\"Seu dia será incrível ✨\",\n\"Passando para desejar paz 🙏\",\n\"Que tudo flua naturalmente 🌊\",\n\"Uma tarde leve para você 🍃\",\n\"Hoje vai dar certo 🚀\",\n\"Espero que esteja tranquilo 😊\",\n\"Que venham boas notícias 📩\",\n\"Seu esforço valerá muito 💪\",\n\"Uma manhã cheia de energia ⚡\",\n\"Passando para deixar abraço 🤝\",\n\"Que seu coração fique leve 🙏\",\n\"Boas vibrações para hoje ✨\",\n\"Seu dia será produtivo 📈\",\n\"Que tudo aconteça tranquilamente 🍃\",\n\"Uma semana cheia de conquistas 🚀\",\n\"Espero que esteja descansando bem 🌙\",\n\"Que sua manhã seja especial ☀️\",\n\"Passando apenas para cumprimentar 😊\",\n\"Hoje será muito positivo ✨\",\n\"Seu caminho será iluminado 🌞\",\n\"Que nunca falte esperança 🙌\",\n\"Uma rotina tranquila hoje 🍃\",\n\"Grandes oportunidades aparecerão 🚀\",\n\"Seu dia merece tranquilidade 🙏\",\n\"Que sua tarde seja produtiva 📈\",\n\"Passando para desejar serenidade ✨\",\n\"Você merece coisas boas 😊\",\n\"Uma jornada leve hoje 🍃\",\n\"Espero que tudo esteja fluindo 🌊\",\n\"Que hoje existam bons momentos ☀️\",\n\"Seu esforço trará resultados 🚀\",\n\"Que sua noite seja tranquila 🌙\",\n\"Passando para desejar alegria 😄\",\n\"Hoje será cheio de oportunidades ✨\",\n\"Que seu sorriso permaneça sempre 😊\",\n\"Uma manhã maravilhosa para você ☀️\",\n\"Espero que seu dia prospere 🚀\",\n\"Que tudo fique mais leve 🍃\",\n\"Passando para deixar energia positiva ⚡\",\n\"Seu dia será abençoado 🙏\"\n][Math.floor(Math.random() * 50)] }}\n",
+        "delayMessage": 9
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -368
+      ],
+      "id": "960e4ac8-5f80-401d-b356-1fdc9795928d",
+      "name": "Send text message1",
+      "credentials": {
+        "zapiApi": {
+          "id": "I4IJZZKVmvEvX9dc",
+          "name": "Zapi_Sobral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 49,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        -160
+      ],
+      "id": "3d509f8c-34c4-411a-855a-102e1802888c",
+      "name": "Wait",
+      "webhookId": "1b507dc2-cd5f-407d-873b-1295964e5ac4"
+    },
+    {
+      "parameters": {
+        "amount": 55,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        -368
+      ],
+      "id": "e8566512-8c46-4505-8588-ce2965745e74",
+      "name": "Wait1",
+      "webhookId": "1b507dc2-cd5f-407d-873b-1295964e5ac4"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 20) + 2500 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -752,
+        -208
+      ],
+      "id": "3e2e9587-dcbe-4130-8c84-c3707712b472",
+      "name": "Pausa para mensagem principal",
+      "webhookId": "67692ef9-28de-43dc-838e-8c1e380a3ea5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "10767f25-32bf-4161-8bef-1966ac59c9a1",
+              "leftValue": "={{ \nNumber($now.setZone('America/Sao_Paulo').toFormat('HH')) >= 7 &&\nNumber($now.setZone('America/Sao_Paulo').toFormat('HH')) < 21\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -976,
+        -192
+      ],
+      "id": "6bed55b8-818b-498a-ba77-401b7c301544",
+      "name": "Hiorário antes de 21:00"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Hiorário antes de 21:00",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Texto do audio a ser enviado": {
+      "main": [
+        [
+          {
+            "node": "Gerar Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar Audio": {
+      "main": [
+        [
+          {
+            "node": "Converter audio para base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Converter audio para base64": {
+      "main": [
+        [
+          {
+            "node": "Send an audio",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send an audio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an audio1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an audio": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send text message": {
+      "main": [
+        []
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Send text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pausa para mensagem principal": {
+      "main": [
+        [
+          {
+            "node": "Texto do audio a ser enviado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hiorário antes de 21:00": {
+      "main": [
+        [
+          {
+            "node": "Pausa para mensagem principal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "45d7b7c2-4c43-4381-bb38-895e94c6d28a",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-15T18:00:07.864Z",
+      "createdAt": "2026-05-15T18:00:07.864Z",
+      "role": "workflow:owner",
+      "workflowId": "A_BOizSX-K5OJWjJE1VWe",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
