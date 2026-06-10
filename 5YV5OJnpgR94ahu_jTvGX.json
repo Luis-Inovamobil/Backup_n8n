@@ -1,0 +1,495 @@
+{
+  "id": "5YV5OJnpgR94ahu_jTvGX",
+  "name": "Conversa entre BOTs",
+  "createdAt": "2026-05-15T19:54:53.311Z",
+  "updatedAt": "2026-05-22T19:54:54.910Z",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 57
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1536,
+        -144
+      ],
+      "id": "44c17a50-8f7a-43ca-bfc2-26b4b2a2b0b0",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 25) + 1800 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1136,
+        16
+      ],
+      "id": "2ac20f77-6c80-4565-94f4-97c740bc51ef",
+      "name": "Mensagem do BILL 2",
+      "webhookId": "67692ef9-28de-43dc-838e-8c1e380a3ea5"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 30) + 2500 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1136,
+        192
+      ],
+      "id": "7720b449-055d-44a9-881b-9678018f0479",
+      "name": "Mensagem da Sara - Sobral",
+      "webhookId": "67692ef9-28de-43dc-838e-8c1e380a3ea5"
+    },
+    {
+      "parameters": {
+        "phone": "558888856714",
+        "message": "={{ [\n\"E aí, sumido 😂\",\n\"Tá acordado ainda? 🌙\",\n\"Rapaz, que correria hoje 😅\",\n\"Tu viu aquilo ontem? 👀\",\n\"Bom dia, meu parceiro ☀️\",\n\"Hoje tá puxado viu 😮‍💨\",\n\"Tu almoçou já? 🍽️\",\n\"Rapaz, preciso te contar 😂\",\n\"Tá fazendo o quê agora? 👀\",\n\"Como foi teu dia? 😊\",\n\"Tu dormiu tarde ontem? 🌙\",\n\"Hoje o café salvou ☕\",\n\"Rapaz, acordei sem vontade nenhuma 😅\",\n\"Tu tá tranquilo hoje? 🍃\",\n\"Hoje o clima tá bom ☀️\",\n\"E aí, tudo certo contigo? 🤝\",\n\"Tu viu a chuva hoje? 🌧️\",\n\"Rapaz, que sono absurdo 😴\",\n\"Hoje tô só existindo 😂\",\n\"Tu já resolveu aquilo? 👀\",\n\"Bom descanso hoje 🌙\",\n\"Hoje o dia voou 😳\",\n\"Tu sumiu mesmo hein 😂\",\n\"Rapaz, tô precisando descansar 😅\",\n\"Hoje bateu preguiça 😴\",\n\"Tu tá trabalhando agora? 💼\",\n\"Rapaz, pensa num calor 🥵\",\n\"Hoje acordei motivado 🚀\",\n\"Tu gosta desse clima? 🌤️\",\n\"Hoje tá tranquilo demais 🍃\",\n\"Rapaz, que fome agora 🍔\",\n\"Tu vai dormir cedo hoje? 🌙\",\n\"Hoje foi corrido demais 😮‍💨\",\n\"Rapaz, nem vi o tempo passar 😂\",\n\"Tu ainda tá na rua? 🚗\",\n\"Hoje o silêncio tá bom 🍃\",\n\"Rapaz, muito trabalho hoje 💼\",\n\"Tu tá bem mesmo? 😊\",\n\"Hoje eu precisava era férias 😂\",\n\"Rapaz, só o café resolve ☕\",\n\"Tu acordou cedo hoje? ⏰\",\n\"Hoje o humor tá ótimo 😄\",\n\"Rapaz, essa semana tá longa 😅\",\n\"Tu já jantou hoje? 🍽️\",\n\"Hoje tô mais tranquilo 🍃\",\n\"Rapaz, que dia estranho 😳\",\n\"Tu viu aquele jogo? ⚽\",\n\"Hoje o cansaço venceu 😴\",\n\"Rapaz, pensei em ti agora 😂\",\n\"Tu tá conseguindo descansar? 🌙\",\n\"Hoje o dia rendeu bastante 🚀\",\n\"Rapaz, acordei perdido hoje 😅\",\n\"Tu gosta de frio? 🥶\",\n\"Hoje tá um clima agradável ☀️\",\n\"Rapaz, preciso dormir cedo 😴\",\n\"Tu vai sair hoje? 🚗\",\n\"Hoje bateu saudade 😂\",\n\"Rapaz, muito barulho hoje 😵\",\n\"Tu trabalha amanhã cedo? ⏰\",\n\"Hoje foi só luta 😮‍💨\",\n\"Rapaz, queria um churrasco 🍖\",\n\"Tu ainda toma muito café? ☕\",\n\"Hoje tô sem energia nenhuma 😅\",\n\"Rapaz, que trânsito horrível 🚗\",\n\"Tu já tomou água hoje? 💧\",\n\"Hoje o tempo tá passando rápido ⏳\",\n\"Rapaz, quase dormi agora 😴\",\n\"Tu ainda tá acordado? 👀\",\n\"Hoje a internet tá ruim 😂\",\n\"Rapaz, pensa num dia cansativo 😮‍💨\",\n\"Tu vai descansar no fim semana? 🌤️\",\n\"Hoje só queria silêncio 🍃\",\n\"Rapaz, acordei inspirado hoje 🚀\",\n\"Tu gosta de áudio longo? 🎧\",\n\"Hoje tô só observando 😂\",\n\"Rapaz, que frio absurdo 🥶\",\n\"Tu tá em casa agora? 🏠\",\n\"Hoje o corpo pediu descanso 😴\",\n\"Rapaz, meu celular descarregou 😅\",\n\"Tu viu a hora já? ⏰\",\n\"Hoje a preguiça venceu 😂\",\n\"Rapaz, muito serviço acumulado 💼\",\n\"Tu ainda sai cedo? 🚗\",\n\"Hoje foi mais tranquilo 😊\",\n\"Rapaz, esse calor tá impossível 🥵\",\n\"Tu costuma dormir tarde? 🌙\",\n\"Hoje o café ficou forte ☕\",\n\"Rapaz, tô precisando relaxar 🍃\",\n\"Tu gosta de manhã silenciosa? ☀️\",\n\"Hoje acordei sem sono 😂\",\n\"Rapaz, que vontade de viajar ✈️\",\n\"Tu já resolveu tudo hoje? 📈\",\n\"Hoje foi produtivo até 🚀\",\n\"Rapaz, quase perdi a hora ⏰\",\n\"Tu gosta de dias chuvosos? 🌧️\",\n\"Hoje tô de boa 😊\",\n\"Rapaz, nem acredito nisso 😂\",\n\"Tu ainda tá trabalhando? 💼\",\n\"Hoje bateu sono cedo 😴\",\n\"Rapaz, preciso organizar minha rotina 📅\",\n\"Tu viu aquela novidade? 👀\"\n][Math.floor(Math.random() * 100)] }}\n",
+        "delayMessage": 9
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        -160
+      ],
+      "id": "0606cd76-f3ae-427e-a92c-93041deb665a",
+      "name": "Enviar Mensagem de Bill 1 para Sobral",
+      "credentials": {
+        "zapiApi": {
+          "id": "YzxXLKqs5YH9ORqb",
+          "name": "Zapi_BILL_1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phone": "558888856714",
+        "message": "={{ [\n\"Mano, hoje acordei totalmente perdido 😂\",\n\"Rapaz, quase perdi o horário agora ⏰\",\n\"Hoje o café tá fazendo milagre ☕\",\n\"Caramba, que preguiça absurda hoje 😴\",\n\"Mano, tô pensando em dormir cedo hoje 🌙\",\n\"Rapaz, o clima mudou do nada 🌧️\",\n\"Hoje o trânsito tava impossível 🚗\",\n\"Mano, tô precisando de férias 😂\",\n\"Rapaz, meu celular quase descarregou 😅\",\n\"Hoje o corpo pediu descanso 😴\",\n\"Mano, ouvi uma música boa agora 🎵\",\n\"Rapaz, que calor absurdo hoje 🥵\",\n\"Hoje acordei animado até 🚀\",\n\"Mano, tô sem paciência hoje 😂\",\n\"Rapaz, essa semana tá voando ⏳\",\n\"Hoje bateu saudade do nada 😊\",\n\"Mano, tô só existindo hoje 😅\",\n\"Rapaz, nem vi a hora passar ⏰\",\n\"Hoje o almoço foi bom demais 🍽️\",\n\"Mano, quase dormi sentado agora 😴\",\n\"Rapaz, tô precisando relaxar 🍃\",\n\"Hoje o dia tá estranho 😂\",\n\"Mano, preciso organizar minha rotina 📅\",\n\"Rapaz, acordei antes do despertador 😳\",\n\"Hoje o silêncio tá bom 🍃\",\n\"Mano, tô pensando demais hoje 🤔\",\n\"Rapaz, meu café esfriou ☕\",\n\"Hoje acordei cheio de energia ⚡\",\n\"Mano, que vontade de viajar ✈️\",\n\"Rapaz, o tempo passou rápido hoje ⏳\",\n\"Hoje o humor tá ótimo 😄\",\n\"Mano, tô tentando focar 💼\",\n\"Rapaz, quase derrubei tudo agora 😂\",\n\"Hoje a internet tá ruim 😅\",\n\"Mano, tô ouvindo música antiga 🎧\",\n\"Rapaz, preciso dormir mais cedo 🌙\",\n\"Hoje foi só correria 😮‍💨\",\n\"Mano, o calor tá complicado 🥵\",\n\"Rapaz, tô com fome já 🍔\",\n\"Hoje o café salvou minha vida ☕\",\n\"Mano, tô cansado demais hoje 😴\",\n\"Rapaz, quase esqueci disso 😂\",\n\"Hoje tá um clima agradável ☀️\",\n\"Mano, o dia começou tranquilo 🍃\",\n\"Rapaz, essa chuva apareceu do nada 🌧️\",\n\"Hoje tô mais quieto 😊\",\n\"Mano, quase perdi minha chave 😅\",\n\"Rapaz, tô sobrevivendo hoje 😂\",\n\"Hoje o trabalho rendeu bastante 📈\",\n\"Mano, acordei sem vontade nenhuma 😴\",\n\"Rapaz, tá ventando muito hoje 🌬️\",\n\"Hoje foi produtivo até 🚀\",\n\"Mano, tô pensando em pedir comida 🍕\",\n\"Rapaz, quase não acordei hoje 😂\",\n\"Hoje a rotina tá puxada 💼\",\n\"Mano, tô precisando descansar 🍃\",\n\"Rapaz, meu despertador nem tocou ⏰\",\n\"Hoje bateu sono cedo 🌙\",\n\"Mano, tô só observando hoje 👀\",\n\"Rapaz, esse frio tá forte 🥶\",\n\"Hoje eu queria ficar deitado 😴\",\n\"Mano, tô ouvindo chuva agora 🌧️\",\n\"Rapaz, o café ficou forte ☕\",\n\"Hoje o dia começou acelerado 🚀\",\n\"Mano, quase mandei mensagem errada 😂\",\n\"Rapaz, minha internet caiu 😅\",\n\"Hoje tô tentando relaxar 🍃\",\n\"Mano, acordei no susto hoje 😳\",\n\"Rapaz, tô sem energia nenhuma 😴\",\n\"Hoje o tempo tá bonito ☀️\",\n\"Mano, preciso caminhar mais 🚶\",\n\"Rapaz, minha rotina tá bagunçada 😂\",\n\"Hoje só queria descansar 🌙\",\n\"Mano, tô pensando em viajar ✈️\",\n\"Rapaz, quase perdi o ônibus 🚍\",\n\"Hoje acordei inspirado 🚀\",\n\"Mano, o clima tá gostoso hoje 🍃\",\n\"Rapaz, tô precisando de silêncio 😅\",\n\"Hoje foi cansativo demais 😮‍💨\",\n\"Mano, meu celular travou 😂\",\n\"Rapaz, quase derrubei café ☕\",\n\"Hoje tô mais animado 😊\",\n\"Mano, o tempo tá passando voando ⏳\",\n\"Rapaz, acordei antes do sol ☀️\",\n\"Hoje o corpo tá pesado 😴\",\n\"Mano, tô rindo sozinho 😂\",\n\"Rapaz, preciso tomar mais água 💧\",\n\"Hoje a manhã foi tranquila 🍃\",\n\"Mano, tô tentando manter foco 📈\",\n\"Rapaz, meu sono tá desregulado 🌙\",\n\"Hoje o calor tá surreal 🥵\",\n\"Mano, preciso respirar um pouco 🍃\",\n\"Rapaz, quase esqueci meu compromisso ⏰\",\n\"Hoje o café veio forte ☕\",\n\"Mano, acordei meio perdido 😂\",\n\"Rapaz, minha cabeça tá acelerada 🤯\",\n\"Hoje foi um dia diferente 😊\",\n\"Mano, tô sobrevivendo no café ☕\",\n\"Rapaz, preciso descansar urgente 😴\",\n\"Hoje bateu vontade de sumir 😂\",\n\"Mano, o silêncio tá perfeito 🍃\",\n\"Rapaz, tô levando tudo na calma 🙏\"\n][Math.floor(Math.random() * 100)] }}",
+        "delayMessage": 9
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        16
+      ],
+      "id": "8d0a6e71-54dc-4121-bd2a-ab9c61b1d28a",
+      "name": "Enviar Mensagem de Bill 2 para Sobral",
+      "credentials": {
+        "zapiApi": {
+          "id": "IWySDn9ikGggNo8L",
+          "name": "Zapi_BILL_2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phone": "552796040608",
+        "message": "={{ [\n\"Acordei morrendo de sono hoje 😴\",\n\"Quase deixei meu café cair ☕\",\n\"Hoje o tempo amanheceu bonito ☀️\",\n\"Nem ouvi o despertador tocar ⏰\",\n\"Tô querendo descansar mais hoje 🍃\",\n\"O café demorou fazer efeito 😂\",\n\"Acordei totalmente perdido hoje 😅\",\n\"O clima tá agradável demais 🌤️\",\n\"O corpo tá pedindo descanso 😮‍💨\",\n\"Sonhei coisa estranha essa noite 😅\",\n\"Tô tentando despertar ainda 😴\",\n\"A manhã começou silenciosa hoje 🍃\",\n\"Meu celular travou novamente 😂\",\n\"Quase derrubei água agora 💧\",\n\"O humor melhorou bastante hoje 😊\",\n\"A noite passou rápido demais 🌙\",\n\"Tô precisando respirar um pouco 🍃\",\n\"O almoço vai salvar hoje 🍽️\",\n\"Quase dormi depois almoço 😴\",\n\"O clima tá perfeito hoje ☀️\",\n\"Acordei antes de todo mundo ⏰\",\n\"O café ficou doce demais ☕\",\n\"O dia tá fluindo tranquilo 🌊\",\n\"Precisava relaxar um pouco mais 🍃\",\n\"O sono bateu forte agora 😴\",\n\"Tô ouvindo música antiga 🎵\",\n\"A rotina tá mais leve 😊\",\n\"Quase esqueci responder você 😂\",\n\"Queria dormir mais um pouco 🌙\",\n\"O silêncio tá agradável hoje 🍃\",\n\"A preguiça venceu hoje 😅\",\n\"Meu foco tá indo embora 😂\",\n\"O clima ajudou bastante hoje ☀️\",\n\"Tô precisando de energia ⚡\",\n\"O trabalho acumulou demais 💼\",\n\"Bateu vontade sumir hoje 😅\",\n\"Quase perdi minha carteira 😂\",\n\"Tô tentando organizar minha rotina 📅\",\n\"O dia passou rápido demais ⏳\",\n\"Meu sono tá bagunçado 🌙\",\n\"Quase esqueci meu café ☕\",\n\"A internet resolveu funcionar 😄\",\n\"Acordei pensando em comida 🍔\",\n\"Tô precisando caminhar mais 🚶\",\n\"O tempo ficou estranho 🌧️\",\n\"O calor tá complicado hoje 🥵\",\n\"Acordei cheio pensamentos 🤔\",\n\"O silêncio tá confortável 🍃\",\n\"Tô levando tudo mais devagar 😊\",\n\"Quase não consegui levantar 😴\",\n\"A manhã começou corrida 😮‍💨\",\n\"Tô sem vontade nenhuma hoje 😂\",\n\"Meu celular descarregou cedo 🔋\",\n\"O café veio forte hoje ☕\",\n\"Quase perdi a paciência 😅\",\n\"Acordei no automático 😂\",\n\"O clima tá leve hoje 🍃\",\n\"Minha cabeça tá cansada 🤯\",\n\"Preciso dormir melhor 🌙\",\n\"A tarde promete ser longa ⏳\",\n\"Quase esqueci de almoçar 🍽️\",\n\"O tempo virou rápido 🌧️\",\n\"Acordei mais disposto 🚀\",\n\"Tô tentando manter calma 🙏\",\n\"O despertador me traiu ⏰\",\n\"O café salvou novamente ☕\",\n\"Tô precisando espairecer 🍃\",\n\"Acordei querendo silêncio 🤫\",\n\"O corpo tá mais leve 😊\",\n\"O dia tá rendendo bastante 📈\",\n\"Quase derrubei tudo agora 😂\",\n\"Bateu vontade viajar ✈️\",\n\"A internet caiu cedo 😅\",\n\"Tô tentando relaxar mais 🍃\",\n\"Acordei ouvindo chuva 🌧️\",\n\"O trânsito acabou comigo 🚗\",\n\"Meu foco desapareceu hoje 😂\",\n\"O clima tá gostoso ☀️\",\n\"Tô precisando desligar um pouco 📵\",\n\"Quase perdi meu horário ⏰\",\n\"A noite promete descanso 🌙\",\n\"O café tá maravilhoso ☕\",\n\"Acordei sem acreditar 😂\",\n\"O dia tá mais tranquilo 😊\",\n\"Meu corpo tá cansado 😮‍💨\",\n\"Quase mandei áudio errado 🎧\",\n\"A rotina tá organizada 📅\",\n\"Tô precisando férias urgente ✈️\",\n\"O calor tá surreal 🥵\",\n\"Acordei mais motivado 🚀\",\n\"Quase dormi agora pouco 😴\",\n\"Tô ouvindo chuva relaxante 🌧️\",\n\"O silêncio tá perfeito 🍃\",\n\"Meu humor melhorou bastante 😊\",\n\"Quase esqueci do compromisso ⏰\",\n\"O dia amanheceu diferente ☀️\",\n\"Tô tentando manter energia ⚡\",\n\"Preciso organizar minha mente 🤯\",\n\"A tarde parece tranquila 🍃\",\n\"Acordei meio desligado 😂\",\n\"O café ainda tá quente ☕\"\n][Math.floor(Math.random() * 100)] }}",
+        "delayMessage": 9
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        192
+      ],
+      "id": "2d4eaadf-c154-4bcb-a682-8fb8e0e0eb08",
+      "name": "Responder BILL 1",
+      "credentials": {
+        "zapiApi": {
+          "id": "I4IJZZKVmvEvX9dc",
+          "name": "Zapi_Sobral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phone": "553798603941",
+        "message": "={{ [\n\"Hoje acordei antes do despertador 😅\",\n\"Você já saiu de casa hoje? 🚗\",\n\"O café hoje ficou perfeito ☕\",\n\"Acabei esquecendo meu carregador 🔋\",\n\"Você viu como esfriou rápido? 🥶\",\n\"Hoje o silêncio tá agradável 🍃\",\n\"Conseguiu resolver aquilo ontem? 👀\",\n\"Tô pensando em dormir mais cedo 🌙\",\n\"Hoje a internet tá colaborando 😂\",\n\"Você já comeu alguma coisa? 🍔\",\n\"O tempo mudou muito rápido 🌧️\",\n\"Quase perdi a hora agora ⏰\",\n\"Você ainda tá trabalhando? 💼\",\n\"Hoje acordei mais tranquilo 😊\",\n\"Acabei ouvindo música antiga 🎵\",\n\"Você costuma acordar cedo assim? ☀️\",\n\"O calor deu uma trégua hoje 🌤️\",\n\"Hoje bateu vontade descansar 😴\",\n\"Você viu aquela mensagem ontem? 👀\",\n\"Tô tentando manter foco hoje 📈\",\n\"O almoço hoje valeu a pena 🍽️\",\n\"Você também tá cansado hoje? 😮‍💨\",\n\"A manhã passou voando ⏳\",\n\"Hoje acordei sem pressa 🍃\",\n\"Você gosta desse clima mais frio? 🥶\",\n\"O café salvou minha manhã ☕\",\n\"Hoje o trânsito tava complicado 🚗\",\n\"Você conseguiu descansar direito? 🌙\",\n\"Quase deixei o celular cair 😂\",\n\"Hoje a rotina tá mais leve 😊\",\n\"Você ainda usa despertador? ⏰\",\n\"O tempo tá gostoso hoje ☀️\",\n\"Acabei cochilando sem perceber 😴\",\n\"Você vai sair mais tarde? 🚶\",\n\"Hoje acordei cheio de energia ⚡\",\n\"O silêncio hoje tá bom demais 🍃\",\n\"Você costuma ouvir música cedo? 🎧\",\n\"Hoje bateu vontade viajar ✈️\",\n\"Quase esqueci meu compromisso 😅\",\n\"Você já tomou bastante água? 💧\",\n\"A tarde promete ser tranquila 🍃\",\n\"Hoje o café veio forte ☕\",\n\"Você viu o céu hoje cedo? ☀️\",\n\"Acabei ficando acordado até tarde 🌙\",\n\"Hoje o corpo tá pesado 😮‍💨\",\n\"Você ainda tá acordado agora? 👀\",\n\"O dia tá rendendo bem 📈\",\n\"Hoje acordei meio perdido 😂\",\n\"Você também sentiu esse calor? 🥵\",\n\"Acabei ouvindo chuva relaxante 🌧️\",\n\"Hoje a manhã começou calma 🍃\",\n\"Você costuma dormir tarde? 🌙\",\n\"O clima tá perfeito hoje ☀️\",\n\"Hoje meu foco tá estranho 😅\",\n\"Você vai descansar no fim semana? 🌤️\",\n\"O café demorou fazer efeito 😂\",\n\"Hoje bateu preguiça cedo 😴\",\n\"Você gosta de manhã silenciosa? 🍃\",\n\"Acabei esquecendo de responder 😅\",\n\"O trânsito hoje tava impossível 🚗\",\n\"Você já resolveu tudo hoje? 📈\",\n\"Hoje o humor tá melhor 😊\",\n\"Quase derrubei meu café ☕\",\n\"Você ainda vê aquela série? 📺\",\n\"Hoje a tarde tá agradável 🍃\",\n\"O calor tá absurdo hoje 🥵\",\n\"Você também acordou cansado? 😴\",\n\"Acabei ficando sem bateria 🔋\",\n\"Hoje o dia amanheceu bonito ☀️\",\n\"Você gosta desse tempo chuvoso? 🌧️\",\n\"O almoço demorou demais hoje 🍽️\",\n\"Hoje acordei querendo silêncio 🤫\",\n\"Você costuma tomar muito café? ☕\",\n\"A internet caiu novamente 😂\",\n\"Hoje o clima tá tranquilo 🍃\",\n\"Você já organizou sua semana? 📅\",\n\"O café hoje ficou forte demais ☕\",\n\"Hoje quase perdi meu horário ⏰\",\n\"Você tá conseguindo relaxar? 🍃\",\n\"O tempo virou do nada 🌧️\",\n\"Hoje acordei mais animado 🚀\",\n\"Você vai dormir cedo hoje? 🌙\",\n\"Acabei me distraindo fácil 😂\",\n\"Hoje o corpo pediu descanso 😮‍💨\",\n\"Você gosta de dias calmos? 🍃\",\n\"O silêncio hoje tá confortável 😊\",\n\"Hoje quase esqueci de almoçar 🍽️\",\n\"Você ainda tá na correria? ⏳\",\n\"O café resolveu minha vida ☕\",\n\"Hoje o clima tá leve ☀️\",\n\"Você ouviu aquela música nova? 🎵\",\n\"Acordei sem entender nada 😂\",\n\"Hoje a manhã passou rápido ⏳\",\n\"Você conseguiu terminar aquilo? 👀\",\n\"O trânsito acabou comigo hoje 🚗\",\n\"Hoje acordei mais disposto 🚀\",\n\"Você gosta de trabalhar cedo? 💼\",\n\"Acabei precisando caminhar mais 🚶\",\n\"Hoje o dia tá silencioso 🍃\",\n\"Você ainda sente muito sono cedo? 😴\",\n\"O clima tá agradável demais hoje ☀️\",\n\"Hoje o foco apareceu finalmente 📈\"\n][Math.floor(Math.random() * 100)] }}",
+        "delayMessage": 9
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        400
+      ],
+      "id": "a23b886a-5d13-4939-a691-b0983ac6cef7",
+      "name": "Responder BILL 2",
+      "credentials": {
+        "zapiApi": {
+          "id": "I4IJZZKVmvEvX9dc",
+          "name": "Zapi_Sobral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 10) + 600 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        192
+      ],
+      "id": "08b2157f-642a-49a8-8ab6-f13e6e329ae2",
+      "name": "Pausa para enviar Mensagem para BILL 1",
+      "webhookId": "67692ef9-28de-43dc-838e-8c1e380a3ea5"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 12) + 1500 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        400
+      ],
+      "id": "48a4bb4a-87dc-4422-b58e-432b331f92b6",
+      "name": "Pausa para enviar mensagem para BILL 2",
+      "webhookId": "67692ef9-28de-43dc-838e-8c1e380a3ea5"
+    },
+    {
+      "parameters": {
+        "phone": "553798334700",
+        "message": "={{ [\n\"Como foi seu dia hoje? 😊\",\n\"Você dormiu bem essa noite? 🌙\",\n\"Já tomou café hoje? ☕\",\n\"Tá tudo tranquilo por aí? 🍃\",\n\"Você saiu cedo hoje? ⏰\",\n\"Como anda sua rotina? 📅\",\n\"Já almoçou hoje? 🍽️\",\n\"Você tá trabalhando agora? 💼\",\n\"Conseguiu descansar um pouco? 😴\",\n\"Como tá o clima aí? 🌤️\",\n\"Você ainda tá acordado? 👀\",\n\"Hoje foi corrido pra você? ⏳\",\n\"Você viu aquela chuva? 🌧️\",\n\"Tá muito calor aí também? 🥵\",\n\"Você costuma acordar cedo? ☀️\",\n\"Já bebeu água suficiente hoje? 💧\",\n\"Como tá seu humor hoje? 😊\",\n\"Você vai sair mais tarde? 🚗\",\n\"Conseguiu resolver aquilo? 👀\",\n\"Você ainda toma muito café? ☕\",\n\"Tá conseguindo relaxar? 🍃\",\n\"Hoje foi produtivo pra você? 📈\",\n\"Você gosta de dias frios? 🥶\",\n\"Tá tudo indo bem hoje? 🙏\",\n\"Você dormiu tarde ontem? 🌙\",\n\"Como foi sua manhã? ☀️\",\n\"Você gosta de chuva? 🌧️\",\n\"Tá trabalhando até tarde hoje? 💼\",\n\"Já jantou hoje? 🍔\",\n\"Você tá cansado hoje? 😮‍💨\",\n\"Conseguiu terminar suas tarefas? 📈\",\n\"Você prefere manhã ou noite? 🌙\",\n\"Hoje o trânsito tava ruim aí? 🚗\",\n\"Você ainda vê muita série? 📺\",\n\"Tá ouvindo música agora? 🎵\",\n\"Você costuma caminhar cedo? 🚶\",\n\"Hoje seu dia tá tranquilo? 🍃\",\n\"Você gosta de silêncio? 🤫\",\n\"Tá conseguindo manter foco? 📈\",\n\"Você tá em casa agora? 🏠\",\n\"Hoje foi um bom dia? 😊\",\n\"Você gosta desse clima? ☀️\",\n\"Tá muito corrido hoje? ⏳\",\n\"Você já descansou hoje? 😴\",\n\"Conseguiu comer direito? 🍽️\",\n\"Você ainda usa despertador? ⏰\",\n\"Hoje seu café tava bom? ☕\",\n\"Você gosta de trabalhar cedo? 💼\",\n\"Tá tudo calmo por aí? 🍃\",\n\"Você acordou disposto hoje? ⚡\",\n\"Hoje você saiu de casa? 🚶\",\n\"Tá conseguindo dormir bem? 🌙\",\n\"Você gosta de manhã silenciosa? ☀️\",\n\"Seu dia começou bem hoje? 😊\",\n\"Você costuma ouvir música cedo? 🎧\",\n\"Hoje bateu preguiça aí também? 😅\",\n\"Você ainda tá na correria? ⏳\",\n\"Tá conseguindo organizar tudo? 📅\",\n\"Você prefere calor ou frio? 🌤️\",\n\"Hoje o almoço tava bom? 🍽️\",\n\"Você gosta de dirigir? 🚗\",\n\"Tá conseguindo descansar mentalmente? 🍃\",\n\"Você acorda fácil cedo? ⏰\",\n\"Hoje o trabalho rendeu? 📈\",\n\"Você tá ouvindo chuva agora? 🌧️\",\n\"Conseguiu relaxar um pouco hoje? 😴\",\n\"Você ainda dorme tarde? 🌙\",\n\"Hoje o dia passou rápido aí? ⏳\",\n\"Tá tudo fluindo bem? 🌊\",\n\"Você gosta de rotina tranquila? 🍃\",\n\"Seu celular descarrega rápido também? 🔋\",\n\"Hoje você tomou muito café? ☕\",\n\"Tá precisando descansar mais? 😮‍💨\",\n\"Você costuma sair à noite? 🌙\",\n\"Hoje o calor tá complicado aí? 🥵\",\n\"Você gosta de viajar? ✈️\",\n\"Conseguiu focar hoje? 📈\",\n\"Você ainda joga videogame? 🎮\",\n\"Hoje o silêncio tá bom aí? 🍃\",\n\"Você tá conseguindo se alimentar direito? 🍔\",\n\"Hoje bateu sono cedo? 😴\",\n\"Você costuma ouvir podcasts? 🎧\",\n\"Tá conseguindo manter calma? 🙏\",\n\"Hoje o clima melhorou aí? ☀️\",\n\"Você gosta de trabalhar em silêncio? 🤫\",\n\"Seu dia tá leve hoje? 🍃\",\n\"Você costuma dormir com chuva? 🌧️\",\n\"Hoje você saiu pra caminhar? 🚶\",\n\"Tá conseguindo manter energia? ⚡\",\n\"Você gosta de dias mais tranquilos? 😊\",\n\"Hoje o tempo passou voando aí? ⏳\",\n\"Você tá se cuidando direitinho? 🙏\",\n\"Hoje você acordou motivado? 🚀\",\n\"Tá conseguindo parar um pouco? 🍃\",\n\"Você gosta de conversar cedo? ☀️\",\n\"Hoje o humor tá bom por aí? 😄\",\n\"Você ainda toma café à noite? ☕\",\n\"Tá conseguindo manter a rotina? 📅\",\n\"Hoje foi cansativo pra você? 😮‍💨\",\n\"Você já pensou em descansar mais? 😴\"\n][Math.floor(Math.random() * 100)] }}",
+        "delayMessage": 9
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        16,
+        192
+      ],
+      "id": "be85c0c2-f292-4e63-a6e6-b16ff2892263",
+      "name": "Perguntando BILL 1",
+      "credentials": {
+        "zapiApi": {
+          "id": "I4IJZZKVmvEvX9dc",
+          "name": "Zapi_Sobral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phone": "553798603941",
+        "message": "={{ [\n\"Você acordou cedo hoje? ⏰\",\n\"Como tá sua energia hoje? ⚡\",\n\"Já resolveu suas pendências? 📋\",\n\"Você saiu pra almoçar hoje? 🍽️\",\n\"Tá conseguindo ficar tranquilo? 🍃\",\n\"Hoje o dia tá pesado aí? 😮‍💨\",\n\"Você gosta desse horário? 🌙\",\n\"Conseguiu terminar seu trabalho? 💼\",\n\"Tá muito movimentado por aí? 🚗\",\n\"Você dormiu rápido ontem? 😴\",\n\"Hoje você tá mais animado? 😊\",\n\"Já tomou seu café da tarde? ☕\",\n\"Tá ouvindo alguma música agora? 🎵\",\n\"Hoje você ficou muito ocupado? ⏳\",\n\"Conseguiu parar um pouco hoje? 🍃\",\n\"Você costuma acordar no primeiro alarme? ⏰\",\n\"Hoje seu celular já travou? 😂\",\n\"Tá calor demais aí também? 🥵\",\n\"Você já saiu pra resolver algo? 🚶\",\n\"Hoje o silêncio tá agradável aí? 🍃\",\n\"Você tá acompanhando alguma série? 📺\",\n\"Conseguiu descansar sua mente hoje? 🧠\",\n\"Hoje você ficou muito tempo online? 📱\",\n\"Tá conseguindo manter produtividade? 📈\",\n\"Você costuma dormir no sofá? 😅\",\n\"Hoje você sentiu muito sono? 😴\",\n\"Conseguiu evitar estresse hoje? 🙏\",\n\"Você gosta desse clima mais nublado? 🌥️\",\n\"Hoje você trabalhou bastante? 💼\",\n\"Tá conseguindo se organizar? 📅\",\n\"Você já tomou bastante água? 💧\",\n\"Hoje o trânsito tava ruim aí? 🚗\",\n\"Você costuma caminhar durante manhã? 🚶\",\n\"Hoje você ficou muito cansado? 😮‍💨\",\n\"Tá tudo silencioso por aí? 🤫\",\n\"Você ainda gosta de acordar cedo? ☀️\",\n\"Hoje você conseguiu relaxar? 🍃\",\n\"Tá conseguindo manter rotina saudável? 😊\",\n\"Você ouviu chuva essa madrugada? 🌧️\",\n\"Hoje o café fez efeito rápido? ☕\",\n\"Tá pensando em descansar cedo? 🌙\",\n\"Você costuma assistir vídeos antes dormir? 📺\",\n\"Hoje você saiu bastante? 🚗\",\n\"Conseguiu focar no que precisava? 📈\",\n\"Você gosta de clima frio? 🥶\",\n\"Hoje seu dia tá mais leve? 🍃\",\n\"Tá conseguindo manter paciência? 🙏\",\n\"Você já resolveu tudo importante? 👀\",\n\"Hoje você ficou muito no celular? 📱\",\n\"Tá ouvindo música relaxante? 🎧\",\n\"Você costuma trabalhar ouvindo música? 🎵\",\n\"Hoje bateu vontade de viajar? ✈️\",\n\"Conseguiu descansar depois almoço? 🍽️\",\n\"Você gosta de dias chuvosos? 🌧️\",\n\"Hoje você acordou motivado? 🚀\",\n\"Tá conseguindo aproveitar seu tempo? ⏳\",\n\"Você costuma dormir tarde assim? 🌙\",\n\"Hoje seu humor tá melhor? 😊\",\n\"Tá tudo organizado por aí? 📅\",\n\"Você ainda usa agenda? 📝\",\n\"Hoje o clima melhorou? ☀️\",\n\"Tá conseguindo fugir correria? 😮‍💨\",\n\"Você costuma cozinhar em casa? 🍳\",\n\"Hoje você precisou sair cedo? 🚗\",\n\"Conseguiu fazer pausa hoje? 🍃\",\n\"Você gosta de manhã silenciosa? ☀️\",\n\"Hoje o tempo passou rápido? ⏳\",\n\"Tá conseguindo manter calma hoje? 🙏\",\n\"Você gosta de trabalhar sozinho? 💼\",\n\"Hoje você ficou preso trânsito? 🚗\",\n\"Conseguiu resolver aquele problema? 👀\",\n\"Você ainda joga alguma coisa? 🎮\",\n\"Hoje você tá mais tranquilo? 😊\",\n\"Tá conseguindo descansar o suficiente? 😴\",\n\"Você costuma ouvir podcast? 🎧\",\n\"Hoje seu dia foi produtivo? 📈\",\n\"Tá conseguindo manter foco mental? 🧠\",\n\"Você gosta desse clima agradável? 🌤️\",\n\"Hoje você acordou disposto? ⚡\",\n\"Tá conseguindo dormir sem interrupções? 🌙\",\n\"Você ainda toma café forte? ☕\",\n\"Hoje você ficou muito cansado mentalmente? 🤯\",\n\"Tá conseguindo separar tempo pra você? 🍃\",\n\"Você costuma trabalhar até tarde? 💼\",\n\"Hoje bateu preguiça aí também? 😂\",\n\"Conseguiu terminar tudo planejado? 📋\",\n\"Você gosta de silêncio absoluto? 🤫\",\n\"Hoje você saiu pra caminhar? 🚶\",\n\"Tá conseguindo aproveitar o dia? ☀️\",\n\"Você costuma desligar celular cedo? 📵\",\n\"Hoje você ouviu música antiga? 🎵\",\n\"Tá conseguindo manter disposição? 🚀\",\n\"Você gosta de dias tranquilos? 🍃\",\n\"Hoje você tomou muito café? ☕\",\n\"Tá conseguindo evitar distrações? 👀\",\n\"Você ainda dorme com ventilador? 🌬️\",\n\"Hoje você ficou muito tempo sentado? 💺\",\n\"Conseguiu manter ritmo hoje? 📈\",\n\"Você gosta de conversar nesse horário? 🌙\",\n\"Hoje você tá mais calmo? 😊\",\n\"Tá conseguindo aproveitar sua noite? 🌃\"\n][Math.floor(Math.random() * 100)] }}",
+        "delayMessage": 9
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        32,
+        400
+      ],
+      "id": "23fc0063-e684-4ea6-9d1e-0a101230c791",
+      "name": "Perguntando BILL 2",
+      "credentials": {
+        "zapiApi": {
+          "id": "I4IJZZKVmvEvX9dc",
+          "name": "Zapi_Sobral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 15) + 1800 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        304
+      ],
+      "id": "36271cda-4a2b-4d53-8176-433da129e83c",
+      "name": "Resposta dos BILL(s)",
+      "webhookId": "67692ef9-28de-43dc-838e-8c1e380a3ea5"
+    },
+    {
+      "parameters": {
+        "phone": "558888856714",
+        "message": "={{ [\n\"Hoje foi tranquilo até 😊\",\n\"Dormi melhor dessa vez 😴\",\n\"O café ajudou bastante ☕\",\n\"Tô tentando descansar mais 🍃\",\n\"Hoje o trânsito tava pesado 🚗\",\n\"Consegui resolver quase tudo 📋\",\n\"Tô mais calmo hoje 🙏\",\n\"O clima tá agradável aqui ☀️\",\n\"Hoje o dia passou rápido ⏳\",\n\"Ainda tô meio cansado 😮‍💨\",\n\"Consegui focar bastante hoje 📈\",\n\"Hoje acordei mais disposto ⚡\",\n\"O almoço foi muito bom 🍽️\",\n\"Tô ouvindo música agora 🎵\",\n\"Hoje trabalhei bastante 💼\",\n\"Tô tentando dormir mais cedo 🌙\",\n\"O calor tá complicado aqui 🥵\",\n\"Hoje consegui relaxar um pouco 🍃\",\n\"A internet caiu mais cedo 😂\",\n\"Hoje foi bem produtivo 🚀\",\n\"Tô levando tudo com calma 😊\",\n\"Hoje acordei sem sono 😅\",\n\"Consegui descansar melhor 🌙\",\n\"O café veio forte hoje ☕\",\n\"Tô evitando correria hoje 🍃\",\n\"Hoje fiquei muito tempo online 📱\",\n\"Consegui terminar minhas tarefas 📈\",\n\"O clima esfriou bastante 🥶\",\n\"Hoje a manhã foi tranquila ☀️\",\n\"Tô precisando descansar mais 😴\",\n\"Hoje o corpo tá pesado 😮‍💨\",\n\"Consegui organizar bastante coisa 📅\",\n\"Tô mais tranquilo agora 🍃\",\n\"Hoje a rotina tá leve 😊\",\n\"Passei boa parte trabalhando 💼\",\n\"Hoje bateu muito sono 😂\",\n\"Tô tentando manter foco 👀\",\n\"O dia rendeu bastante 🚀\",\n\"Hoje acordei mais animado 😄\",\n\"Tô tomando muito café ultimamente ☕\",\n\"O trânsito acabou comigo hoje 🚗\",\n\"Consegui sair cedo dessa vez ⏰\",\n\"Hoje o tempo tá ótimo ☀️\",\n\"Tô tentando manter energia ⚡\",\n\"O silêncio tá agradável hoje 🍃\",\n\"Hoje consegui fazer pausa 😴\",\n\"Tô ouvindo chuva agora 🌧️\",\n\"O trabalho acumulou bastante 💼\",\n\"Hoje fiquei mais em casa 🏠\",\n\"Consegui resolver aquilo finalmente 👀\",\n\"Tô tentando relaxar mentalmente 🧠\",\n\"O dia foi puxado hoje 😮‍💨\",\n\"Hoje acordei antes do alarme ⏰\",\n\"Tô mais motivado hoje 🚀\",\n\"O clima ajudou bastante 🌤️\",\n\"Hoje consegui descansar cedo 🌙\",\n\"Tô me organizando melhor 📅\",\n\"O café salvou minha manhã ☕\",\n\"Hoje quase não parei ⏳\",\n\"Tô tentando evitar estresse 🙏\",\n\"O dia amanheceu bonito ☀️\",\n\"Hoje o humor tá bom 😊\",\n\"Tô ficando cansado cedo 😴\",\n\"Consegui caminhar um pouco 🚶\",\n\"Hoje trabalhei até tarde 💼\",\n\"Tô ouvindo playlist antiga 🎧\",\n\"O clima ficou estranho 🌧️\",\n\"Hoje fiquei bem ocupado 📋\",\n\"Tô precisando espairecer 🍃\",\n\"O café demorou bater 😂\",\n\"Hoje consegui manter calma 🙏\",\n\"Tô mais produtivo hoje 📈\",\n\"O trânsito tava impossível 🚗\",\n\"Hoje acordei meio perdido 😅\",\n\"Tô tentando desligar mais 📵\",\n\"O dia foi mais leve 😊\",\n\"Hoje bateu vontade viajar ✈️\",\n\"Tô conseguindo dormir melhor 🌙\",\n\"O almoço compensou hoje 🍽️\",\n\"Hoje fiquei sem bateria 🔋\",\n\"Tô tentando descansar mente 🍃\",\n\"O tempo passou voando ⏳\",\n\"Hoje o calor venceu 🥵\",\n\"Tô tentando manter rotina 📅\",\n\"O silêncio hoje ajudou 🍃\",\n\"Hoje consegui focar melhor 👀\",\n\"Tô levando tudo devagar 😊\",\n\"O trabalho rendeu bastante 📈\",\n\"Hoje fiquei cansado mentalmente 🤯\",\n\"Tô tentando evitar celular 📱\",\n\"O clima tá confortável 🌤️\",\n\"Hoje consegui respirar um pouco 🍃\",\n\"Tô mais tranquilo essa noite 🌙\",\n\"O café ficou perfeito hoje ☕\",\n\"Hoje a manhã foi corrida 😮‍💨\",\n\"Tô tentando organizar minha cabeça 🧠\",\n\"O dia tá terminando bem 😊\",\n\"Hoje consegui descansar mais 😴\",\n\"Tô mantendo tudo sob controle 🙏\",\n\"O trânsito demorou demais 🚗\",\n\"Hoje acordei mais feliz 😄\"\n][Math.floor(Math.random() * 100)] }}",
+        "delayMessage": 9
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        640,
+        176
+      ],
+      "id": "d8647f09-58ab-4562-b11f-0545742a4a4c",
+      "name": "Resposta Final BILL 1",
+      "credentials": {
+        "zapiApi": {
+          "id": "YzxXLKqs5YH9ORqb",
+          "name": "Zapi_BILL_1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phone": "558888856714",
+        "message": "={{ [\n\"Hoje foi tranquilo até 😊\",\n\"Dormi melhor dessa vez 😴\",\n\"O café ajudou bastante ☕\",\n\"Tô tentando descansar mais 🍃\",\n\"Hoje o trânsito tava pesado 🚗\",\n\"Consegui resolver quase tudo 📋\",\n\"Tô mais calmo hoje 🙏\",\n\"O clima tá agradável aqui ☀️\",\n\"Hoje o dia passou rápido ⏳\",\n\"Ainda tô meio cansado 😮‍💨\",\n\"Consegui focar bastante hoje 📈\",\n\"Hoje acordei mais disposto ⚡\",\n\"O almoço foi muito bom 🍽️\",\n\"Tô ouvindo música agora 🎵\",\n\"Hoje trabalhei bastante 💼\",\n\"Tô tentando dormir mais cedo 🌙\",\n\"O calor tá complicado aqui 🥵\",\n\"Hoje consegui relaxar um pouco 🍃\",\n\"A internet caiu mais cedo 😂\",\n\"Hoje foi bem produtivo 🚀\",\n\"Tô levando tudo com calma 😊\",\n\"Hoje acordei sem sono 😅\",\n\"Consegui descansar melhor 🌙\",\n\"O café veio forte hoje ☕\",\n\"Tô evitando correria hoje 🍃\",\n\"Hoje fiquei muito tempo online 📱\",\n\"Consegui terminar minhas tarefas 📈\",\n\"O clima esfriou bastante 🥶\",\n\"Hoje a manhã foi tranquila ☀️\",\n\"Tô precisando descansar mais 😴\",\n\"Hoje o corpo tá pesado 😮‍💨\",\n\"Consegui organizar bastante coisa 📅\",\n\"Tô mais tranquilo agora 🍃\",\n\"Hoje a rotina tá leve 😊\",\n\"Passei boa parte trabalhando 💼\",\n\"Hoje bateu muito sono 😂\",\n\"Tô tentando manter foco 👀\",\n\"O dia rendeu bastante 🚀\",\n\"Hoje acordei mais animado 😄\",\n\"Tô tomando muito café ultimamente ☕\",\n\"O trânsito acabou comigo hoje 🚗\",\n\"Consegui sair cedo dessa vez ⏰\",\n\"Hoje o tempo tá ótimo ☀️\",\n\"Tô tentando manter energia ⚡\",\n\"O silêncio tá agradável hoje 🍃\",\n\"Hoje consegui fazer pausa 😴\",\n\"Tô ouvindo chuva agora 🌧️\",\n\"O trabalho acumulou bastante 💼\",\n\"Hoje fiquei mais em casa 🏠\",\n\"Consegui resolver aquilo finalmente 👀\",\n\"Tô tentando relaxar mentalmente 🧠\",\n\"O dia foi puxado hoje 😮‍💨\",\n\"Hoje acordei antes do alarme ⏰\",\n\"Tô mais motivado hoje 🚀\",\n\"O clima ajudou bastante 🌤️\",\n\"Hoje consegui descansar cedo 🌙\",\n\"Tô me organizando melhor 📅\",\n\"O café salvou minha manhã ☕\",\n\"Hoje quase não parei ⏳\",\n\"Tô tentando evitar estresse 🙏\",\n\"O dia amanheceu bonito ☀️\",\n\"Hoje o humor tá bom 😊\",\n\"Tô ficando cansado cedo 😴\",\n\"Consegui caminhar um pouco 🚶\",\n\"Hoje trabalhei até tarde 💼\",\n\"Tô ouvindo playlist antiga 🎧\",\n\"O clima ficou estranho 🌧️\",\n\"Hoje fiquei bem ocupado 📋\",\n\"Tô precisando espairecer 🍃\",\n\"O café demorou bater 😂\",\n\"Hoje consegui manter calma 🙏\",\n\"Tô mais produtivo hoje 📈\",\n\"O trânsito tava impossível 🚗\",\n\"Hoje acordei meio perdido 😅\",\n\"Tô tentando desligar mais 📵\",\n\"O dia foi mais leve 😊\",\n\"Hoje bateu vontade viajar ✈️\",\n\"Tô conseguindo dormir melhor 🌙\",\n\"O almoço compensou hoje 🍽️\",\n\"Hoje fiquei sem bateria 🔋\",\n\"Tô tentando descansar mente 🍃\",\n\"O tempo passou voando ⏳\",\n\"Hoje o calor venceu 🥵\",\n\"Tô tentando manter rotina 📅\",\n\"O silêncio hoje ajudou 🍃\",\n\"Hoje consegui focar melhor 👀\",\n\"Tô levando tudo devagar 😊\",\n\"O trabalho rendeu bastante 📈\",\n\"Hoje fiquei cansado mentalmente 🤯\",\n\"Tô tentando evitar celular 📱\",\n\"O clima tá confortável 🌤️\",\n\"Hoje consegui respirar um pouco 🍃\",\n\"Tô mais tranquilo essa noite 🌙\",\n\"O café ficou perfeito hoje ☕\",\n\"Hoje a manhã foi corrida 😮‍💨\",\n\"Tô tentando organizar minha cabeça 🧠\",\n\"O dia tá terminando bem 😊\",\n\"Hoje consegui descansar mais 😴\",\n\"Tô mantendo tudo sob controle 🙏\",\n\"O trânsito demorou demais 🚗\",\n\"Hoje acordei mais feliz 😄\"\n][Math.floor(Math.random() * 100)] }}",
+        "delayMessage": 9
+      },
+      "type": "@z-api/n8n-nodes-zapi.zapi",
+      "typeVersion": 1,
+      "position": [
+        656,
+        384
+      ],
+      "id": "f9c678ef-6783-4542-b230-c64f4702f4fc",
+      "name": "Resposta final BILL 2",
+      "credentials": {
+        "zapiApi": {
+          "id": "IWySDn9ikGggNo8L",
+          "name": "Zapi_BILL_2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 25) + 1500 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1136,
+        -160
+      ],
+      "id": "e8a84f18-5ea9-4813-aad2-772dd1f458af",
+      "name": "Mensagem do BILL 1 para Sobral",
+      "webhookId": "67692ef9-28de-43dc-838e-8c1e380a3ea5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "10767f25-32bf-4161-8bef-1966ac59c9a1",
+              "leftValue": "={{ \nNumber($now.setZone('America/Sao_Paulo').toFormat('HH')) >= 8 &&\nNumber($now.setZone('America/Sao_Paulo').toFormat('HH')) < 22\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1488,
+        144
+      ],
+      "id": "575ac56c-a967-43df-ba8c-faef0a2e3d32",
+      "name": "Hiorário antes de 22:00"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Hiorário antes de 22:00",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem de Bill 1 para Sobral": {
+      "main": [
+        []
+      ]
+    },
+    "Mensagem do BILL 2": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem de Bill 2 para Sobral",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem da Sara - Sobral": {
+      "main": [
+        [
+          {
+            "node": "Responder BILL 1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Responder BILL 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder BILL 1": {
+      "main": [
+        [
+          {
+            "node": "Pausa para enviar Mensagem para BILL 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder BILL 2": {
+      "main": [
+        [
+          {
+            "node": "Pausa para enviar mensagem para BILL 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pausa para enviar Mensagem para BILL 1": {
+      "main": [
+        [
+          {
+            "node": "Perguntando BILL 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pausa para enviar mensagem para BILL 2": {
+      "main": [
+        [
+          {
+            "node": "Perguntando BILL 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perguntando BILL 1": {
+      "main": [
+        [
+          {
+            "node": "Resposta dos BILL(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perguntando BILL 2": {
+      "main": [
+        [
+          {
+            "node": "Resposta dos BILL(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta dos BILL(s)": {
+      "main": [
+        [
+          {
+            "node": "Resposta Final BILL 1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Resposta final BILL 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem do BILL 1 para Sobral": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem de Bill 1 para Sobral",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hiorário antes de 22:00": {
+      "main": [
+        [
+          {
+            "node": "Mensagem do BILL 1 para Sobral",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Mensagem do BILL 2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Mensagem da Sara - Sobral",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "ca72f2ba-4c82-4ad3-98f8-6da71c4b4a8f",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-15T19:54:53.318Z",
+      "createdAt": "2026-05-15T19:54:53.318Z",
+      "role": "workflow:owner",
+      "workflowId": "5YV5OJnpgR94ahu_jTvGX",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
