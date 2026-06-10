@@ -1,0 +1,4231 @@
+{
+  "id": "yPmWZzGP9CwiA2LH",
+  "name": "BILL - Homologação -APi Oficial",
+  "createdAt": "2026-05-12T16:51:17.059Z",
+  "updatedAt": "2026-05-12T17:54:19.000Z",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// alguns parametros é melhor montar com javascript,\n// facilita o entendimento e manutenção\n\n// nao confundir montagem de objetos javascript com mensagens json\n// tem diferenças, mas o n8n converte automaticamente para json\n\nitem.json.reply = $json.reply;\n\nitem.json.optionList = {\n  title: \"Serviços disponíveis !\",\n  buttonLabel: \"Abrir lista de opções\",\n  options: [\n    {\n      id: \"1\",\n      description: \"\",\n      title: \"📄 Faturas em aberto\",\n    },\n    {\n      id: \"2\",\n      description: \"\",\n      title: \"✅ Faturas pagas\",\n    },    \n    {\n      id: \"3\",\n      description: \"\",\n      title: \"📊 Histórico de consumo\",\n    },\n    {\n      id: \"4\",\n      description: \"\",\n      title: \"📝 Denúncia\",\n    },\n    {\n      id: \"5\",\n      description: \"\",\n      title: \"🌍 Localização\",\n    },\n    {\n      id: \"6\",\n      description: \"\",\n      title: \"🔄 Trocar ligação\",\n    },\n    {\n      id: \"7\",\n      description: \"\",\n      title: \"🧑🏻‍💼 Falar com Atendente\",\n    },\n    {\n      id: \"8\",\n      description: \"\",\n      title: \"🖐🏻 Sair\",\n    },\n  ],\n};\n\nreturn item;\n"
+      },
+      "id": "b480f730-8013-464c-86a7-9e6865a8a1e4",
+      "name": "Monta lista recursos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// alguns parametros é melhor montar com javascript,\n// facilita o entendimento e manutenção\n\n// nao confundir montagem de objetos javascript com mensagens json\n// tem diferenças, mas o n8n converte automaticamente para json\n\nitem.json.reply = \"Que bom ter você por aqui 👋🏻\\n\\nEm que posso lhe ajudar ?\";\n\nitem.json.optionList = {\n  title: \"Serviços disponíveis !\",\n  buttonLabel: \"Abrir lista de opções\",\n  options: [\n    {\n      id: \"1\",\n      description: \"\",\n      title: \"📄 Faturas em aberto\",\n    },\n    {\n      id: \"2\",\n      description: \"\",\n      title: \"✅ Faturas pagas\",\n    },    \n    {\n      id: \"3\",\n      description: \"\",\n      title: \"📊 Histórico de consumo\",\n    },\n    {\n      id: \"4\",\n      description: \"\",\n      title: \"📝 Denúncia\",\n    },\n    {\n      id: \"5\",\n      description: \"\",\n      title: \"🌍 Localização\",\n    },\n    {\n      id: \"6\",\n      description: \"\",\n      title: \"🔄 Trocar ligação\",\n    },\n    {\n      id: \"7\",\n      description: \"\",\n      title: \"🧑🏻‍💼 Falar com Atendente\",\n    },\n    {\n      id: \"8\",\n      description: \"\",\n      title: \"🖐🏻 Sair\",\n    },\n  ],\n};\n\nreturn item;\n"
+      },
+      "id": "46942eb7-9aa1-432a-969a-1096d09a2d28",
+      "name": "Monta lista",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        1584
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Node: Get Payload  (runOnceForEachItem)\nconst it = $input.item; const j = it.json || {};\nconst src = ($items(\"Receber mensagem\")[0]||{}).json || {};\nconst body = j.body || src.body || {};\n\nconst first = (...vals) => {\n  for (const v of vals) if (typeof v === 'string' && v.trim()) return v.trim();\n  return '';\n};\n\n// Normaliza tudo para $json.message.content.data\nconst data = {\n  phone: body.phone ?? j.phone ?? null,\n  text: first(\n    body?.text?.message,\n    j?.text?.message,\n    body?.message?.text,\n    body?.message?.conversation,\n    body?.buttonReply?.message,\n    body?.buttonsResponseMessage?.message\n  ),\n  list: {\n    title: first(\n      body?.listResponseMessage?.title,\n      body?.listResponse?.title\n    ) || null,\n    rowId: body?.listResponseMessage?.rowId ?? body?.listResponse?.rowId ?? null,\n  },\n  button: {\n    id: body?.buttonReply?.id ?? null,\n    label: body?.buttonReply?.message ?? null,\n  },\n  quotedMessageId: body?.quotedMsgId ?? body?.[\"quoted-message-id\"] ?? null,\n};\n\nit.json.message = { content: { data } };\nit.json.phone = data.phone ?? it.json.phone ?? null;\nreturn it;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2320,
+        608
+      ],
+      "id": "37103046-a04c-4958-8b3e-0f1da27a2d65",
+      "name": "Get Payload"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendButtonList}}",
+        "options": {
+          "fullResponse": true,
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            },
+            {
+              "name": "buttonList",
+              "value": "={{ $json.buttonList }}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Apresentar Faturas em Aberto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2512,
+        976
+      ],
+      "id": "070f46db-8ca2-40e0-a3fa-03c44c48ae15",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{$('Constantes').item.json.env.api.endpoints.retornarUsuario}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "matricula",
+              "value": "={{ $('Precisa Validar Ligação ?').item.json.session.data.codigoLigacao }}"
+            },
+            {
+              "name": "chaveDigital",
+              "value": "={{ $('Precisa Validar Ligação ?').item.json._session.data_json.chavedigital }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1088,
+        1344
+      ],
+      "id": "b40089db-4d02-445c-b1db-c2b7da5221a4",
+      "name": "Validar LIgação",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{$('Constantes').item.json.env.api.endpoints.historicoConsumo}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "matricula",
+              "value": "={{ $('Resposta lista').item.json.session.data.codigoLigacao }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        1488
+      ],
+      "id": "b0100abb-0f7e-45d7-b894-ca633038c4c6",
+      "name": "Histórico de consumo",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Formatar histórico de consumo — Run once for all items ===\nconst items = $input.all();\n\n// 1) Pega as linhas do retorno da API (array no json / rows / result / data, ou vários itens)\nfunction extractRows(arr) {\n  if (!arr.length) return [];\n  const j0 = arr[0].json;\n  if (Array.isArray(j0))        return j0;\n  if (Array.isArray(j0.rows))   return j0.rows;\n  if (Array.isArray(j0.result)) return j0.result;\n  if (Array.isArray(j0.data))   return j0.data;\n  if (arr.length > 1)           return arr.map(i => i.json); // fallback: 1 item por linha\n  return [];\n}\nconst rows = extractRows(items);\n\n// 2) Utilitários\nconst pad  = (s, w) => String(s ?? '').padEnd(w, ' ');\nconst padR = (s, w) => String(s ?? '').padStart(w, ' ');\nconst numBR = (n) => Number(n ?? 0).toLocaleString('pt-BR');\nconst money = (n) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })\n  .format(Number(n ?? 0));\n\n// 3) Phone / sessão / ligação (se houver)\nlet phone = null, session = null;\nfor (const it of items) {\n  phone   = phone   ?? it.json.session?.phone ?? it.json.phone ?? it.json.body?.phone ?? null;\n  session = session ?? it.json.session ?? it.json._session ?? null;\n}\nconst ligacao = $('Router').first().json._session.data_json.codigoLigacao ?? '';\n\n// 4) Sem dados → resposta amigável\nif (!rows.length) {\n  return [{\n    json: {\n      phone,\n      session,\n      ligacao,\n      reply: 'Não encontrei histórico de consumo para a ligação *' + ligacao + '*\\n'\n    },\n    pairedItem: [{ item: 0 }]\n  }];\n}\n\n// 5) Mapeia e formata (API: referencia, leitura, litrosConsumidos, valorFaturado, vencimento)\nconst mapped = rows.map(r => ({\n  referencia:   String(r.referencia ?? ''),\n  leitura:   String(r.leitura ?? ''),\n  consumo:String(r.litrosConsumidos ?? 0),\n}));\n\n// 6) Tabela monoespaçada\nconst W_MES=10, W_LEI=8, W_CONS=8;\nconst header = `${pad('Mês/Ano', W_MES)} ${pad('Leitura', W_LEI)} ${pad('Consumo', W_CONS)}`;\nconst sep    = '-'.repeat(header.length);\n\nconst lines = mapped.map(r =>\n  `${pad(r.referencia, W_MES-2)} ${padR(numBR(r.leitura), W_LEI)} ${padR(numBR(r.consumo), W_CONS)}`\n);\n\nconst reply =\n  `📊 Histórico de consumo da ligação *` + ligacao + `*\\n` +\n  '```' + '\\n' +\n  header + '\\n' + sep + '\\n' +\n  lines.join('\\n') + '\\n' + sep + '\\n' +\n  '```';\n\n// 7) Saída única para o HTTP /send-text\nreturn [{\n  json: { phone, session, reply },\n  // devolve pairedItem p/ evitar erros de \"Paired item data...\"\n  pairedItem: [{ item: 0 }]\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        1488
+      ],
+      "id": "5cfef862-abcd-4107-9794-f7dc4973a6d7",
+      "name": "Formatar histórico de consumo"
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "table": {
+          "__rl": true,
+          "value": "sessions",
+          "mode": "list",
+          "cachedResultName": "sessions"
+        },
+        "deleteCommand": "delete",
+        "where": {
+          "values": [
+            {
+              "column": "phone",
+              "value": "={{ $('Router').item.json.phone }}"
+            },
+            {
+              "column": "phoneconectado",
+              "value": "={{ $('Router').item.json.phoneconectado }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "effbb026-1fce-4bdd-8fb4-6127683ad83b",
+      "name": "Deletar sessão",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        -1472,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{$node[\"Receber mensagem\"].json[\"body\"][\"phone\"]}}"
+            },
+            {
+              "name": "message",
+              "value": "={{ \n\"Denúncia registrada ✅\\n\\nSegue número do *requerimento* para acompanhamento: *\" + $json.numero + \"*\"\n}}"
+            },
+            {
+              "name": "delayMessage",
+              "value": "2"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Enviar Confirmação",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        2288
+      ],
+      "id": "ba42124e-107b-40d1-b0d7-6441cab7959d"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "574393e4-f6c2-4883-9c8d-2329d3029112",
+              "leftValue": "={{ $json.session.flow }}",
+              "rightValue": "ouvidoria",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b5fa8a12-39af-4656-ac76-f30f1be00a5a",
+      "name": "Processa Ouvidoria ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        208,
+        2112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const it = $input.item;\nconst j  = it.json;\n\n// phone\nconst phone =\n  j.session?.phone ??\n  j._session?.phone ??\n  j.body?.phone ??\n  j.phone ??\n  $items(\"Receber mensagem\")[0]?.json?.body?.phone ??\n  null;\n\n// phone\nconst phoneconectado =\n  j.session?.phoneconectado ??\n  j._session?.phoneconectado ??\n  j.body?.phoneconectado ??\n  j.phoneconectado ??\n  $items(\"Receber mensagem\")[0]?.json?.body?.phoneconectado ??\n  null;\n\n// data_json pode ser string\nlet dj = $(\"Autenticado ?\").first().json.data_json;\nif (typeof dj === 'string') { try { dj = JSON.parse(dj); } catch { dj = {}; } }\ndj = dj || {};\n\nj.session = {\n  phone,\n  flow: \"confirm\",\n  step: 1,\n  expectedRef: j.session?.expectedRef ?? null,\n  data: {\n    // mantém plano\n    authOk: true,\n    nome: dj.nome ?? j.session?.data?.nome ?? '',\n    codigoLigacao: dj.codigoLigacao ?? j.session?.data?.codigoLigacao ?? null,\n  },\n  // expiresAt é da sessão, não de data\n  expiresAt: new Date(Date.now() + 15 * 60000).toISOString(),\n  phoneconectado,\n};\n\nreturn it; // (antes retornava j; mantenha o item inteiro)\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5056,
+        624
+      ],
+      "id": "80241c79-834d-44ae-b56b-441fac54ff6c",
+      "name": "Recriar session"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        4800,
+        624
+      ],
+      "id": "fcf60268-021d-468e-8cfc-66b599d11e8a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst phone =\n  j.session?.phone ??\n  j.phone ??\n  $items(\"Receber mensagem\")[0]?.json?.body?.phone ?? null;\n\n// guarda a sessão COMPLETA; não altere o item\nj._snapList = {\n  phone,\n  session: JSON.parse(JSON.stringify(j.session || {})),\n};\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4544,
+        400
+      ],
+      "id": "cfe3e65c-d4c8-4a94-950c-4f50ebacbc02",
+      "name": "Snapshot Sessão (Confirm)"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{$node[\"Receber mensagem\"].json[\"body\"][\"phone\"]}}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Router').item.json.reply }}"
+            },
+            {
+              "name": "delayMessage",
+              "value": "2"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Mensagem Encerramento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        -1984,
+        896
+      ],
+      "id": "3c072c0c-c645-4c45-b55e-554623ab0874"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7f66ad89-eeb4-4dac-be36-0a7f140a037d",
+              "leftValue": "={{ $json.showEnd}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2304,
+        1072
+      ],
+      "id": "979656f3-c81f-4821-aff0-1789d3218aeb",
+      "name": "Encerrar Atendimento ?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7f66ad89-eeb4-4dac-be36-0a7f140a037d",
+              "leftValue": "={{ $json.showMenu}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        1072
+      ],
+      "id": "3b0b828f-d333-4753-bacc-9511ddde0c2e",
+      "name": "Abrir Menu ?"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\n// resolve phone de forma robusta\nconst rxPhone =\n  j.phone ??\n  j.session?.phone ??\n  $items(\"Receber mensagem\")[0]?.json?.body?.phone ??\n  null;\n\nconst rxPhoneconectado =\n  j.phoneconectado ??\n  j.session?.phoneconectado ??\n  $items(\"Receber mensagem\")[0]?.json?.body?.connectedPhone ??\n  null;\n\nj.phone = rxPhone;\nj.phoneconectado = rxPhoneconectado;\n\n// preserva sessão existente e NUNCA zera data\nj.session = j.session || {};\nj.session.phone = j.session.phone ?? rxPhone;\nj.session.flow = \"confirm\";\nj.session.step = 1;\nj.session.data = j.session.data || {}; // <- não sobrescreve\nj.session.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\nj.session.phoneconectado = j.session.phoneconectado ?? rxPhoneconectado;\n\nj.reply = \"Posso lhe ajudar em algo mais ?\";\nj.buttonList = {\n    buttons: [\n      { id: \"Sim\", label: \"Sim\", type: \"REPLY\" },\n      { id: \"Não\", label: \"Não\", type: \"REPLY\" },\n    ],\n  }\n\nreturn item;\n"
+      },
+      "id": "75277520-a410-48de-8904-a090e84e4baf",
+      "name": "Encerramento/Voltar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4288,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7f66ad89-eeb4-4dac-be36-0a7f140a037d",
+              "leftValue": "={{ $json.isList }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        1488
+      ],
+      "id": "a4325cba-c567-4618-a816-ad23050c8b54",
+      "name": "Resposta vem de Lista"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendOptionList }}",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{$node[\"Receber mensagem\"].json[\"body\"][\"phone\"]}}"
+            },
+            {
+              "name": "message",
+              "value": "={{ String($json.reply ?? '') }}"
+            },
+            {
+              "name": "optionList",
+              "value": "={{ $json.optionList }}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            }
+          ]
+        }
+      },
+      "name": "Imprimir Lista",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        560,
+        864
+      ],
+      "id": "192e6fa6-a41e-4844-b86e-2ed149dad36e"
+    },
+    {
+      "parameters": {
+        "jsCode": "// não destrói o payload; só guarda uma cópia da sessão para o Merge pós-HTTP\nconst item = $input.item;\nconst j = item.json;\n\nj._snap = { phone: j.phone, session: j.session }; // stash para uso no Set expectedRef / Merge\nreturn item; // mantém reply, showMenu, etc.\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        864
+      ],
+      "id": "57615f3a-3104-4f36-bc30-5ba462d3f511",
+      "name": "Snapshot Sessão Lista"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      phone: $json.phone,\n      session: $json.session,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1856,
+        1824
+      ],
+      "id": "7b7646ce-27e4-4b51-9abc-6905e8ce5893",
+      "name": "Snapshot Sessão Texto"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        608,
+        1568
+      ],
+      "id": "8414a4bb-aee3-4d35-8778-f1a581670a5a",
+      "name": "Merge Texto + Sessão"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        848,
+        544
+      ],
+      "id": "6ad39583-5fd4-416e-95de-ad51b2ec03cb",
+      "name": "Merge Lista + Sessão",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{$node[\"Receber mensagem\"].json[\"body\"][\"phone\"]}}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.reply }}"
+            },
+            {
+              "name": "delayMessage",
+              "value": "2"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            }
+          ]
+        }
+      },
+      "name": "Apresentar historico",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2528,
+        1488
+      ],
+      "id": "2ce0a05e-17af-4fb9-ab1e-aa59eb8cbc20"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -816,
+        848
+      ],
+      "id": "c811f3b0-872f-4409-bcf8-36a679d4daed",
+      "name": "Passar Session"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "552c6e23-e71b-4b3e-ba9d-747a56d5978e",
+              "leftValue": "={{ $json.session.data.authOk }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "3d63a4d8-85d7-4aa1-bcca-10f3d80732d8",
+      "name": "Autenticado ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1360,
+        2256
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "09d4a268-f329-4c70-a7a4-b6b7b1fe7446",
+      "name": "No Operation, do nothing3",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        -1168,
+        2848
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "/**\n * ROUTER — Ident (Nome -> Código), Menu e Confirmação SIM/NÃO\n * Entradas principais: j.message.content.data (Get Payload), j._session (Select/Inject Sessão)\n * Saídas: j.session, j.reply, j.showMenu (bool), j.showEnd (bool), j.finalize (bool)\n */\n\n// --- Header\nconst item = $input.item || { json: {} };\nconst j = item.json || {};\n\n// util: primeiro texto não vazio\nconst first = (...vals) => {\n  for (const v of vals)\n    if (typeof v === \"string\" && v.trim() !== \"\") return v.trim();\n  return \"\";\n};\nconst lower = (s) => (s || \"\").toLowerCase();\n\n// -------- Entrada normalizada (Get Payload) --------\nconst data = j?.message?.content?.data || {};\nconst textIn = first(data.text);\nconst listT = data?.list?.title || null;\nconst listId = data?.list?.rowId || null;\nconst btnLabel = data?.button?.label || null;\n\nj.isList = !!(listT || listId);\nj.choiceTitle = listT;\nj.choiceId = listId;\n\n// mensagem efetiva\nlet msg = j.isList ? j.choiceTitle || \"\" : textIn;\n\nconst normalized = String(msg).trim().toLowerCase();\n\n// comandos globais\nif (normalized.includes(\"sair\")) {\n  j.showEnd = true;\n  // Obtém a hora atual de Brasília\n  const agora = new Date();\n  const horaBR = new Date(agora.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));\n  const hora = horaBR.getHours();\n  let mensagem;\n  if (hora <= 12) {\n    mensagem = \"*Agradecemos pelo contato*, tenha um ótimo dia ☀️\";\n  } else if (hora >= 18) {\n    mensagem = \"*Agradecemos pelo contato*, tenha uma ótima noite 🌃\";\n  } else {\n    mensagem = \"*Agradecemos pelo contato*, tenha uma ótima tarde 🌇\";\n  }\n  j.reply = mensagem;\n  return item;\n}\n\n// phone robusto\nconst src = ($items(\"Receber mensagem\")[0] || {}).json || {};\nj.phone = j.phone ?? j?.body?.phone ?? data?.phone ?? src?.body?.phone ?? null;\n\n\n// -------- Reconstroi sessão a partir do Select/Inject Sessão --------\nconst row = j._session || {};\nlet session = null;\nif (row && (row.flow || row.data_json || row.expires_at)) {\n  session = {\n    phone: row.phone || j.phone,\n    phoneconectado: row.phoneconectado || j.phoneconectado,\n    flow: row.flow || \"ident\",\n    step: Number(row.step ?? 1),\n    expectedRef: row.expected_ref ?? row.expectedRef ?? null,\n    data: row.data_json\n      ? typeof row.data_json === \"string\"\n        ? JSON.parse(row.data_json || \"{}\") || {}\n        : row.data_json\n      : {},\n    expiresAt: row.expires_at\n      ? new Date(row.expires_at).toISOString()\n      : null,\n  };\n}\n\n// expiração & resets\nif (session?.expiresAt && new Date(session.expiresAt) < new Date())\n  session = null;\nconst low = lower(msg);\nif (low === \"menu\" || low === \"cancelar\") session = null;\n\n// ===================== NÃO AUTENTICADO (ident) =====================\nconst authed = session?.data?.authOk === true;\n\nif (!authed) {\n  if (!session || session.flow !== \"ident\") {\n    // inicia identificação\n    session = {\n      phone: j.phone,\n      phoneconectado: j.phoneconectado,\n      flow: \"ident\",\n      step: 1,\n      data: {},\n      expectedRef: null,\n      expiresAt: new Date(Date.now() + 15 * 60000).toISOString(),\n    };\n    j.reply = \"👋🏻 Olá! Eu sou o *BILL*, seu assistente virtual.\\nEstou aqui para te atender de forma rápida e humanizada.\\n\\nPara começarmos, qual é o seu *nome*?\";\n    j.finalize = false;\n  } else if (session.step === 1 && !j.reply) {\n    // PASSO 1 — nome\n    if (msg === \"\") {\n      j.reply = \"Desculpe, não consegui entender.\\nPode me informar seu *nome*, por favor? 🙌🏻\";\n    } else {\n      session.data.nome = msg;\n      session.step = 2;\n      session.needValidateLigacao = false; // só arma quando vier o código\n        j.reply = `Prazer em falar com você, *${session.data.nome} !* 👋🏻\\nPor favor, me informe o *código da ligação* (apenas os números, sem o dígito).\\n\\nSe quiser encerrar o atendimento, basta digitar *Sair* a qualquer momento.`;\n    }\n    j.finalize = false;\n  } \n  \n  else if (session.step === 2 && !j.reply) {\n  const codigodaLigacao = String(msg ?? \"\").trim();\n\n  if (codigodaLigacao === \"\") {\n    j.reply = `Informe o *código da ligação*.`;\n    j.finalize = false;\n  } else if (!/^[0-9]+$/.test(codigodaLigacao)) {        // <-- só passa se for SÓ números\n    j.reply = \"O código informado não é válido.\\n\\nPor favor, digite apenas os *números* — sem letras, espaços ou símbolos. 🔢\";\n    j.finalize = false;\n  } else {\n      session.data.codigoLigacao = codigodaLigacao;        // mantém exatamente o que foi digitado (só dígitos)\n      session.step = 3;\n      session.needValidateLigacao = false; \n      j.reply =`*${session.data.nome}*, me informe por favor a *chave digital*.`;\n    j.finalize = false;\n  }\n}   \n\n  else if (session.step === 3 && !j.reply) {\n  const chavedigital = String(msg ?? \"\").trim();\n  if (chavedigital === \"\") {\n    j.reply = \"Informe a *chave digital*.\";\n    j.finalize = false;\n  } else {\n      session.data.chavedigital = chavedigital;        // mantém exatamente o que foi digitado (só dígitos)\n      session.step = 3;\n      session.needValidateLigacao = true; \n      j.reply = null;\n    j.finalize = false;\n  }\n}\n\n  // saída parcial\n  session.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n  j.session = {\n    phone: session.phone,\n    phoneconectado: session.phoneconectado,\n    flow: session.flow,\n    step: session.step,\n    expectedRef: session.expectedRef,\n    data: session.data,\n    expiresAt: session.expiresAt,\n    needValidateLigacao: !!session.needValidateLigacao,\n  };\n  return item;\n}\n\n// ===================== AUTENTICADO =====================\n\n// SIM/NÃO (quando estiver em confirmação)\nconst ans = lower(btnLabel || j.choiceTitle || msg || \"\");\nconst isYesNo = ans === \"sim\" || ans === \"não\";\n\n\nif (session?.flow === \"humano\")\n{\n      session.flow = \"ident\",\n      session.step = 3;\n      session.needValidateLigacao = true; \n      j.reply = null;\n}\n\nif (session?.flow === \"confirm\" && session?.step === 1 && isYesNo) {\n  if (ans === \"sim\") {\n    session.step = 0;\n    j.showMenu = true; // lista será enviada fora do Router\n    j.reply = \"\";\n  } else {\n  // Obtém a hora atual de Brasília\n  const agora = new Date();\n  const horaBR = new Date(agora.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));\n  const hora = horaBR.getHours();\n\n  // Define a mensagem conforme o horário\n  let mensagem;\n  if (hora <= 12) {\n    mensagem = \"*Agradecemos pelo contato*, tenha um ótimo dia ☀️\";\n  } else if (hora >= 18) {\n    mensagem = \"*Agradecemos pelo contato*, tenha uma ótima noite 🌃\";\n  } else {\n    mensagem = \"*Agradecemos pelo contato*, tenha uma ótima tarde 🌇\";\n  }\n  // Retorna valores no padrão da tua sessão\n  session.step = 0;\n  j.showEnd = true;\n  j.reply = mensagem;\n}\n  session.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n  j.session = session;\n  return item;\n}\n\n// Escolha de serviço (autenticado)\nconst chosen = lower(j.isList ? j.choiceTitle : msg || \"\");\n\nif (chosen === \"localização\") {\n  j.reply = null; // fluxo de Localização assume\n} else if (chosen.includes(\"denúncia\") || chosen.includes(\"denuncia\")) {\n  j.reply = \"Tudo certo! 💬\\n\\nMe conte com o máximo de detalhes o que aconteceu, assim conseguimos te ajudar mais rápido.\";\n  session.flow = \"ouvidoria\";\n} else if (\n  chosen === \"histórico de consumo\" ||\n  chosen === \"historico de consumo\"\n) {\n  j.reply = null; // fluxo histórico assume\n} else if (\n  chosen === \"2ª via de fatura\" ||\n  chosen === \"2ª via\" ||\n  chosen === \"faturas em aberto\"\n) {\n  // mantém seu comportamento atual; se quiser PIX, trate aqui (flow='pix')\n  j.reply = null;\n}\n\n// Atualiza sessão e sai\nsession.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\nj.session = {\n  phone: session.phone,\n  phoneconectado: session.phoneconectado,\n  flow: session.flow,\n  step: session.step,\n  expectedRef: session.expectedRef,\n  data: session.data,\n  expiresAt: session.expiresAt,\n  needValidateLigacao: !!session.needValidateLigacao,\n};\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        608
+      ],
+      "id": "825fb58b-a349-4fd1-befa-58d8dc1b3899",
+      "name": "Router"
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $input.item.json;\nconst sess = j.session || {};\nsess.data = sess.data || {};\n\nlet codigo = String(sess.data.codigoLigacao ?? j.codigo ?? '').trim();\ncodigo = (codigo.match(/\\d+/g)?.join('')) || '';\nif (codigo) sess.data.codigoLigacao = codigo;\nelse delete sess.data.codigoLigacao;\n\nreturn [{ json: { phone: j.phone, session: sess } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1328,
+        992
+      ],
+      "id": "bc873fde-c56c-4a17-a3a3-54e231f0f4d1",
+      "name": "Setar Codigo"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "b2007816-7ce0-42dd-add7-645f7950de92",
+              "leftValue": "={{ $json.session.flow }}",
+              "rightValue": "ident",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "1c337c9f-1e98-43d9-b0fe-8e845f1d8db9",
+              "leftValue": "={{ $json.session.needValidateLigacao }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e1ebe7b6-99c8-47d5-adb0-866dc3d015f5",
+              "leftValue": "={{ $json.session.data.codigoLigacao }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "61912a42-5bb7-4265-9100-6d35ed78e759",
+      "name": "Precisa Validar Ligação ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1936,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// -------- Processa Validação (após MERGE) --------\nconst j = $input.item.json || {};\nconst sess = j.session || {};\nconst phone = j.phone || sess.phone || null;\n\nconst found = Number(j.found ?? j.matricula != null) === 1;\nconst nome = sess?.data?.nome || \"cliente\";\nconst codigo = sess?.data?.codigoLigacao || j.codigo || \"\";\n\nif (found) {\n  sess.data = sess.data || {};\n  sess.data.authOk = true;\n  sess.flow = \"menu\";\n  sess.step = 0;\n  sess.needValidateLigacao = false;\n  sess.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n  sess.data.codigoLigacao = codigo;\n  sess.data.nome = nome;\n\nconst cab = `Tudo certo, *` + nome + `*!✅\\n\\nValidei a ligação *` + codigo + `*.\\n\\nEsta ligação está vinculada ao endereço : *` + $input.first().json.rua + `*, número *XXX*, *` + $input.first().json.bairro + `*.\\n\\nQue bom ter você por aqui !\\nEm que posso lhe ajudar ?`;\n  return [{ json: { phone, session: sess, showMenu: true, reply: cab } }];\n}\n\n// NÃO ENCONTROU → sempre devolve texto\nsess.step = 2;\nsess.needValidateLigacao = true;\nsess.expiresAt = new Date(Date.now() + 15 * 60000).toISOString();\n\nconst msg =\n  \"Parece que o código da ligação ou a chave digital não conferem, confirme as informações.\\n\\nPor favor, digite novamente o *código da ligação* (apenas os números, sem o dígito). 🔁\";\nreturn [{ json: { phone, session: sess, showMenu: false, reply: msg } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        848
+      ],
+      "id": "49e1e8cc-ce34-4986-9469-635f49c889f2",
+      "name": "Processa Validação"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{$node[\"Receber mensagem\"].json[\"body\"][\"phone\"]}}"
+            },
+            {
+              "name": "=message",
+              "value": "={{ String($json.reply ?? '') }}"
+            },
+            {
+              "name": "delayTyping",
+              "value": "2"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            }
+          ]
+        }
+      },
+      "name": "Enviar Pergunta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        320,
+        1328
+      ],
+      "id": "aab93506-d62f-4dc4-a0cd-d0224b7e8f0e",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "8f7c49d6-e100-469d-b178-c99701215cdd",
+              "leftValue": "={{ $json.reply }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5c40440b-72be-494a-8d6e-c2d310067d6b",
+      "name": "Tem reply?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1648,
+        1568
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT phone, flow, step, expected_ref, data_json, expires_at,phoneconectado\nFROM sessions\nWHERE phone = {{ $json.Phone }} and phoneconectado = {{ $json.PhoneConnected }}\n\nUNION ALL\n\nSELECT {{ $json.Phone }} AS phone, NULL AS flow, NULL AS step, NULL AS expected_ref, NULL AS data_json, NULL AS expires_at, {{ $json.PhoneConnected }} AS phoneconectado\nWHERE NOT EXISTS (SELECT 1 FROM sessions WHERE phone = {{ $json.Phone }} and phoneconectado = {{ $json.PhoneConnected }} )\nLIMIT 1;",
+        "options": {}
+      },
+      "id": "40a05174-7fc5-47f0-8e6f-ce01fc24b58a",
+      "name": "Select Sessão",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        -1392,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendButtonList}}",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{$node[\"Receber mensagem\"].json[\"body\"][\"phone\"]}}"
+            },
+            {
+              "name": "message",
+              "value": "={{$json.reply}} "
+            },
+            {
+              "name": "buttonList",
+              "value": "={{ $json.buttonList }}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Mensagem final",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        4560,
+        848
+      ],
+      "id": "b3bfc6bc-fc1e-4370-ae33-fbd58f098f1f"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\n// ==== ENTRADA / CAMPOS ÚTEIS (mantidos) ====\nconst b = j.body ?? {};\nj.phone = j.phone ?? b.phone ?? null;\n\n// veio resposta de lista/botão?\nj.listResponse = !!(b.listResponseMessage || b.listResponse || b.buttonReply);\n\n// flag “encerrar atendimento” quando clicado em “Não”\nconst btnMsg = (b?.buttonReply?.message ?? \"\").trim().toLowerCase();\nj.encerraratendimento = btnMsg === \"não\";\n\n// ==== CONFIGURAÇÃO POR NÚMERO (adicione seus números aqui) ====\n// Use apenas dígitos no índice, exatamente como chega em j.PhoneConnected\nconst phonesConfig = {\n  553798334700: {\n    idInstanceZapi: \"3EA6B3979B12E1B6EDC772620DC9C8F4\",\n    tokenInstanceZapi: \"86D7C5F85892C2570C026339\",\n    clientTokenHeaderZapi: \"Fdc4b6b51b6d942db941b9e00a4991740S\",\n    rotaPrincipalDados: \"https://demonstracao.agenciavirtual.api.gestaosaneamentoweb.com.br/api/chatbot\",\n    title: \"Inovação Computação Móvel\",\n    address: \"Avenida Paraná, 1348, Sidil, Divinopolis, MG, 35501-660\",\n    lat: \"-20.135580\",\n    long: \"-44.896239\",\n    tipoRequerimento: 103,\n  },\n  553798603941: {\n    idInstanceZapi: \"3E8020BFCB6F329C7878B2948C7C07B3\",\n    tokenInstanceZapi: \"7FAEC497FAA217714D1F22C7\",\n    clientTokenHeaderZapi: \"Fdc4b6b51b6d942db941b9e00a4991740S\",\n    rotaPrincipalDados:\n      \"https://tdev-ag.icommercial002.inovamobil.com.br/api/chatbot\",\n    title: \"Residência\",\n    address: \"Rua Itapecerica, 1060, Sidil, Divinopolis, MG, 35500-018\",\n    lat: \"-20.13889\",\n    long: \"-44.88389\",\n    tipoRequerimento: 22,\n  },\n};\n\n// ==== OBRIGATÓRIO TER PhoneConnected ====\nconst phoneConnected = (j.PhoneConnected ?? \"\").replace(/\\D+/g, \"\");\nconst selected = phonesConfig[phoneConnected];\nif (!selected) {\n  throw new Error(\n    `PhoneConnected (${phoneConnected || \"vazio\"}) não mapeado em phonesConfig`,\n  );\n}\n\n// ==== PARAMS (nomes mantidos, sem impacto) ====\nconst idInstanceZapi = selected.idInstanceZapi;\nconst tokenInstanceZapi = selected.tokenInstanceZapi;\nconst clientTokenHeaderZapi = selected.clientTokenHeaderZapi;\nconst rotaPrincipalDados = selected.rotaPrincipalDados;\n\nconst baseUrl = \"https://api.z-api.io\";\nconst extensionDocument = \"pdf\";\n\n// ==== ENV / ENDPOINTS ====\nconst endpointZapi = `${baseUrl}/instances/${idInstanceZapi}/token/${tokenInstanceZapi}`;\nj.env = {\n  baseUrl,\n  idInstanceZapi,\n  tokenInstanceZapi,\n  clientTokenHeaderZapi,\n  endpoints: {\n    sendOptionList: `${endpointZapi}/send-option-list`,\n    sendButtonList: `${endpointZapi}/send-button-list`,\n    sendCarousel: `${endpointZapi}/send-carousel`,\n    sendText: `${endpointZapi}/send-text`,\n    sendLink: `${endpointZapi}/send-link`,\n    sendAudio: `${endpointZapi}/send-audio`,\n    sendVideo: `${endpointZapi}/send-video`,\n    sendImage: `${endpointZapi}/send-image`,\n    sendDocument: `${endpointZapi}/send-document/${extensionDocument}`,\n    sendLocation: `${endpointZapi}/send-location`,\n  },\n  phoneConnected,\n};\n\nj.env.api = {\n  rotaPrincipalDados,\n  endpoints: {\n    historicoConsumo: `${rotaPrincipalDados}/historico-consumo`,\n    ultimasFaturas: `${rotaPrincipalDados}/faturas-abertas`,\n    faturasPagas: `${rotaPrincipalDados}/faturas-concluidas`,\n    retornarUsuario: `${rotaPrincipalDados}/retornar-usuario`,\n    gerarFatura: `${rotaPrincipalDados}/fatura-pdf`,\n    ouvidoria: `${rotaPrincipalDados}/denuncia`,\n    auditoria: `${rotaPrincipalDados}/auditoria`,\n  },\n  location: {\n    title: selected.title,\n    address: selected.address,\n    lat: selected.lat,\n    long: selected.long,\n  },\n  configuracao: {\n    tipoRequerimento: selected.tipoRequerimento,\n    HorarioAtendimentoHumanoInicio : \"08:00\",\n    HorarioAtendimentoHumanoFim : \"17:00\"\n  },\n};\n\nreturn item;\n"
+      },
+      "id": "031095e4-3b62-4890-ac22-500b315aa8d7",
+      "name": "Constantes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1648,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendLocation }}",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{$node[\"Receber mensagem\"].json[\"body\"][\"phone\"]}}"
+            },
+            {
+              "name": "title",
+              "value": "={{$('Constantes').item.json.env.api.location.title}}"
+            },
+            {
+              "name": "address",
+              "value": "={{$('Constantes').item.json.env.api.location.address}}"
+            },
+            {
+              "name": "latitude",
+              "value": "={{$('Constantes').item.json.env.api.location.lat}}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{$('Constantes').item.json.env.api.location.long}}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            }
+          ]
+        }
+      },
+      "name": "Envia Localização",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        624
+      ],
+      "id": "c09ed997-330e-404c-9adf-07c1ea27bf93",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "id": "d000500d-074d-4d77-bcb6-b08290d67981",
+      "name": "No Operation, do nothing1",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1264,
+        1856
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {},
+      "id": "406a69df-bd8e-4787-a3c9-7dec511f9747",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        976,
+        2048
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c053051a-02d5-4e0c-93ee-a325e256c52a",
+        "options": {}
+      },
+      "name": "Receber mensagem",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -2320,
+        272
+      ],
+      "webhookId": "c053051a-02d5-4e0c-93ee-a325e256c52a",
+      "id": "1339858c-18a1-4ba3-986d-cfcfa3418c4a"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "159af285-4def-4cef-b786-f3006096cb4d",
+              "name": "instanceid",
+              "value": "={{ $json.body.instanceId }}",
+              "type": "string"
+            },
+            {
+              "id": "4e670196-33f5-4e71-8dc0-c45f2a3b4221",
+              "name": "messageid",
+              "value": "={{ $json.body.messageId }}",
+              "type": "string"
+            },
+            {
+              "id": "18fe345b-9e00-4b92-bb04-1fd9e310f5ee",
+              "name": "messageText",
+              "value": "={{ $json.body?.listResponseMessage?.title \n   || $json.body?.listResponse?.title \n   || $json.body?.buttonReply?.message \n   || $json.body?.text?.message \n   || $json.body?.buttonsResponseMessage?.message \n   || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "dbe6291f-4458-46bc-bcbe-655dac0ef2d9",
+              "name": "fromMe",
+              "value": "={{ $json.body.fromMe }}",
+              "type": "boolean"
+            },
+            {
+              "id": "3e1861eb-3498-475b-90b2-6714f68b30ec",
+              "name": "mensagemgrupo",
+              "value": "={{ $json.body.isGroup }}",
+              "type": "boolean"
+            },
+            {
+              "id": "157104a3-1d94-4363-a746-37dc5e1b0669",
+              "name": "status",
+              "value": "={{ $json.body.status }}",
+              "type": "string"
+            },
+            {
+              "id": "270c247a-464f-4a70-b840-81aedc560abb",
+              "name": "Phone",
+              "value": "={{ $json.body.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "97a5c888-007d-479e-9db2-b7fc5ecaa805",
+              "name": "chatname",
+              "value": "={{ $json.body.chatName }}",
+              "type": "string"
+            },
+            {
+              "id": "097e7186-8b9b-4a3d-81b9-d5cfc8524153",
+              "name": "messageaudio",
+              "value": "={{ $json.body.audio.audioUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "99266c55-d810-44dd-8813-3dd018892b9e",
+              "name": "messagephoto",
+              "value": "={{ $json.body.image.imageUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "bc76b1f8-f9a5-4f12-9054-f5518119e044",
+              "name": "PhoneConnected",
+              "value": "={{ $json.body.connectedPhone }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1888,
+        272
+      ],
+      "id": "464b7518-6f7f-4342-8488-2cec8398d961",
+      "name": "Dados"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a101d655-9ea1-4d7d-a881-e2478360a6d7",
+              "leftValue": "={{ $json.fromMe }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        928,
+        1760
+      ],
+      "id": "f95d135c-4568-4572-ac62-4a1f40ea99db",
+      "name": "Mensagem enviada pelo Bot"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "64cffcd2-671e-40c9-83a8-495f5f6da1cb",
+              "leftValue": "={{ $json.body.isGroup }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        1920
+      ],
+      "id": "9f93ad2f-3faa-4424-a104-9d0040999d7b",
+      "name": "Mensagem Individual"
+    },
+    {
+      "parameters": {
+        "url": "={{$('Constantes').item.json.env.api.endpoints.ultimasFaturas}}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            }
+          ]
+        },
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "=matricula",
+              "value": "={{ $('Resposta lista').item.json.session.data.codigoLigacao }}"
+            }
+          ]
+        }
+      },
+      "name": "Faturas em Aberto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        976
+      ],
+      "id": "88f7b3e2-f5ef-40c0-9b9c-43aeaf2ced25",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7f66ad89-eeb4-4dac-be36-0a7f140a037d",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "gen_pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        2384
+      ],
+      "id": "dd3365d9-a9e7-4cb3-b1a3-db5f0dff20f8",
+      "name": "Gerar Fatura ?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// NORMALIZADOR DE CLIQUE — unifica todos os caminhos possíveis do ID\nconst id =\n  // Botões modernos\n  $json?.message?.content?.data?.button?.id ||\n  $json?.body?.buttonsResponseMessage?.buttonId ||\n  $json?.body?.buttonReply?.id ||\n  $json?.body?.button?.id ||\n  $json?.message?.button?.id ||\n\n  // Option List (novo): optionId\n  $json?.message?.content?.data?.list?.optionId ||\n  $json?.body?.listResponse?.optionId ||\n  $json?.body?.listResponseMessage?.optionId ||\n\n  // List (legado): rowId\n  $json?.message?.content?.data?.list?.rowId ||\n  $json?.body?.listResponse?.rowId ||\n  $json?.body?.listResponseMessage?.rowId ||\n\n  // fallback\n  '';\n\nconst isInvoiceClickAbertas = /^fat_sel_/.test(id);  // clique numa fatura da lista\nconst isActionClickAbertas  = /^fat_act_/.test(id);  // clique numa ação (PIX/Barras/PDF)\nconst isInvoiceClickPagas = /^fatpaga_sel_/.test(id);  // clique numa fatura da lista\n\nreturn [{\n  json: {\n    ...$json,\n    clickId: id,\n    isInvoiceClickAbertas,\n    isActionClickAbertas,\n    isInvoiceClickPagas\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2096,
+        272
+      ],
+      "id": "f156e628-42dd-4bee-a77f-fff0c56d7cdc",
+      "name": "Normalizador de Clique"
+    },
+    {
+      "parameters": {
+        "url": "={{$('Constantes').item.json.env.api.endpoints.ultimasFaturas}}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            }
+          ]
+        },
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "=matricula",
+              "value": "={{ $('Gerar Fatura ?').item.json.detailRequest.matricula }}"
+            },
+            {
+              "name": "referencia",
+              "value": "={{ $('Gerar Fatura ?').item.json.detailRequest.referencia }}"
+            }
+          ]
+        }
+      },
+      "name": "Consultar Fatura por referência",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        976,
+        2768
+      ],
+      "id": "6102e2f3-ba3c-4807-9e6a-5b33185dc5d5",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// MONTAR RESPOSTA PIX/BARRAS — code_only (somente o conteúdo)\n// Mode: Run once for each item\ntry {\n  const HANDLER_NODE = \"Montar opções da fatura selecionada (Em Aberto)\";   // ajuste se o nome do seu nó for outro\n  const WEBHOOK_NODE = \"Receber mensagem\";\n\n  const get = (o,p)=>p.split('.').reduce((a,k)=> (a && a[k]!==undefined ? a[k] : null), o || null);\n  const unwrap = (v)=>{\n    if (Array.isArray(v)) return v;\n    if (v && typeof v === 'object') {\n      if (Array.isArray(v.data)) return v.data;\n      if (Array.isArray(v.body)) return v.body;\n      if (Array.isArray(v.rows)) return v.rows;\n      return [v];\n    }\n    return [];\n  };\n  const findField = (obj, paths)=> {\n    for (const p of paths) {\n      const val = get(obj, p);\n      if (val !== undefined && val !== null && String(val).trim() !== '') return String(val).trim();\n    }\n    return '';\n  };\n\n  const H = $item(0).$node[HANDLER_NODE]?.json || {};\n  const W = $item(0).$node[WEBHOOK_NODE]?.json || {};\n  const J = $json || {};\n\n  const phone =\n    H.phone || J.phone ||\n    get(J,'message.content.data.phone') || get(J,'body.phone') ||\n    get(W,'body.phone') || null;\n\n  const want =\n    H.detailRequest?.want || J.detailRequest?.want || null;   // 'pix' | 'bar'\n\n  const refTarget =\n    H.detailRequest?.referencia || J.detailRequest?.referencia || null;\n\n  if (!phone) return { json: { phone: null, message: 'erro: phone ausente' }, pairedItem: [{ item: 0 }] };\n  if (!want)  return { json: { phone, message: 'erro: ação (pix/bar) ausente' }, pairedItem: [{ item: 0 }] };\n\n  const rows = unwrap(J);\n  let row = rows[0] || {};\n  if (refTarget) {\n    const hit = rows.find(r => (r?.mesAnoReferencia || r?.mes) === refTarget);\n    if (hit) row = hit;\n  }\n\n  const qr     = findField(row, ['qrCode','qrcode','payload','pix']);\n  const linha  = findField(row, ['linhaDigitavel','linha_digitavel','digitableLine','line']);\n  const barras = findField(row, ['codigoBarras','codigo_barras','barcode','barCode']);\n\n  if (want === 'pix') {\n    if (!qr) return { json: { phone, message: 'PIX indisponível para esta fatura.' }, pairedItem: [{ item: 0 }] };\n    return { json: { phone, message: qr }, pairedItem: [{ item: 0 }] };\n  }\n\n  // want === 'bar'\n  const text = linha || barras || '';\n  if (!text) return { json: { phone, message: 'Linha digitável/código indisponível.' }, pairedItem: [{ item: 0 }] };\n  return { json: { phone, message: text }, pairedItem: [{ item: 0 }] };\n\n} catch (e) {\n  return { json: { phone: null, message: `erro ao montar resposta: ${String(e?.message || e)}` }, pairedItem: [{ item: 0 }] };\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        2784
+      ],
+      "id": "76c51148-f8cb-478b-8af6-4ca6b9aeae1e",
+      "name": "Montar resposta Pix/Barras"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            },
+            {
+              "name": "delayMessage",
+              "value": "2"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Apresentar PIX/Barras",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        2816
+      ],
+      "id": "6efe256e-d436-4911-bd42-6c50457c93d4"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "=Finalizando a consulta de faturas em aberto ..."
+            },
+            {
+              "name": "delayTyping",
+              "value": "6"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Feedback ao usuário - Faturas em aberto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        976
+      ],
+      "id": "ec2b2310-11ea-48a2-80e3-2719dfc1d62c",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendOptionList }}",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{$node[\"Receber mensagem\"].json[\"body\"][\"phone\"]}}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.reply }}"
+            },
+            {
+              "name": "optionList",
+              "value": "={{ $json.optionList }}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            }
+          ]
+        }
+      },
+      "name": "Envia lista Opções",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        1664
+      ],
+      "id": "02ca94d4-474b-44f3-a208-4c6c150455eb"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "=Gerando informações para pagamento ..."
+            },
+            {
+              "name": "delayTyping",
+              "value": "2"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Feedback ao usuário - PIX/Barras",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        544,
+        2560
+      ],
+      "id": "6b4f50b7-4f6d-434f-9651-9a3eaaf58c95",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "=Finalizando a consulta de histórico ..."
+            },
+            {
+              "name": "delayTyping",
+              "value": "5"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Feedback ao usuário - Historico",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        1488
+      ],
+      "id": "4ac10f1d-2634-4cf6-8f5f-636c86b05f57",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "=Validando informações ..."
+            },
+            {
+              "name": "delayTyping",
+              "value": "4"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Feedback ao usuário - Baixar Fatura1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        -1408,
+        1216
+      ],
+      "id": "77fd3808-5c6f-4d52-b987-39c04ae49f1e",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const DadosGravacao = {\n  ligacao: $(\"Router\").first().json.session.data.codigoLigacao ?? \"\",\n  phone: $(\"Router\").first().json.session.phone ?? \"\",\n  phoneConectado: $(\"Router\").first().json.session.phoneconectado ?? \"\",\n  observacao: \"\",\n  dataHora: new Date().toISOString(),\n  servico : 4\n};\n\nreturn DadosGravacao;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2752,
+        1488
+      ],
+      "id": "91c9699b-6a57-4ff7-b197-97f969fc0701",
+      "name": "Gravar - Histórico de Consumo"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const DadosGravacao = {\n  ligacao: $(\"Router\").first().json.session.data.codigoLigacao ?? \"\",\n  phone: $(\"Router\").first().json.session.phone ?? \"\",\n  phoneConectado: $(\"Router\").first().json.session.phoneconectado ?? \"\",\n  observacao: \"\",\n  dataHora: new Date().toISOString(),\n  servico : 6\n};\n\nreturn DadosGravacao;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2336,
+        624
+      ],
+      "id": "6eab1f57-a96e-4550-9312-d49c58ab9b66",
+      "name": "Gravar - Localização"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const DadosGravacao = {\n  ligacao: $(\"Router\").first().json.session.data.codigoLigacao ?? \"\",\n  phone: $(\"Router\").first().json.session.phone ?? \"\",\n  phoneConectado: $(\"Router\").first().json.session.phoneconectado ?? \"\",\n  observacao: \"\",\n  dataHora: new Date().toISOString(),\n  servico : 5\n};\n\nreturn DadosGravacao;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        2272
+      ],
+      "id": "c9d5f8f1-ea5a-4222-bb66-a2797f8a349a",
+      "name": "Gravar - Ouvidoria"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const servico = $('Montar opções da fatura selecionada (Em Aberto)').item.json.detailRequest.want;\n\nconst DadosGravacao = {\n  ligacao: $(\"Router\").first().json.session.data.codigoLigacao ?? \"\",\n  phone: $(\"Router\").first().json.session.phone ?? \"\",\n  phoneConectado: $(\"Router\").first().json.session.phoneconectado ?? \"\",\n  observacao: \"\",\n  dataHora: new Date().toISOString(),\n  servico : (servico || \"\").toUpperCase() === \"PIX\" ? 2 : 3\n};\n\nreturn DadosGravacao;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        2768
+      ],
+      "id": "6f33ec06-a94a-48cc-8393-7758c59a9985",
+      "name": "Gravar - PIX ou Barras"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{$('Constantes').item.json.env.api.endpoints.ouvidoria}}",
+        "options": {
+          "bodyContentCustomMimeType": "",
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "descricaoDenuncia",
+              "value": "={{ $json.message.content.data.text }}"
+            },
+            {
+              "name": "tipoRequerimento",
+              "value": "={{$('Constantes').item.json.env.api.configuracao.tipoRequerimento}}"
+            }
+          ]
+        }
+      },
+      "name": "Gravar ouvidoria",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        2320
+      ],
+      "id": "baf5ba1b-076c-436b-85ef-a68b71ac8e24",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2eab16b9-b8b1-4220-b549-52c9d0c06861",
+              "leftValue": "={{ $('Preparar Lista - Faturas em Aberto').item.json.message }}",
+              "rightValue": "=Não",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2720,
+        976
+      ],
+      "id": "17285660-b032-4794-9a2d-4911143503a1",
+      "name": "Não há faturas em aberto ?"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "=Finalizando a consulta de faturas pagas ..."
+            },
+            {
+              "name": "delayTyping",
+              "value": "6"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Feedback ao usuário - Faturas pagas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        1200
+      ],
+      "id": "857fd3aa-f907-4d97-befa-0c8a2dae75e7",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{$('Constantes').item.json.env.api.endpoints.faturasPagas}}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            }
+          ]
+        },
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "=matricula",
+              "value": "={{ $('Resposta lista').item.json.session.data.codigoLigacao }}"
+            }
+          ]
+        }
+      },
+      "name": "Faturas Pagas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        1200
+      ],
+      "id": "6ad6ff71-ccac-4e9a-a9c7-921ca9bb05b6",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// SEND-BUTTON-LIST (stateless) — Z-API /send-button-list\n// MODO: Run once for all items\n// Saída por lote: { phone, message, buttonList } + pairedItem\n\nconst WEBHOOK_NODE = \"Receber mensagem\";\n\n// helpers\nconst tryParse = x => { if (typeof x !== 'string') return x; const s=x.trim(); if(!(s.startsWith('[')||s.startsWith('{'))) return x; try{ return JSON.parse(s);}catch{ return x;} };\nconst isObj = v => v && typeof v === 'object' && !Array.isArray(v);\nconst toNum = s => Number(String(s ?? '').replace(/[^\\d.-]/g,'')) || 0;\nconst money = n => ('R$' + new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2}).format(n)).replace('R$ ','R$');\nconst chunk = (arr,n)=>{const o=[]; for(let i=0;i<arr.length;i+=n)o.push(arr.slice(i,i+n)); return o;};\nconst b64u = {\n  enc: (obj) => Buffer.from(JSON.stringify(obj),'utf8')\n    .toString('base64').replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'')\n};\nfunction unwrapArrayLike(j){\n  const v = tryParse(j);\n  if (Array.isArray(v)) return v;\n  if (isObj(v)) {\n    if (Array.isArray(v.rows))   return v.rows;\n    if (Array.isArray(v.result)) return v.result;\n    if (Array.isArray(v.data))   return v.data;\n    if (Array.isArray(v.body))   return v.body;\n    const k = Object.keys(v);\n    if (['mesAnoReferencia','mes','vencimento','valor','valorFaturado','total'].some(x=>k.includes(x))) return [v];\n  }\n  return [];\n}\nfunction extractRows(items){\n  if (!items.length) return [];\n  const j0 = items[0]?.json;\n  if (Array.isArray(j0)) return j0;\n  const w = unwrapArrayLike(j0); if (w.length) return w;\n  if (items.length>1) return items.map(i=>i.json);\n  return [];\n}\n\n// entrada\nconst items = $input.all();\nconst phone =\n  $json.phone ??\n  $item(0).$node[WEBHOOK_NODE]?.json?.body?.phone ??\n  null;\n\n// pegue a mesma matrícula que você usou no HTTP “Faturas pagas”\nconst codigoLigacao =\n  $json.matricula ??\n  $item(0).$node[WEBHOOK_NODE]?.json?.session?.data?.codigoLigacao ??\n  $json.session?.data?.codigoLigacao ??\n  null;\n\nlet rows = extractRows(items).filter(r => r && (r.mesAnoReferencia || r.mes || r.vencimento));\nif (!rows.length) {\n  return [{\n    json: { phone, message: 'Não há faturas pagas no momento.', buttonList: null },\n    pairedItem: [{ item: 0 }]\n  }];\n}\n\n// normaliza e monta tokens com { m, r }\nconst norm = rows.map((r, idx) => {\n  const rref = String(r.mesAnoReferencia ?? r.mes ?? '').trim(); // <- rref (não “ref”)\n  const venc = String(r.vencimento ?? '').trim();\n  const valN = toNum(r.valor ?? r.valorFaturado ?? r.total);\n  const token = 'T.' + b64u.enc({ m: codigoLigacao, r: rref }); // base64url {m,r}\n  return { token, ref: rref, venc, valN, idx };\n});\n\nconst batches = chunk(norm, 6);\nconst out = [];\n\nfor (let b = 0; b < batches.length; b++) {\n  const batch = batches[b];\n\n  const message = b === 0\n    ? '✅ *Faturas pagas*\\n\\nAqui estão as suas *6 últimas faturas*.\\nToque sobre a fatura desejada para baixar.'\n    : 'Mais opções';\n\n  const buttonList = {\n    buttons: batch.map((f, i) => ({\n      id: `fatpaga_sel_${f.token}`,\n      // use f.ref aqui (nada de “ref” solto)\n      label: `${i+1}) ${f.ref} · ${money(f.valN)}`.slice(0, 20)\n    }))\n  };\n\n  out.push({ json: { phone, message, buttonList }, pairedItem: [{ item: 0 }] });\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        1200
+      ],
+      "id": "05a7852d-b57b-4747-a179-8c5e2c50427c",
+      "name": "Preparar Lista - Faturas Pagas"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendButtonList}}",
+        "options": {
+          "fullResponse": true,
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            },
+            {
+              "name": "buttonList",
+              "value": "={{ $json.buttonList }}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Apresentar Faturas pagas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2512,
+        1200
+      ],
+      "id": "46dc9c9e-88db-4f1d-992f-5cb243c73091",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2eab16b9-b8b1-4220-b549-52c9d0c06861",
+              "leftValue": "={{ $('Preparar Lista - Faturas Pagas').item.json.message }}",
+              "rightValue": "Não",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2720,
+        1200
+      ],
+      "id": "3e83b79b-8d4c-42ac-a80f-66820ddc45db",
+      "name": "Não há faturas pagas ?",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "552c6e23-e71b-4b3e-ba9d-747a56d5978e",
+              "leftValue": "={{ $('Normalizador de Clique').item.json.isInvoiceClickAbertas }}",
+              "rightValue": "fat_sel",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "4332e7ed-167a-4c18-bf9f-7a48682201fd",
+      "name": "É clique de faturas em aberto",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        2672
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// SEND-BUTTON-LIST (stateless) — Z-API /send-button-list\n// MODO: Run once for all items\n// Saída por lote: { phone, message, buttonList } + pairedItem\n\nconst WEBHOOK_NODE = \"Receber mensagem\";\n\n// helpers\nconst tryParse = x => { if (typeof x !== 'string') return x; const s=x.trim(); if(!(s.startsWith('[')||s.startsWith('{'))) return x; try{ return JSON.parse(s);}catch{ return x;} };\nconst isObj = v => v && typeof v === 'object' && !Array.isArray(v);\nconst toNum = s => Number(String(s ?? '').replace(/[^\\d.-]/g,'')) || 0;\nconst money = n => ('R$' + new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2}).format(n)).replace('R$ ','R$');\nconst chunk = (arr,n)=>{const o=[]; for(let i=0;i<arr.length;i+=n)o.push(arr.slice(i,i+n)); return o;};\nconst b64u = {\n  enc: (obj) => Buffer.from(JSON.stringify(obj),'utf8')\n    .toString('base64').replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'')\n};\nfunction unwrapArrayLike(j){\n  const v = tryParse(j);\n  if (Array.isArray(v)) return v;\n  if (isObj(v)) {\n    if (Array.isArray(v.rows))   return v.rows;\n    if (Array.isArray(v.result)) return v.result;\n    if (Array.isArray(v.data))   return v.data;\n    if (Array.isArray(v.body))   return v.body;\n    const k = Object.keys(v);\n    if (['mesAnoReferencia','mes','vencimento','valor','valorFaturado','total'].some(x=>k.includes(x))) return [v];\n  }\n  return [];\n}\nfunction extractRows(items){\n  if (!items.length) return [];\n  const j0 = items[0]?.json;\n  if (Array.isArray(j0)) return j0;\n  const w = unwrapArrayLike(j0); if (w.length) return w;\n  if (items.length>1) return items.map(i=>i.json);\n  return [];\n}\n\n// entrada\nconst items = $input.all();\nconst phone =\n  $json.phone ??\n  $item(0).$node[WEBHOOK_NODE]?.json?.body?.phone ??\n  null;\n\n// pegue a mesma matrícula que você usou no HTTP “Faturas em aberto”\nconst codigoLigacao =\n  $json.matricula ??\n  $item(0).$node[WEBHOOK_NODE]?.json?.session?.data?.codigoLigacao ??\n  $json.session?.data?.codigoLigacao ??\n  null;\n\nlet rows = extractRows(items).filter(r => r && (r.mesAnoReferencia || r.mes || r.vencimento));\nif (!rows.length) {\n  return [{\n    json: { phone, message: 'Não há faturas em aberto no momento.', buttonList: null },\n    pairedItem: [{ item: 0 }]\n  }];\n}\n\n// normaliza e monta tokens com { m, r }\nconst norm = rows.map((r, idx) => {\n  const rref = String(r.mesAnoReferencia ?? r.mes ?? '').trim(); // <- rref (não “ref”)\n  const venc = String(r.vencimento ?? '').trim();\n  const valN = toNum(r.valor ?? r.valorFaturado ?? r.total);\n  const token = 'T.' + b64u.enc({ m: codigoLigacao, r: rref }); // base64url {m,r}\n  return { token, ref: rref, venc, valN, idx };\n});\n\n// 12 botões por mensagem\nconst batches = chunk(norm, 12);\nconst out = [];\n\nfor (let b = 0; b < batches.length; b++) {\n  const batch = batches[b];\n\n  const message = b === 0\n    ? '📄 *Faturas em aberto*\\n\\nAqui estão as suas faturas *mais recentes*.\\nListamos no máximo 12 para facilitar sua visualização'\n    : 'Mais opções';\n\n  const buttonList = {\n    buttons: batch.map((f, i) => ({\n      id: `fat_sel_${f.token}`,\n      // use f.ref aqui (nada de “ref” solto)\n      label: `${i+1}) ${f.ref} · ${money(f.valN)}`.slice(0, 20)\n    }))\n  };\n\n  out.push({ json: { phone, message, buttonList }, pairedItem: [{ item: 0 }] });\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        976
+      ],
+      "id": "ab76cee3-bc7d-4fd6-b558-25c310f5f274",
+      "name": "Preparar Lista - Faturas em Aberto"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "552c6e23-e71b-4b3e-ba9d-747a56d5978e",
+              "leftValue": "={{ $('Normalizador de Clique').item.json.isInvoiceClickPagas }}",
+              "rightValue": "fat_sel",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "275c8bf2-e9ca-4f3d-a4ec-79f800ed1382",
+      "name": "É clique de faturas pagas",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        2592
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PROBE: inspeciona faturasMap[token] no momento do clique\nconst WEBHOOK_NODE = \"Receber mensagem\";\nconst get = (o,p) => p.split('.').reduce((a,k)=> (a && a[k]!==undefined ? a[k] : null), o || null);\nconst parseMaybe = v => (typeof v === 'string' ? (v.trim() ? JSON.parse(v) : {}) : (v || {}));\n\nconst W = $item(0).$node[WEBHOOK_NODE]?.json || {};\nconst J = $json || {};\n\nconst btnId =\n  get(J,'body.buttonsResponseMessage.buttonId') ||\n  get(J,'buttonsResponseMessage.buttonId') ||\n  get(J,'message.content.data.button.id') ||\n  get(W,'body.buttonsResponseMessage.buttonId') ||\n  get(W,'buttonsResponseMessage.buttonId') ||\n  get(W,'message.content.data.button.id') || '';\n\nconst m = String(btnId).trim().match(/^fatpaga_sel_(.+)$/);\nconst token = m ? m[1] : null;\n\nconst rawData = get(J,'session.data') ?? J.data_json ?? get(J,'_session.data') ??\n                get(W,'session.data') ?? W.data_json ?? get(W,'_session.data') ?? {};\nconst data = parseMaybe(rawData);\nconst f = (token && data.faturasMap) ? data.faturasMap[token] : null;\n\nreturn [{\n  json: {\n    token,\n    hasMap: !!data.faturasMap,\n    fatura: f || null\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        2672
+      ],
+      "id": "b8b27de4-5d9b-413b-9774-31cde201194a",
+      "name": "Montar lista de faturas pagas"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// AÇÕES DA FATURA — gera 3 botões com o mesmo TOKEN (stateless)\n// Run once for each item\ntry {\n  const matricula = $('É clique de faturas pagas').item.json.data_json.codigoLigacao;\n  const phone = $('É clique de faturas pagas').item.json.phone;\n  let mensagem = $('É clique de faturas pagas').item.json.message.content.data.text;\n  const referencia = mensagem.match(/(\\d{2}\\/\\d{4})/)?.[1];\n\nreturn { json: { phone, action:'gen_pdf', pdfRequest: { matricula, referencia } }, pairedItem: [{ item: 0 }] };\n}catch (e) {\n  return { json: { phone:null, action:'noop', message:`erro ao selecionar fatura paga` }, pairedItem: [{ item: 0 }] };\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        2848
+      ],
+      "id": "7698e955-d4d1-4e1e-ae41-4a51ddc70dab",
+      "name": "Ações das faturas pagas"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// AÇÕES DA FATURA — gera 3 botões com o mesmo TOKEN (stateless)\n// Run once for each item\ntry {\n  const WEBHOOK_NODE = \"Receber mensagem\";\n  const get = (o,p)=>p.split('.').reduce((a,k)=> (a&&a[k]!==undefined?a[k]:null), o||null);\n\n  const W = $item(0).$node[WEBHOOK_NODE]?.json || {};\n  const J = $json || {};\n\n  const phone = J.phone ?? get(J,'message.content.data.phone') ?? get(J,'body.phone') ?? get(W,'body.phone') ?? null;\n\n  let clickId =\n    get(J,'body.buttonsResponseMessage.buttonId') ||\n    get(J,'buttonsResponseMessage.buttonId') ||\n    get(J,'message.content.data.button.id') ||\n    get(W,'body.buttonsResponseMessage.buttonId') ||\n    get(W,'buttonsResponseMessage.buttonId') ||\n    get(W,'message.content.data.button.id') || '';\n\n  clickId = String(clickId).trim();\n  if (!clickId.startsWith('fat_sel_')) {\n    return { json: { phone, message: 'Selecione uma fatura primeiro.', buttonList: null }, pairedItem: [{ item: 0 }] };\n  }\n\n  const token = clickId.slice('fat_sel_'.length);\n\n  const buttonList = {\n    buttons: [\n      { id: `fat_act_pix_${token}`,  label: \"Copiar QRCode PIX ❖\" },\n      { id: `fat_act_bar_${token}`,  label: \"Copiar Código de barras 𝄃𝄃𝄂𝄂𝄀𝄁𝄃𝄂𝄂𝄃\" },\n      { id: `fat_act_pdf_${token}`,  label: \"Baixar fatura ⬇️\" }\n    ]\n  };\n\n  return {\n    json: { phone, message: 'O que deseja realizar ?', buttonList },\n    pairedItem: [{ item: 0 }]\n  };\n\n} catch (e) {\n  return { json: { phone: null, message: `erro ao preparar ações: ${String(e?.message||e)}`, buttonList: null }, pairedItem: [{ item: 0 }] };\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        3008
+      ],
+      "id": "e69dc1c0-d171-48c3-8e8f-b5b6a1056577",
+      "name": "Ações das faturas em aberto"
+    },
+    {
+      "parameters": {
+        "jsCode": "// PROBE: inspeciona faturasMap[token] no momento do clique\nconst WEBHOOK_NODE = \"Receber mensagem\";\nconst get = (o,p) => p.split('.').reduce((a,k)=> (a && a[k]!==undefined ? a[k] : null), o || null);\nconst parseMaybe = v => (typeof v === 'string' ? (v.trim() ? JSON.parse(v) : {}) : (v || {}));\n\nconst W = $item(0).$node[WEBHOOK_NODE]?.json || {};\nconst J = $json || {};\n\nconst btnId =\n  get(J,'body.buttonsResponseMessage.buttonId') ||\n  get(J,'buttonsResponseMessage.buttonId') ||\n  get(J,'message.content.data.button.id') ||\n  get(W,'body.buttonsResponseMessage.buttonId') ||\n  get(W,'buttonsResponseMessage.buttonId') ||\n  get(W,'message.content.data.button.id') || '';\n\nconst m = String(btnId).trim().match(/^fat_(?:sel|act_[a-z]+)_(.+)$/);\nconst token = m ? m[1] : null;\n\nconst rawData = get(J,'session.data') ?? J.data_json ?? get(J,'_session.data') ??\n                get(W,'session.data') ?? W.data_json ?? get(W,'_session.data') ?? {};\nconst data = parseMaybe(rawData);\nconst f = (token && data.faturasMap) ? data.faturasMap[token] : null;\n\nreturn [{\n  json: {\n    token,\n    hasMap: !!data.faturasMap,\n    fatura: f || null,\n    fields: f ? {\n      qrCode: !!(f.qrCode || f.qrcode),\n      linhaDigitavel: !!(f.linhaDigitavel || f.linha_digitavel),\n      codigoBarras: !!(f.codigoBarras || f.codigo_barras)\n    } : null\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        2928
+      ],
+      "id": "c9c1948a-b75c-4d74-b000-feb4e7ad8fc1",
+      "name": "Montar lista de faturas em aberto"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendButtonList}}",
+        "options": {
+          "fullResponse": true,
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            },
+            {
+              "name": "buttonList",
+              "value": "={{ $json.buttonList }}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Apresentar faturas em aberto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        48,
+        3120
+      ],
+      "id": "739a485e-8f44-4ba2-81e2-5b130258d7de",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "552c6e23-e71b-4b3e-ba9d-747a56d5978e",
+              "leftValue": "={{ $('Normalizador de Clique').item.json.isActionClickAbertas }}",
+              "rightValue": "fat_act",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "a3439d57-d479-4607-8ac8-cd5c0a101f18",
+      "name": "É clique de ação de faturas em aberto",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        2336
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// HANDLER AÇÕES (pix/bar/pdf) — stateless, com fallback para matrícula\ntry {\n  const WEBHOOK_NODE = \"Receber mensagem\";\n  const get = (o,p)=>p.split('.').reduce((a,k)=> (a&&a[k]!==undefined?a[k]:null), o||null);\n  const b64uDec = s => {\n    const pad = s.length % 4 === 2 ? '==' : s.length % 4 === 3 ? '=' : '';\n    const b64 = s.replace(/-/g,'+').replace(/_/g,'/') + pad;\n    return JSON.parse(Buffer.from(b64,'base64').toString('utf8'));\n  };\n\n  const W = $item(0).$node[WEBHOOK_NODE]?.json || {};\n  const J = $json || {};\n  const phone = J.phone ?? get(J,'message.content.data.phone') ?? get(J,'body.phone') ?? get(W,'body.phone') ?? null;\n\n  const btnId =\n    get(J,'body.buttonsResponseMessage.buttonId') ||\n    get(J,'buttonsResponseMessage.buttonId') ||\n    get(J,'message.content.data.button.id') ||\n    get(W,'body.buttonsResponseMessage.buttonId') ||\n    get(W,'buttonsResponseMessage.buttonId') ||\n    get(W,'message.content.data.button.id') || '';\n\n  const mId = String(btnId).trim().match(/^fat_act_(pix|bar|pdf)_(.+)$/);\n  if (!mId) return { json: { phone, action:'noop', message:'ação não reconhecida.' }, pairedItem: [{ item: 0 }] };\n\n  const kind = mId[1];\n  const tok  = mId[2];\n\n  let matricula = null, referencia = null;\n\n  // T.{base64url:{m,r}}\n  const mTokA = tok.match(/^T\\.(.+)$/);\n  if (mTokA) {\n    try { const pay = b64uDec(mTokA[1]) || {};\n      matricula  = pay.m ?? null;\n      referencia = (pay.r || '').replace('-', '/');\n    } catch {}\n  }\n\n  // fallback de referência: MM-AAAA(_...)\n  if (!referencia) {\n    const mc = tok.match(/^(\\d{2})-(\\d{4})(?:_.+)?$/);\n    if (mc) referencia = `${mc[1]}/${mc[2]}`;\n  }\n\n  // fallback de matrícula: webhook.session.data.codigoLigacao\n  if (!matricula) {\n    matricula =\n      get(J,'session.data.codigoLigacao') ||\n      get(W,'session.data.codigoLigacao') || null;\n  }\n\n  if (!referencia) {\n    return { json: { phone, action:'send_text', message:'Não consegui identificar a referência da fatura. Liste novamente.' }, pairedItem: [{ item: 0 }] };\n  }\n\n  if (kind === 'pdf') {\n    return { json: { phone, action:'gen_pdf', pdfRequest: { matricula, referencia } }, pairedItem: [{ item: 0 }] };\n  }\n\n  // pix/bar → reconsulta detalhe da fatura (matricula opcional; se sua API exigir, já virá preenchida pelo passo 1)\n  return { json: { phone, action:'fetch_detail', detailRequest: { matricula, referencia, want: kind } }, pairedItem: [{ item: 0 }] };\n\n} catch (e) {\n  return { json: { phone:null, action:'noop', message:`erro no handler: ${String(e?.message||e)}` }, pairedItem: [{ item: 0 }] };\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        2368
+      ],
+      "id": "d34d14af-614e-4cf8-8159-0c4de6aa5a7a",
+      "name": "Montar opções da fatura selecionada (Em Aberto)"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// PREPARAR PDF PARA Z-API — gera 3 payloads possíveis\n// MODO: Run once for each item\n\ntry {\n  const get = (o,p)=>p.split('.').reduce((a,k)=> (a && a[k]!==undefined ? a[k] : null), o || null);\n\n  // 1) phone: busque em locais confiáveis do seu flow\n  const phoneRaw =\n    $json.phone ||\n    get($item(0).$node[\"Ações das faturas pagas\"]?.json || {}, \"phone\") ||\n    get($item(0).$node[\"Receber mensagem\"]?.json || {}, \"body.phone\") ||\n    null;\n\n  const phone = phoneRaw ? String(phoneRaw).replace(/\\D/g,'') : null;\n\n  // 2) referência para nome do arquivo\n  const referencia =\n    $json.referencia ||\n    get($item(0).$node[\"Ações das faturas pagas\"]?.json || {}, \"pdfRequest.referencia\") ||\n    \"fatura\";\n\n  // 3) capturar base64 de forma tolerante\n  let raw = null;\n\n  // Se o HTTP está em \"Response Format = String\", $json costuma ser **string**\n  if (typeof $json === \"string\") raw = $json;\n  if (!raw && typeof $json?.body === \"string\") raw = $json.body;\n\n  // fallback caso sua API às vezes venha em JSON\n  if (!raw) {\n    raw =\n      $json.pdfBase64 || $json.base64 || $json.fileBase64 || $json.documentBase64 ||\n      $json.data || $json.content || $json.pdf || null;\n  }\n\n  if (!phone || !raw) {\n    return {\n      json: {\n        ok: false,\n        reason: !phone ? \"phone_missing\" : \"base64_missing\",\n        phone: phone || null\n      }\n    };\n  }\n\n  // 4) limpar prefixo e espaços/quebras; re-pad opcional\n  let base64 = String(raw).trim()\n    .replace(/^data:.*?;base64,/i, \"\")\n    .replace(/\\s+/g, \"\");\n\n  // checagem: parece PDF?\n  const looksPdf = base64.startsWith(\"JVBER\");\n  // bytes estimados: 3/4 do length\n  const approxBytes = Math.floor(base64.length * 3 / 4);\n  const approxMB = (approxBytes / (1024*1024)).toFixed(2);\n\n  // limite típico do WhatsApp ~16 MB\n  const tooBig = approxBytes > 16 * 1024 * 1024;\n\n  const fileName = `Fatura_${String(referencia).replace(/\\W+/g,'-')}.pdf`;\n  const caption  = `✅ Fatura ${referencia}`;\n  const mimeType = \"application/pdf\";\n\n  // montagem de 3 payloads possíveis (escolha UM nos HTTPs abaixo)\n  const payloadA = { // A) \"flat\" — muitas instâncias usam /send-file-from-base64\n    phone, fileName, base64, caption, mimeType\n  };\n  const payloadB = { // B) objeto document\n    phone, document: { fileName, base64, mimeType }, caption\n  };\n  const payloadC = { // C) algumas exigem campo \"file\" no lugar de \"base64\"\n    phone, fileName, file: base64, caption, mimeType\n  };\n\n  return {\n    json: {\n      ok: !tooBig,\n      warn: tooBig ? `PDF ~${approxMB}MB pode ultrapassar limite do WhatsApp` : null,\n      looksPdf,\n      approxMB,\n      payloadA,\n      payloadB,\n      payloadC\n    }\n  };\n\n} catch (e) {\n  return { json: { ok: false, error: `prep_fail: ${String(e?.message || e)}` } };\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        3024
+      ],
+      "id": "99bbfc1a-c492-40c2-9873-36067ad5ee6f",
+      "name": "Montar PDF de fatura paga"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// PREPARAR PDF PARA Z-API — gera 3 payloads possíveis\n// MODO: Run once for each item\n\ntry {\n  const get = (o,p)=>p.split('.').reduce((a,k)=> (a && a[k]!==undefined ? a[k] : null), o || null);\n\n  // 1) phone: busque em locais confiáveis do seu flow\n  const phoneRaw =\n    $json.phone ||\n    get($item(0).$node[\"Montar opções da fatura selecionada (Em Aberto)\"]?.json || {}, \"phone\") ||\n    get($item(0).$node[\"Receber mensagem\"]?.json || {}, \"body.phone\") ||\n    null;\n\n  // sanitiza phone para E.164 (somente dígitos)\n  const phone = phoneRaw ? String(phoneRaw).replace(/\\D/g,'') : null;\n\n  // 2) referência para nome do arquivo\n  const referencia =\n    $json.referencia ||\n    get($item(0).$node[\"Montar opções da fatura selecionada (Em Aberto)\"]?.json || {}, \"pdfRequest.referencia\") ||\n    get($item(0).$node[\"Consultar Fatura por referência\"]?.json || {}, \"mesAnoReferencia\") ||\n    \"fatura\";\n\n  // 3) capturar base64 de forma tolerante\n  let raw = null;\n\n  // Se o HTTP está em \"Response Format = String\", $json costuma ser **string**\n  if (typeof $json === \"string\") raw = $json;\n  if (!raw && typeof $json?.body === \"string\") raw = $json.body;\n\n  // fallback caso sua API às vezes venha em JSON\n  if (!raw) {\n    raw =\n      $json.pdfBase64 || $json.base64 || $json.fileBase64 || $json.documentBase64 ||\n      $json.data || $json.content || $json.pdf || null;\n  }\n\n  if (!phone || !raw) {\n    return {\n      json: {\n        ok: false,\n        reason: !phone ? \"phone_missing\" : \"base64_missing\",\n        phone: phone || null\n      }\n    };\n  }\n\n  // 4) limpar prefixo e espaços/quebras; re-pad opcional\n  let base64 = String(raw).trim()\n    .replace(/^data:.*?;base64,/i, \"\")\n    .replace(/\\s+/g, \"\");\n\n  // checagem: parece PDF?\n  const looksPdf = base64.startsWith(\"JVBER\");\n  // bytes estimados: 3/4 do length\n  const approxBytes = Math.floor(base64.length * 3 / 4);\n  const approxMB = (approxBytes / (1024*1024)).toFixed(2);\n\n  // limite típico do WhatsApp ~16 MB\n  const tooBig = approxBytes > 16 * 1024 * 1024;\n\n  const fileName = `Fatura_${String(referencia).replace(/\\W+/g,'-')}.pdf`;\n  const caption  = `📄 Fatura ${referencia}`;\n  const mimeType = \"application/pdf\";\n\n  // montagem de 3 payloads possíveis (escolha UM nos HTTPs abaixo)\n  const payloadA = { // A) \"flat\" — muitas instâncias usam /send-file-from-base64\n    phone, fileName, base64, caption, mimeType\n  };\n  const payloadB = { // B) objeto document\n    phone, document: { fileName, base64, mimeType }, caption\n  };\n  const payloadC = { // C) algumas exigem campo \"file\" no lugar de \"base64\"\n    phone, fileName, file: base64, caption, mimeType\n  };\n\n  return {\n    json: {\n      ok: !tooBig,\n      warn: tooBig ? `PDF ~${approxMB}MB pode ultrapassar limite do WhatsApp` : null,\n      looksPdf,\n      approxMB,\n      payloadA,\n      payloadB,\n      payloadC\n    }\n  };\n\n} catch (e) {\n  return { json: { ok: false, error: `prep_fail: ${String(e?.message || e)}` } };\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        2544
+      ],
+      "id": "a7090e5a-3bf8-4ceb-a541-a4cde5105dbb",
+      "name": "Montar PDF de fatura em aberto"
+    },
+    {
+      "parameters": {
+        "url": "={{$('Constantes').item.json.env.api.endpoints.gerarFatura}}",
+        "responseFormat": "string",
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            }
+          ]
+        },
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "=matricula",
+              "value": "={{ $('Ações das faturas pagas').item.json.pdfRequest.matricula }}"
+            },
+            {
+              "name": "referencia",
+              "value": "={{ $('Ações das faturas pagas').item.json.pdfRequest.referencia }}"
+            }
+          ]
+        }
+      },
+      "name": "Gerar fatura paga",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        976,
+        3008
+      ],
+      "id": "2d0eb28d-b58b-4fbc-82b7-5b4c4e72262a",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{$('Constantes').item.json.env.api.endpoints.gerarFatura}}",
+        "responseFormat": "string",
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            }
+          ]
+        },
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "=matricula",
+              "value": "={{ $('Gerar Fatura ?').item.json.pdfRequest.matricula }}"
+            },
+            {
+              "name": "referencia",
+              "value": "={{ $('Gerar Fatura ?').item.json.pdfRequest.referencia }}"
+            }
+          ]
+        }
+      },
+      "name": "Gerar fatura em aberto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        976,
+        2464
+      ],
+      "id": "0b102039-6453-427b-b5c3-edc646357848",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "=Realizando download da fatura ..."
+            },
+            {
+              "name": "delayTyping",
+              "value": "10"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Feedback ao usuário - Baixar Fatura em aberto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        544,
+        2368
+      ],
+      "id": "d5463968-a14f-4133-90ca-99a091093a43",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "=Realizando download da fatura ..."
+            },
+            {
+              "name": "delayTyping",
+              "value": "10"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Feedback ao usuário - Baixar Fatura paga",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        576,
+        2976
+      ],
+      "id": "50851382-7f26-44bf-aa07-adc6d8df821a",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sessions (phone, flow, step, expected_ref, data_json, expires_at,phoneconectado)\nVALUES (\n  '{{$json.session.phone}}',\n  '{{$json.session.flow}}',\n  {{$json.session.step}},\n  {{ $json.session.expectedRef ? \"'\" + $json.session.expectedRef + \"'\" : \"NULL\" }},\n  CAST('{{ JSON.stringify($json.session.data || {}) }}' AS JSON),\n  '{{$json.session.expiresAt}}','{{ $json.session.phoneconectado }}'\n)\nON DUPLICATE KEY UPDATE\n  flow         = '{{$json.session.flow}}',\n  step         = {{$json.session.step}},\n  expected_ref = {{ $json.session.expectedRef ? \"'\" + $json.session.expectedRef + \"'\" : \"NULL\" }},\n  data_json ='{{ JSON.stringify($json.session.data || {}) }}',\n  expires_at   = '{{$json.session.expiresAt}}';\n",
+        "options": {
+          "queryReplacement": "={{$json.session.phone}}  {{$json.session.flow}}  {{$json.session.step}}  {{$json.session.expectedRef ?? null}}  {{ JSON.stringify($json.session.data ?? {}) }}  {{$json.session.expiresAt}}"
+        }
+      },
+      "id": "08a92916-2d57-4913-ba40-9f87529a22d2",
+      "name": "Alterar Sessao 2",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        5552,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sessions (phone, flow, step, expected_ref, data_json, expires_at,phoneconectado)\nVALUES (\n  '{{$json.session.phone}}',\n  '{{$json.session.flow}}',\n  {{$json.session.step}},\n  {{ $json.session.expectedRef ? \"'\" + $json.session.expectedRef + \"'\" : \"NULL\" }},\n  CAST('{{ JSON.stringify($json.session.data || {}) }}' AS JSON),\n  '{{$json.session.expiresAt}}','{{ $json.session.phoneconectado }}'\n)\nON DUPLICATE KEY UPDATE\n  flow         = '{{$json.session.flow}}',\n  step         = {{$json.session.step}},\n  expected_ref = {{ $json.session.expectedRef ? \"'\" + $json.session.expectedRef + \"'\" : \"NULL\" }},\n  data_json ='{{ JSON.stringify($json.session.data || {}) }}',\n  expires_at   = '{{$json.session.expiresAt}}';\n",
+        "options": {
+          "queryReplacement": "={{$json.session.phone}}  {{$json.session.flow}}  {{$json.session.step}}  {{$json.session.expectedRef ?? null}}  {{ JSON.stringify($json.session.data ?? {}) }}  {{$json.session.expiresAt}}"
+        }
+      },
+      "id": "59edd5ba-4d03-4b1c-bef4-ad723149d788",
+      "name": "Alterar Sessão 3",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\n// messageId da Z-API\nconst mid =\n  j.messageId ??\n  j.data?.messageId ??\n  j.response?.messageId ??\n  j.result?.messageId ??\n  j.id ??\n  null;\n\nconst snapSess = j._snapList?.session || {};\nconst currSess = j.session || {};\nconst merged = {\n  phone: currSess.phone ?? j._snapList?.phone ?? snapSess.phone ?? j.phone ?? null,\n  phoneconectado: currSess.phoneconectado ?? j._snapList?.phoneconectado ?? snapSess.phoneconectado ?? j.phoneconectado ?? null,\n  flow: currSess.flow ?? snapSess.flow ?? \"menu\",\n  step: currSess.step ?? snapSess.step ?? 0,\n  data:\n    currSess.data && Object.keys(currSess.data).length\n      ? currSess.data\n      : snapSess.data || {},\n  expiresAt:\n    currSess.expiresAt ??\n    snapSess.expiresAt ??\n    new Date(Date.now() + 15 * 60000).toISOString(),\n  expectedRef: currSess.expectedRef ?? null,\n};\n\nif (mid) merged.expectedRef = mid;\n\n// normaliza chavedigital: se veio na raiz, coloca dentro de data\nif (j.chavedigital != null && String(j.chavedigital).trim() !== \"\") {\n  merged.data = { ...merged.data, chavedigital: j.chavedigital };\n}\n\n// regra: se step=3 e há chavedigital, volta para 2\nconst hasChave =\n  merged.data?.chavedigital != null &&\n  String(merged.data.chavedigital).trim() !== \"\";\n\nif (merged.step === 3 && hasChave && $('Router').item.json.session.needValidateLigacao == true) {\n  merged.step = 2;\n}\n\nj.session = merged;\nj.phone = merged.phone;\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        944
+      ],
+      "id": "6fd57e47-e97d-4763-a853-62fa5a7d65c6",
+      "name": "Repassar sessão"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\n// messageId da Z-API\nconst mid =\n  j.messageId ??\n  j.data?.messageId ??\n  j.response?.messageId ??\n  j.result?.messageId ??\n  j.id ??\n  null;\n\nconst snapSess = j._snapList?.session || {};\nconst currSess = j.session || {};\nconst merged = {\n  phone: currSess.phone ?? j._snapList?.phone ?? snapSess.phone ?? j.phone ?? null,\n  phoneconectado: currSess.phoneconectado ?? j._snapList?.phoneconectado ?? snapSess.phoneconectado ?? j.phoneconectado ?? null,\n  flow: currSess.flow ?? snapSess.flow ?? \"menu\",\n  step: currSess.step ?? snapSess.step ?? 0,\n  data:\n    currSess.data && Object.keys(currSess.data).length\n      ? currSess.data\n      : snapSess.data || {},\n  expiresAt:\n    currSess.expiresAt ??\n    snapSess.expiresAt ??\n    new Date(Date.now() + 15 * 60000).toISOString(),\n  expectedRef: currSess.expectedRef ?? null,\n};\n\nif (mid) merged.expectedRef = mid;\n\n// normaliza chavedigital: se veio na raiz, coloca dentro de data\nif (j.chavedigital != null && String(j.chavedigital).trim() !== \"\") {\n  merged.data = { ...merged.data, chavedigital: j.chavedigital };\n}\n\n// regra: se step=3 e há chavedigital, volta para 2\nconst hasChave =\n  merged.data?.chavedigital != null &&\n  String(merged.data.chavedigital).trim() !== \"\";\n\nif (merged.step === 3 && hasChave && $('Router').item.json.session.needValidateLigacao == true) {\n  merged.step = 2;\n}\n\nj.session = merged;\nj.phone = merged.phone;\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5296,
+        624
+      ],
+      "id": "1fcc73aa-e418-4300-b11a-f924db127dea",
+      "name": "Repassar sessão 2"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const DadosGravacao = {\n  ligacao: $(\"Router\").first().json.session.data.codigoLigacao ?? \"\",\n  phone: $(\"Router\").first().json.session.phone ?? \"\",\n  phoneConectado: $(\"Router\").first().json.session.phoneconectado ?? \"\",\n  observacao: \"\",\n  dataHora: new Date().toISOString(),\n  servico : 7\n};\n\nreturn DadosGravacao;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        3008
+      ],
+      "id": "c2229d22-3467-41f8-bc7b-528bccd1eaa8",
+      "name": "Gravar - Segunda via - Paga"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const DadosGravacao = {\n  ligacao: $(\"Router\").first().json.session.data.codigoLigacao ?? \"\",\n  phone: $(\"Router\").first().json.session.phone ?? \"\",\n  phoneConectado: $(\"Router\").first().json.session.phoneconectado ?? \"\",\n  observacao: \"\",\n  dataHora: new Date().toISOString(),\n  servico : 1\n};\n\nreturn DadosGravacao;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        2544
+      ],
+      "id": "a4c4286d-e843-4fdc-8d43-2ef51510d0ae",
+      "name": "Gravar - Segunda Via - em aberto"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{$('Constantes').item.json.env.api.endpoints.auditoria}}",
+        "options": {
+          "bodyContentCustomMimeType": "",
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "celularChatbot",
+              "value": "={{ $json.phoneConectado }}"
+            },
+            {
+              "name": "celularUsuario",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "rotina",
+              "value": "={{ $json.servico }}"
+            },
+            {
+              "name": "ligacaoId",
+              "value": "={{ $json.ligacao }}"
+            },
+            {
+              "name": "observacao",
+              "value": "={{ $json.observacao }}"
+            }
+          ]
+        }
+      },
+      "name": "Gravar Auditoria",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        3984,
+        992
+      ],
+      "id": "0e350fae-ecf2-4da4-96dd-68762c47eecf",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst snapSess = j._snapList?.session || {};\nconst currSess = j.session || {};\n\nconst merged = {\n  phone: currSess.phone ?? j._snapList?.phone ?? snapSess.phone ?? j.phone ?? null,\n  phoneconectado: currSess.phoneconectado ?? j._snapList?.phoneconectado ?? snapSess.phoneconectado ?? j.phoneconectado ?? null,\n  flow: \"ident\",\n  step: 2,\n  data:\n    currSess.data && Object.keys(currSess.data).length\n      ? currSess.data\n      : snapSess.data || {},\n  expiresAt:\n    currSess.expiresAt ??\n    snapSess.expiresAt ??\n    new Date(Date.now() + 15 * 60000).toISOString(),\n  expectedRef: currSess.expectedRef ?? null,\n};\n\nj.session = merged;\n\nj.session.data.authOk = false;\nj.session.data.codigoLigacao = null;\nj.session.reply = `Prazer em falar com você,*` + currSess.data.nome + `!* 👋\\nPor favor, me informe o *código da ligação* (apenas os números, sem o dígito).\\n\\nSe quiser encerrar o atendimento, basta digitar *Sair* a qualquer momento.`;\n\n\nj.phone = merged.phone;\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        784
+      ],
+      "id": "203f3465-d617-492c-9e70-6f2b815efcd2",
+      "name": "Montar sessão para trocar ligação"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sessions (phone, flow, step, expected_ref, data_json, expires_at,phoneconectado)\nVALUES (\n  '{{$json.session.phone}}',\n  '{{$json.session.flow}}',\n  {{$json.session.step}},\n  {{ $json.session.expectedRef ? \"'\" + $json.session.expectedRef + \"'\" : \"NULL\" }},\n  CAST('{{ JSON.stringify($json.session.data || {}) }}' AS JSON),\n  '{{$json.session.expiresAt}}','{{ $json.session.phoneconectado }}'\n)\nON DUPLICATE KEY UPDATE\n  flow         = '{{$json.session.flow}}',\n  step         = {{$json.session.step}},\n  expected_ref = {{ $json.session.expectedRef ? \"'\" + $json.session.expectedRef + \"'\" : \"NULL\" }},\n  data_json ='{{ JSON.stringify($json.session.data || {}) }}',\n  expires_at   = '{{$json.session.expiresAt}}';\n",
+        "options": {
+          "queryReplacement": "={{$json.session.phone}}  {{$json.session.flow}}  {{$json.session.step}}  {{$json.session.expectedRef ?? null}}  {{ JSON.stringify($json.session.data ?? {}) }}  {{$json.session.expiresAt}}"
+        }
+      },
+      "id": "66ef6777-b5d9-4158-b8ca-55dfa6dd71f8",
+      "name": "Alterar sessão para trocar ligação",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $('Montar sessão para trocar ligação').item.json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Montar sessão para trocar ligação').item.json.session.reply }}"
+            },
+            {
+              "name": "delayTyping",
+              "value": "6"
+            },
+            {
+              "name": "delayMessage",
+              "value": "2"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Solicitar o novo código de ligação",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2512,
+        784
+      ],
+      "id": "19e82b23-ef3b-440d-8890-d480b04806a9",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendDocument }}",
+        "options": {
+          "bodyContentCustomMimeType": "",
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.payloadA.phone }}"
+            },
+            {
+              "name": "document",
+              "value": "={{ 'data:application/pdf;base64,' + $json.payloadA.base64 }}"
+            },
+            {
+              "name": "fileName",
+              "value": "={{ $json.payloadA.fileName }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.payloadA.caption }}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Apresentar PDF fatura aberta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        2576
+      ],
+      "id": "639dc154-dd2d-48e9-9f8e-e03fde70a57f",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendDocument }}",
+        "options": {
+          "bodyContentCustomMimeType": "",
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $json.payloadA.phone }}"
+            },
+            {
+              "name": "document",
+              "value": "={{ 'data:application/pdf;base64,' + $json.payloadA.base64 }}"
+            },
+            {
+              "name": "fileName",
+              "value": "={{ $json.payloadA.fileName }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.payloadA.caption }}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Apresentar PDF fatura paga",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        3024
+      ],
+      "id": "644e40d7-ae2a-4bae-bdf1-9c09a7165a6c",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $node[\"Receber mensagem\"].json.body.listResponseMessage?.title \n   || $node[\"Receber mensagem\"].json.body.listResponse?.title }}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "contains",
+              "value2": "Faturas em aberto",
+              "output": 1
+            },
+            {
+              "operation": "contains",
+              "value2": "Faturas pagas",
+              "output": 2
+            },
+            {
+              "operation": "contains",
+              "value2": "Histórico de consumo",
+              "output": 3
+            }
+          ]
+        },
+        "fallbackOutput": 0
+      },
+      "name": "Resposta lista",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        1136
+      ],
+      "id": "850bb517-3228-4eb0-ba2a-1a698aac2a47"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $node[\"Receber mensagem\"].json.body.listResponseMessage?.title \n   || $node[\"Receber mensagem\"].json.body.listResponse?.title }}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "contains",
+              "value2": "Denúncia",
+              "output": 3
+            },
+            {
+              "operation": "contains",
+              "value2": "Localização",
+              "output": 1
+            },
+            {
+              "operation": "contains",
+              "value2": "Trocar ligação",
+              "output": 2
+            }
+          ]
+        },
+        "fallbackOutput": 0
+      },
+      "name": "Resposta lista 2",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        736
+      ],
+      "id": "c0139237-ad43-416a-908b-685feb8cf7eb"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $node[\"Receber mensagem\"].json.body.listResponseMessage?.title \n   || $node[\"Receber mensagem\"].json.body.listResponse?.title }}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "contains",
+              "value2": "Falar com Atendente"
+            },
+            {
+              "operation": "contains",
+              "value2": "Sair",
+              "output": 1
+            }
+          ]
+        }
+      },
+      "name": "Resposta lista 3",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        352
+      ],
+      "id": "58e50b58-c503-4b91-97e3-65b6410d1a52"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $('Resposta lista 3').item.json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{\n\"Perfeito! 👨🏻‍💻\\nEstou transferindo sua conversa para um de nossos atendentes humanos.\\n\\nAntes de prosseguir, confirmo seus dados:\\n👤 Nome: *\" \n+ $('Resposta lista 3').item.json.session.data.nome \n+ \"*\\n📝 Código da ligação: *\" \n+ $('Resposta lista 3').item.json.session.data.codigoLigacao \n+ \"*\\n\\nPor favor, detalhe *qual é o problema ou dúvida* para que possamos agilizar seu atendimento.\\n\\nSe desejar voltar ao atendimento automatizado com o *BILL*, basta digitar *BILL* a qualquer momento.\"\n}}\n"
+            },
+            {
+              "name": "delayTyping",
+              "value": "2"
+            },
+            {
+              "name": "delayMessage",
+              "value": "2"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Mensagem de repasse ao Atendente Humano",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2944,
+        208
+      ],
+      "id": "b430ed11-165a-4486-9a56-d1de84f14181",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst snapSess = j._snapList?.session || {};\nconst currSess = j.session || {};\n\nconst merged = {\n  phone: $('Resposta lista 3').item.json.phone,\n  phoneconectado: $('Resposta lista 3').item.json.phoneconectado,\n  flow: \"humano\",\n  step: 1,\n  data:\n    currSess.data && Object.keys(currSess.data).length\n      ? currSess.data\n      : snapSess.data || {},\n  expiresAt:\n    currSess.expiresAt ??\n    snapSess.expiresAt ??\n    new Date(Date.now() + 120 * 60000).toISOString(),\n  expectedRef: currSess.expectedRef ?? null,\n};\n\nj.session = merged;\n\nj.session.data.authOk = true;\nj.session.data.codigoLigacao = $('Resposta lista 3').item.json.data_json.codigoLigacao;\nj.session.data.nome = $('Resposta lista 3').item.json.data_json.nome;\nj.session.data.chavedigital = $('Resposta lista 3').item.json.data_json.chavedigital;\nj.session.reply = ``;\n\n\nj.phone = merged.phone;\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3296,
+        320
+      ],
+      "id": "f550f69c-bd84-4d7e-9084-87ff85312ce8",
+      "name": "Montar sessão para Atendimento Humano"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sessions (phone, flow, step, expected_ref, data_json, expires_at,phoneconectado)\nVALUES (\n  '{{$json.session.phone}}',\n  '{{$json.session.flow}}',\n  {{$json.session.step}},\n  {{ $json.session.expectedRef ? \"'\" + $json.session.expectedRef + \"'\" : \"NULL\" }},\n  CAST('{{ JSON.stringify($json.session.data || {}) }}' AS JSON),\n  '{{$json.session.expiresAt}}','{{ $json.session.phoneconectado }}'\n)\nON DUPLICATE KEY UPDATE\n  flow         = '{{$json.session.flow}}',\n  step         = {{$json.session.step}},\n  expected_ref = {{ $json.session.expectedRef ? \"'\" + $json.session.expectedRef + \"'\" : \"NULL\" }},\n  data_json ='{{ JSON.stringify($json.session.data || {}) }}',\n  expires_at   = '{{$json.session.expiresAt}}';\n",
+        "options": {
+          "queryReplacement": "={{$json.session.phone}}  {{$json.session.flow}}  {{$json.session.step}}  {{$json.session.expectedRef ?? null}}  {{ JSON.stringify($json.session.data ?? {}) }}  {{$json.session.expiresAt}}"
+        }
+      },
+      "id": "abd1e826-5df3-4655-b805-3bd059942526",
+      "name": "Alterar sessão para atendimento Humano",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        3536,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f6a291f2-ed97-4d5e-84e5-34c26d3c4732",
+              "leftValue": "={{ String($json.flow || '').toLowerCase() }}",
+              "rightValue": "humano",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "1e7c390c-8aa0-4323-9201-d13107f5b4fc",
+              "leftValue": "={{ $('Receber mensagem').item.json.body.text.message.toLowerCase() }}",
+              "rightValue": "sair",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -848,
+        272
+      ],
+      "id": "6adcfb3c-c678-47ec-b061-2817b05860a1",
+      "name": "Sessão de atendimento humano ?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f6a291f2-ed97-4d5e-84e5-34c26d3c4732",
+              "leftValue": "={{ $json.body.fromMe }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        688,
+        272
+      ],
+      "id": "29f8faad-0622-409f-86f7-cd9ed2ea7b1b",
+      "name": "Mensagem do bot ?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f6a291f2-ed97-4d5e-84e5-34c26d3c4732",
+              "leftValue": "={{ $json.dentroDoHorario }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2624,
+        336
+      ],
+      "id": "7617c998-166b-4afa-ba2d-0d60a33991a2",
+      "name": "Horário dentro do expediente humano ?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recupera as configurações vindas do nó \"Constantes\"\nconst cfg = $('Constantes').item.json.env.api.configuracao || {};\n\n// Lê os horários de início e fim em string (\"HH:mm\")\nconst iniStr = String(cfg.HorarioAtendimentoHumanoInicio || '').trim();\nconst fimStr = String(cfg.HorarioAtendimentoHumanoFim || '').trim();\n\n// Retorno padrão (fora do horário)\nlet dentroDoHorario = false;\n\nif (/^\\d{2}:\\d{2}$/.test(iniStr) && /^\\d{2}:\\d{2}$/.test(fimStr)) {\n  const [hI, mI] = iniStr.split(':').map(Number);\n  const [hF, mF] = fimStr.split(':').map(Number);\n\n  // Hora atual de Brasília\n  const agoraBR = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));\n  const minutosAgora = agoraBR.getHours() * 60 + agoraBR.getMinutes();\n\n  const ini = hI * 60 + mI;\n  const fim = hF * 60 + mF;\n\n  if (ini <= fim) {\n    // Janela normal (mesmo dia)\n    dentroDoHorario = minutosAgora >= ini && minutosAgora < fim;\n  } else {\n    // Janela que cruza a meia-noite (ex: 22:00–06:00)\n    dentroDoHorario = minutosAgora >= ini || minutosAgora < fim;\n  }\n}\n\nreturn [{\n  json: {\n    dentroDoHorario: Boolean(dentroDoHorario)\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        336
+      ],
+      "id": "873963b8-eaf7-4371-9cea-e7f74bcb5a27",
+      "name": "Consistir horário de atendimento humano"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "={{ $('Constantes').item.json.env.endpoints.sendText }}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "phone",
+              "value": "={{ $('Resposta lista 3').item.json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{\n\"Olá! 👋🏻\\nNosso horário de atendimento humano já foi encerrado por hoje.\\n\\n⏰ Horário de atendimento: *segunda a sexta, das \" + $('Constantes').item.json.env.api.configuracao.HorarioAtendimentoHumanoInicio + \"* às *\" +\n$('Constantes').item.json.env.api.configuracao.HorarioAtendimentoHumanoFim + \"*.\\n\\nAgradecemos pela compreensão.\\n\\nSe desejar voltar ao atendimento automatizado com o *BILL*, basta digitar *BILL*.\\n\\nSe desejar encerrar o atendimento digite *sair*.\"\n}}\n"
+            },
+            {
+              "name": "delayTyping",
+              "value": "2"
+            },
+            {
+              "name": "delayMessage",
+              "value": "2"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Client-Token",
+              "value": "={{ $('Constantes').item.json.env.clientTokenHeaderZapi }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Mensagem de repasse ao Atendente fora do horário",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2944,
+        416
+      ],
+      "id": "693134ef-a26c-4dba-ac61-aae8ad321b4a",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c796eaa6-5ecd-4b17-a672-56a59c82d61b",
+              "leftValue": "={{ $('Receber mensagem').item.json.body.text.message.toLowerCase() }}",
+              "rightValue": "bill",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -496,
+        96
+      ],
+      "id": "898dd3d9-7442-43c0-a623-2d4cc1980cc0",
+      "name": "Verificar se fluxo irá voltar para o BILL"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "_session",
+              "value": "={{$json}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eb3c2518-baa2-4089-8e83-5e3e9523efc0",
+      "name": "Setar sessão",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        272
+      ]
+    }
+  ],
+  "connections": {
+    "Monta lista recursos": {
+      "main": [
+        [
+          {
+            "node": "Imprimir Lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monta lista": {
+      "main": [
+        [
+          {
+            "node": "Envia lista Opções",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Payload": {
+      "main": [
+        [
+          {
+            "node": "Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apresentar Faturas em Aberto": {
+      "main": [
+        [
+          {
+            "node": "Não há faturas em aberto ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar LIgação": {
+      "main": [
+        [
+          {
+            "node": "Passar Session",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Passar Session",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Histórico de consumo": {
+      "main": [
+        [
+          {
+            "node": "Formatar histórico de consumo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar histórico de consumo": {
+      "main": [
+        [
+          {
+            "node": "Apresentar historico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Confirmação": {
+      "main": [
+        [
+          {
+            "node": "Gravar - Ouvidoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processa Ouvidoria ?": {
+      "main": [
+        [
+          {
+            "node": "Gravar ouvidoria",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem Individual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recriar session": {
+      "main": [
+        [
+          {
+            "node": "Repassar sessão 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Recriar session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snapshot Sessão (Confirm)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Encerramento": {
+      "main": [
+        [
+          {
+            "node": "Deletar sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encerrar Atendimento ?": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Encerramento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Snapshot Sessão Texto",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Precisa Validar Ligação ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abrir Menu ?": {
+      "main": [
+        [
+          {
+            "node": "Monta lista recursos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Pergunta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encerramento/Voltar": {
+      "main": [
+        [
+          {
+            "node": "Snapshot Sessão (Confirm)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Mensagem final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta vem de Lista": {
+      "main": [
+        [
+          {
+            "node": "Resposta lista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Monta lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Imprimir Lista": {
+      "main": [
+        [
+          {
+            "node": "Merge Lista + Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snapshot Sessão Lista": {
+      "main": [
+        [
+          {
+            "node": "Abrir Menu ?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Lista + Sessão",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Snapshot Sessão Texto": {
+      "main": [
+        [
+          {
+            "node": "Merge Texto + Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Texto + Sessão": {
+      "main": [
+        [
+          {
+            "node": "Repassar sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Lista + Sessão": {
+      "main": [
+        [
+          {
+            "node": "Repassar sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apresentar historico": {
+      "main": [
+        [
+          {
+            "node": "Gravar - Histórico de Consumo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Passar Session": {
+      "main": [
+        [
+          {
+            "node": "Processa Validação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticado ?": {
+      "main": [
+        [
+          {
+            "node": "É clique de faturas em aberto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router": {
+      "main": [
+        [
+          {
+            "node": "Encerrar Atendimento ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setar Codigo": {
+      "main": [
+        [
+          {
+            "node": "Passar Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Precisa Validar Ligação ?": {
+      "main": [
+        [
+          {
+            "node": "Setar Codigo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Feedback ao usuário - Baixar Fatura1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tem reply?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processa Validação": {
+      "main": [
+        [
+          {
+            "node": "Snapshot Sessão Lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Pergunta": {
+      "main": [
+        [
+          {
+            "node": "Merge Texto + Sessão",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Tem reply?": {
+      "main": [
+        [
+          {
+            "node": "Enviar Pergunta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Autenticado ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Sessão": {
+      "main": [
+        [
+          {
+            "node": "Setar sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem final": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Constantes": {
+      "main": [
+        [
+          {
+            "node": "Select Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia Localização": {
+      "main": [
+        [
+          {
+            "node": "Gravar - Localização",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receber mensagem": {
+      "main": [
+        [
+          {
+            "node": "Normalizador de Clique",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados": {
+      "main": [
+        [
+          {
+            "node": "Constantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem enviada pelo Bot": {
+      "main": [
+        [
+          {
+            "node": "Resposta vem de Lista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Individual": {
+      "main": [
+        [
+          {
+            "node": "Mensagem enviada pelo Bot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Faturas em Aberto": {
+      "main": [
+        [
+          {
+            "node": "Preparar Lista - Faturas em Aberto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar Fatura ?": {
+      "main": [
+        [
+          {
+            "node": "Feedback ao usuário - Baixar Fatura em aberto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Feedback ao usuário - PIX/Barras",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizador de Clique": {
+      "main": [
+        [
+          {
+            "node": "Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Fatura por referência": {
+      "main": [
+        [
+          {
+            "node": "Montar resposta Pix/Barras",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar resposta Pix/Barras": {
+      "main": [
+        [
+          {
+            "node": "Apresentar PIX/Barras",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apresentar PIX/Barras": {
+      "main": [
+        [
+          {
+            "node": "Gravar - PIX ou Barras",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback ao usuário - Faturas em aberto": {
+      "main": [
+        [
+          {
+            "node": "Faturas em Aberto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback ao usuário - PIX/Barras": {
+      "main": [
+        [
+          {
+            "node": "Consultar Fatura por referência",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback ao usuário - Historico": {
+      "main": [
+        [
+          {
+            "node": "Histórico de consumo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback ao usuário - Baixar Fatura1": {
+      "main": [
+        [
+          {
+            "node": "Validar LIgação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar - Histórico de Consumo": {
+      "main": [
+        [
+          {
+            "node": "Gravar Auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar - Localização": {
+      "main": [
+        [
+          {
+            "node": "Gravar Auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar - Ouvidoria": {
+      "main": [
+        [
+          {
+            "node": "Gravar Auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar - PIX ou Barras": {
+      "main": [
+        [
+          {
+            "node": "Gravar Auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar ouvidoria": {
+      "main": [
+        [
+          {
+            "node": "Enviar Confirmação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Não há faturas em aberto ?": {
+      "main": [
+        [
+          {
+            "node": "Encerramento/Voltar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback ao usuário - Faturas pagas": {
+      "main": [
+        [
+          {
+            "node": "Faturas Pagas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Faturas Pagas": {
+      "main": [
+        [
+          {
+            "node": "Preparar Lista - Faturas Pagas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Lista - Faturas Pagas": {
+      "main": [
+        [
+          {
+            "node": "Apresentar Faturas pagas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apresentar Faturas pagas": {
+      "main": [
+        [
+          {
+            "node": "Não há faturas pagas ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Não há faturas pagas ?": {
+      "main": [
+        [
+          {
+            "node": "Encerramento/Voltar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É clique de faturas em aberto": {
+      "main": [
+        [
+          {
+            "node": "Montar lista de faturas em aberto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "É clique de faturas pagas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Lista - Faturas em Aberto": {
+      "main": [
+        [
+          {
+            "node": "Apresentar Faturas em Aberto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É clique de faturas pagas": {
+      "main": [
+        [
+          {
+            "node": "Montar lista de faturas pagas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "É clique de ação de faturas em aberto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar lista de faturas pagas": {
+      "main": [
+        [
+          {
+            "node": "Ações das faturas pagas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ações das faturas pagas": {
+      "main": [
+        [
+          {
+            "node": "Feedback ao usuário - Baixar Fatura paga",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ações das faturas em aberto": {
+      "main": [
+        [
+          {
+            "node": "Apresentar faturas em aberto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar lista de faturas em aberto": {
+      "main": [
+        [
+          {
+            "node": "Ações das faturas em aberto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É clique de ação de faturas em aberto": {
+      "main": [
+        [
+          {
+            "node": "Montar opções da fatura selecionada (Em Aberto)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Processa Ouvidoria ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar opções da fatura selecionada (Em Aberto)": {
+      "main": [
+        [
+          {
+            "node": "Gerar Fatura ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar PDF de fatura paga": {
+      "main": [
+        [
+          {
+            "node": "Apresentar PDF fatura paga",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar PDF de fatura em aberto": {
+      "main": [
+        [
+          {
+            "node": "Apresentar PDF fatura aberta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar fatura paga": {
+      "main": [
+        [
+          {
+            "node": "Montar PDF de fatura paga",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar fatura em aberto": {
+      "main": [
+        [
+          {
+            "node": "Montar PDF de fatura em aberto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback ao usuário - Baixar Fatura em aberto": {
+      "main": [
+        [
+          {
+            "node": "Gerar fatura em aberto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback ao usuário - Baixar Fatura paga": {
+      "main": [
+        [
+          {
+            "node": "Gerar fatura paga",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repassar sessão": {
+      "main": [
+        [
+          {
+            "node": "Alterar Sessão 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repassar sessão 2": {
+      "main": [
+        [
+          {
+            "node": "Alterar Sessao 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar - Segunda via - Paga": {
+      "main": [
+        [
+          {
+            "node": "Gravar Auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar - Segunda Via - em aberto": {
+      "main": [
+        [
+          {
+            "node": "Gravar Auditoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravar Auditoria": {
+      "main": [
+        [
+          {
+            "node": "Encerramento/Voltar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar sessão para trocar ligação": {
+      "main": [
+        [
+          {
+            "node": "Alterar sessão para trocar ligação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alterar sessão para trocar ligação": {
+      "main": [
+        [
+          {
+            "node": "Solicitar o novo código de ligação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apresentar PDF fatura aberta": {
+      "main": [
+        [
+          {
+            "node": "Gravar - Segunda Via - em aberto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apresentar PDF fatura paga": {
+      "main": [
+        [
+          {
+            "node": "Gravar - Segunda via - Paga",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta lista": {
+      "main": [
+        [
+          {
+            "node": "Resposta lista 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Feedback ao usuário - Faturas em aberto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Feedback ao usuário - Faturas pagas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Feedback ao usuário - Historico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta lista 2": {
+      "main": [
+        [
+          {
+            "node": "Resposta lista 3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Envia Localização",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Montar sessão para trocar ligação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta lista 3": {
+      "main": [
+        [
+          {
+            "node": "Consistir horário de atendimento humano",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de repasse ao Atendente Humano": {
+      "main": [
+        [
+          {
+            "node": "Montar sessão para Atendimento Humano",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar sessão para Atendimento Humano": {
+      "main": [
+        [
+          {
+            "node": "Alterar sessão para atendimento Humano",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sessão de atendimento humano ?": {
+      "main": [
+        [
+          {
+            "node": "Verificar se fluxo irá voltar para o BILL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem do bot ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem do bot ?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Horário dentro do expediente humano ?": {
+      "main": [
+        [
+          {
+            "node": "Mensagem de repasse ao Atendente Humano",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem de repasse ao Atendente fora do horário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consistir horário de atendimento humano": {
+      "main": [
+        [
+          {
+            "node": "Horário dentro do expediente humano ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de repasse ao Atendente fora do horário": {
+      "main": [
+        [
+          {
+            "node": "Montar sessão para Atendimento Humano",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar se fluxo irá voltar para o BILL": {
+      "main": [
+        [
+          {
+            "node": "Mensagem do bot ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setar sessão": {
+      "main": [
+        [
+          {
+            "node": "Sessão de atendimento humano ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "4981e9af-44eb-408d-b59d-a435d253f7a7",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-12T16:51:17.067Z",
+      "createdAt": "2026-05-12T16:51:17.067Z",
+      "role": "workflow:owner",
+      "workflowId": "yPmWZzGP9CwiA2LH",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
