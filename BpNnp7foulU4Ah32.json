@@ -1,0 +1,31 @@
+{
+  "id": "BpNnp7foulU4Ah32",
+  "name": "Conversa entre BOTs V2",
+  "createdAt": "2026-06-11T18:12:55.699Z",
+  "updatedAt": "2026-06-11T18:38:27.907Z",
+  "active": false,
+  "isArchived": false,
+  "nodes": [],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "4e2070f1-fbd4-4b02-88bd-bad4bf94cb03",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-06-11T18:12:55.704Z",
+      "createdAt": "2026-06-11T18:12:55.704Z",
+      "role": "workflow:owner",
+      "workflowId": "BpNnp7foulU4Ah32",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
