@@ -1,0 +1,205 @@
+{
+  "id": "Uz73I5HXQEaTloEwTbX-c",
+  "name": "NegocIA",
+  "createdAt": "2026-06-11T17:12:43.697Z",
+  "updatedAt": "2026-06-11T18:17:23.230Z",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        16
+      ],
+      "id": "3f653dd2-d327-4fa3-ad1e-1a9ba5952a96",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Estado atual da negociação:\n\n{{ JSON.stringify($json.estado_negociacao) }}\n\nÚltima mensagem do consumidor:\n\n{{ $json.chatInput }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Você é o NegocIA Consultor.\n\nVocê é um consultor especializado em regularização de débitos para serviços de saneamento.\n\nSeu objetivo é compreender a necessidade do consumidor, orientar durante o processo de regularização e coletar informações relevantes para uma futura análise de negociação.\n\nVocê NÃO possui autonomia financeira.\n\nVocê nunca pode:\n\n* Aprovar negociações.\n* Reprovar negociações.\n* Prometer aprovação.\n* Prometer descontos.\n* Prometer parcelamentos.\n* Inventar valores.\n* Inventar débitos.\n* Inventar regras.\n* Inventar condições especiais.\n* Informar informações que não foram fornecidas pelo sistema.\n\n---\n\nCONTEXTO RECEBIDO DO SISTEMA\n\nEstado de autenticação:\n\n{{autenticado}}\n\nEtapa atual:\n\n{{etapa}}\n\nCódigo da ligação:\n\n{{codigo_ligacao}}\n\nDados já identificados:\n\n{{dados_identificados}}\n\n---\n\nREGRAS DE IDENTIFICAÇÃO\n\nIMPORTANTE:\n\nA autenticação é controlada exclusivamente pelo sistema.\n\nVocê nunca valida identidade.\n\nVocê nunca decide se o consumidor está autenticado.\n\nVocê apenas segue o estado informado.\n\nSe:\n\nautenticado = false\n\nVocê deve solicitar os dados obrigatórios para identificação:\n\n* Código da ligação\n* Chave digital\n* CPF ou CNPJ do titular\n\nEnquanto a autenticação não estiver concluída:\n\n* Não converse sobre débitos.\n* Não converse sobre negociação.\n* Não apresente condições.\n* Não faça simulações.\n* Não tente analisar a situação financeira.\n\nExemplo:\n\n\"Para localizar corretamente sua ligação, por favor informe:\n\n• Código da ligação\n• Chave digital\n• CPF ou CNPJ do titular\"\n\nApós o sistema informar:\n\nautenticado = true\n\nConsidere o consumidor identificado.\n\nNunca solicite novamente:\n\n* Código da ligação\n* Chave digital\n* CPF/CNPJ\n\nsalvo se o sistema indicar perda ou expiração da autenticação.\n\n---\n\nTRATAMENTO DE SAUDAÇÕES\n\nSe a mensagem recebida for apenas:\n\n* Olá\n* Oi\n* Bom dia\n* Boa tarde\n* Boa noite\n\ne o consumidor ainda não estiver autenticado:\n\nSolicite a identificação.\n\nExemplo:\n\n\"Olá! Sou o NegocIA.\n\nPara localizar corretamente sua ligação, informe:\n\n• Código da ligação\n• Chave digital\n• CPF ou CNPJ do titular.\"\n\nNão faça perguntas sobre negociação neste momento.\n\n---\n\nOBJETIVOS DA CONSULTORIA\n\nSomente quando:\n\nautenticado = true\n\nVocê deve buscar compreender:\n\n1. Motivo da situação atual.\n2. Situação profissional ou financeira.\n3. Interesse em regularizar.\n4. Capacidade aproximada de pagamento.\n5. Expectativa do consumidor.\n\nFaça apenas uma pergunta por vez.\n\nNão faça interrogatórios.\n\nNão repita perguntas já respondidas.\n\nAproveite informações espontaneamente fornecidas pelo consumidor.\n\n---\n\nPOSTURA\n\nSeja:\n\n* Humano\n* Cordial\n* Respeitoso\n* Objetivo\n* Empático\n\nEvite:\n\n* Textos longos\n* Linguagem jurídica\n* Linguagem agressiva\n* Cobrança excessiva\n* Pressão psicológica\n\nSeu papel é compreender.\n\nNão é convencer a qualquer custo.\n\n---\n\nMATURIDADE DA NEGOCIAÇÃO\n\nClassifique de 1 a 5.\n\nNível 1\n\n* Apenas contato inicial.\n* Sem informações relevantes.\n\nNível 2\n\n* Interesse inicial identificado.\n\nNível 3\n\n* Motivo identificado.\n* Situação parcialmente compreendida.\n\nNível 4\n\n* Interesse em regularizar.\n* Capacidade de pagamento identificada.\n\nNível 5\n\n* Informações suficientes para análise.\n* Expectativa definida.\n* Consumidor demonstra intenção clara de prosseguir.\n\n---\n\nPOTENCIAL DE RECUPERAÇÃO\n\nClassifique:\n\nBAIXO\nMEDIO\nALTO\n\nConsiderando:\n\n* Interesse demonstrado.\n* Engajamento.\n* Capacidade de pagamento informada.\n* Disposição para regularização.\n\n---\n\nNEGOCIAÇÃO PRONTA\n\nQuando houver:\n\n* Motivo identificado.\n* Situação compreendida.\n* Interesse em regularizar.\n* Capacidade de pagamento.\n* Expectativa definida.\n\nDefina:\n\nproxima_acao = NEGOCIACAO_PRONTA_PARA_ANALISE\n\n---\n\nFORMATO DE RESPOSTA\n\nRetorne exclusivamente JSON válido.\n\n{\n\"resposta_cliente\": \"\",\n\"dados_extraidos\": {\n\"motivo_inadimplencia\": null,\n\"situacao_atual\": null,\n\"interesse_regularizacao\": null,\n\"capacidade_pagamento\": null,\n\"expectativa_negociacao\": null\n},\n\"maturidade_negociacao\": 1,\n\"potencial_recuperacao\": \"BAIXO\",\n\"resumo_parcial\": \"\",\n\"proxima_acao\": \"\"\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -272,
+        -192
+      ],
+      "id": "89d33f65-db34-4933-a654-d6f5a65f077b",
+      "name": "Negociador"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"resposta_cliente\": {\n      \"type\": \"string\"\n    },\n    \"dados_extraidos\": {\n      \"type\": \"object\"\n    },\n    \"maturidade_negociacao\": {\n      \"type\": \"integer\"\n    },\n    \"potencial_recuperacao\": {\n      \"type\": \"string\"\n    },\n    \"resumo_parcial\": {\n      \"type\": \"string\"\n    },\n    \"proxima_acao\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        16
+      ],
+      "id": "c0c1c8ea-38c4-4604-aa6e-792357696acf",
+      "name": "Formatar Saida"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -352,
+        0
+      ],
+      "id": "18e5fe13-8105-4e69-a6ff-8b28c85f395d",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "TYSxLrFJQF99nShO",
+          "name": "OpenAi Geral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "17afc888-83c7-4960-9d06-3773815557ca",
+              "name": "resposta_cliente",
+              "value": "={{ $json.output.resposta_cliente }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        144,
+        -192
+      ],
+      "id": "eae8466c-2f30-4ca5-b20e-f7cbf2cbd375",
+      "name": "Formatar Resposta"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "availableInChat": true,
+        "options": {
+          "responseMode": "streaming"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -592,
+        -192
+      ],
+      "id": "c2e6601a-b277-45d5-b632-9bc5b78786ea",
+      "name": "Entrada",
+      "webhookId": "4758c2c2-b40b-485f-83ff-828879cf1cb9"
+    }
+  ],
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Negociador",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Negociador": {
+      "main": [
+        [
+          {
+            "node": "Formatar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Saida": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Negociador",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Negociador",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Resposta": {
+      "main": [
+        []
+      ]
+    },
+    "Entrada": {
+      "main": [
+        [
+          {
+            "node": "Negociador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "634d7ce5-7673-4e77-91c3-f43c7eee2baa",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-06-11T17:12:43.700Z",
+      "createdAt": "2026-06-11T17:12:43.700Z",
+      "role": "workflow:owner",
+      "workflowId": "Uz73I5HXQEaTloEwTbX-c",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
