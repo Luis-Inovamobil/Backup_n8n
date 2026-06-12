@@ -1,0 +1,141 @@
+{
+  "id": "kg1j0Xn0H20zgf1luh5A9",
+  "name": "Simular envio Mensagem",
+  "createdAt": "2026-06-12T00:49:22.279Z",
+  "updatedAt": "2026-06-12T00:49:22.000Z",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1068535889684555",
+        "recipientPhoneNumber": "=553791238358",
+        "textBody": "=SAAE Divinópolis | Canal Oficial\n\nOlá. Luis Henrique\n\nIdentificamos pendências relacionadas à ligação abaixo:\n\n• Ligação: 123456\n\n• Usuário: JOÃOS*****\n\n• CPF/CNPJ: 123456******\n\n• Endereço: RUA DAS FL********\n\nA regularização pode ajudar a evitar o acúmulo de débitos e possíveis restrições previstas para a prestação do serviço.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        -208
+      ],
+      "id": "d6be864b-15b3-433d-b304-a10801f41f1a",
+      "name": "Simular Envio de Mensagem",
+      "webhookId": "e9b25074-6d07-4345-b129-8e5008d1b251",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const j = { ...$json };\n\nj.reply = \"Deseja consultar suas pendências?\";\n\nj.interactive = {\n  type: \"button\",\n  body: {\n    text: j.reply\n  },\n  action: {\n    buttons: [\n      {\n        type: \"reply\",\n        reply: {\n          id: \"SIM\",\n          title: \"Sim\"\n        }\n      },\n      {\n        type: \"reply\",\n        reply: {\n          id: \"NAO\",\n          title: \"Não\"\n        }\n      }\n    ]\n  }\n};\n\nreturn {\n  json: j\n};"
+      },
+      "id": "234b96c1-2ee8-45bf-a4e2-a2f55cbb51c6",
+      "name": "Montar botão consultar débitos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "=https://graph.facebook.com/v22.0/1068535889684555/messages",
+        "allowUnauthorizedCerts": "={{ false }}",
+        "options": {
+          "bodyContentType": "raw"
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "messaging_product",
+              "value": "whatsapp"
+            },
+            {
+              "name": "to",
+              "value": "=553791238358"
+            },
+            {
+              "name": "type",
+              "value": "interactive"
+            },
+            {
+              "name": "interactive",
+              "value": "={{$json.interactive}}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": " Bearer EAAVf75K5aOkBRp4zIuoVedrrBZB3Q79iMl3SIu3a4b6aNIjIJIb0I22oBnLY2iIM0JGHdusld7eAAhUiyE5fkj4iMBZAZAftMSllx2CjcSsMaIP5JBelHZAE66dlVg02ORWEIhhi8vjFIkHfvsa2mJ8fiVS7WNV5fJWqfFnUo4O4jpdl1OZCG8vTdwRCtcDrFNQZDZD"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Imprimir Botão consulta de débitos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        -208
+      ],
+      "id": "7fd6e4f5-e589-492e-b18c-bebeff68cf87"
+    }
+  ],
+  "connections": {
+    "Simular Envio de Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Montar botão consultar débitos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar botão consultar débitos": {
+      "main": [
+        [
+          {
+            "node": "Imprimir Botão consulta de débitos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "0bc790b8-a2b1-4131-ae68-21c5607a8a9b",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-06-12T00:49:22.284Z",
+      "createdAt": "2026-06-12T00:49:22.284Z",
+      "role": "workflow:owner",
+      "workflowId": "kg1j0Xn0H20zgf1luh5A9",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
