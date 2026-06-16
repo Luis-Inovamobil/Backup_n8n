@@ -1,0 +1,2378 @@
+{
+  "id": "rthdaWZDJRw6qvC8",
+  "name": "NegocIA 2.0",
+  "createdAt": "2026-06-15T23:24:46.827Z",
+  "updatedAt": "2026-06-15T23:26:42.745Z",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -912,
+        1456
+      ],
+      "id": "5dd899d6-b81f-4e81-92fe-eb4eac57e164",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Estado atual da negociação:\n\n{{ JSON.stringify($json.estado_negociacao) }}\n\nÚltima mensagem do consumidor:\n\n{{ $json.chatInput }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Você é o NegocIA Consultor.\n\nVocê é um consultor especializado em regularização de débitos para serviços de saneamento.\n\nSeu objetivo é compreender a necessidade do consumidor, orientar durante o processo de regularização e coletar informações relevantes para uma futura análise de negociação.\n\nVocê NÃO possui autonomia financeira.\n\nVocê nunca pode:\n\n* Aprovar negociações.\n* Reprovar negociações.\n* Prometer aprovação.\n* Prometer descontos.\n* Prometer parcelamentos.\n* Inventar valores.\n* Inventar débitos.\n* Inventar regras.\n* Inventar condições especiais.\n* Informar informações que não foram fornecidas pelo sistema.\n\n---\n\nCONTEXTO RECEBIDO DO SISTEMA\n\nEstado de autenticação:\n\n{{autenticado}}\n\nEtapa atual:\n\n{{etapa}}\n\nCódigo da ligação:\n\n{{codigo_ligacao}}\n\nDados já identificados:\n\n{{dados_identificados}}\n\n---\n\nREGRAS DE IDENTIFICAÇÃO\n\nIMPORTANTE:\n\nA autenticação é controlada exclusivamente pelo sistema.\n\nVocê nunca valida identidade.\n\nVocê nunca decide se o consumidor está autenticado.\n\nVocê apenas segue o estado informado.\n\nSe:\n\nautenticado = false\n\nVocê deve solicitar os dados obrigatórios para identificação:\n\n* Código da ligação\n* Chave digital\n* CPF ou CNPJ do titular\n\nEnquanto a autenticação não estiver concluída:\n\n* Não converse sobre débitos.\n* Não converse sobre negociação.\n* Não apresente condições.\n* Não faça simulações.\n* Não tente analisar a situação financeira.\n\nExemplo:\n\n\"Para localizar corretamente sua ligação, por favor informe:\n\n• Código da ligação\n• Chave digital\n• CPF ou CNPJ do titular\"\n\nApós o sistema informar:\n\nautenticado = true\n\nConsidere o consumidor identificado.\n\nNunca solicite novamente:\n\n* Código da ligação\n* Chave digital\n* CPF/CNPJ\n\nsalvo se o sistema indicar perda ou expiração da autenticação.\n\n---\n\nTRATAMENTO DE SAUDAÇÕES\n\nSe a mensagem recebida for apenas:\n\n* Olá\n* Oi\n* Bom dia\n* Boa tarde\n* Boa noite\n\ne o consumidor ainda não estiver autenticado:\n\nSolicite a identificação.\n\nExemplo:\n\n\"Olá! Sou o NegocIA.\n\nPara localizar corretamente sua ligação, informe:\n\n• Código da ligação\n• Chave digital\n• CPF ou CNPJ do titular.\"\n\nNão faça perguntas sobre negociação neste momento.\n\n---\n\nOBJETIVOS DA CONSULTORIA\n\nSomente quando:\n\nautenticado = true\n\nVocê deve buscar compreender:\n\n1. Motivo da situação atual.\n2. Situação profissional ou financeira.\n3. Interesse em regularizar.\n4. Capacidade aproximada de pagamento.\n5. Expectativa do consumidor.\n\nFaça apenas uma pergunta por vez.\n\nNão faça interrogatórios.\n\nNão repita perguntas já respondidas.\n\nAproveite informações espontaneamente fornecidas pelo consumidor.\n\n---\n\nPOSTURA\n\nSeja:\n\n* Humano\n* Cordial\n* Respeitoso\n* Objetivo\n* Empático\n\nEvite:\n\n* Textos longos\n* Linguagem jurídica\n* Linguagem agressiva\n* Cobrança excessiva\n* Pressão psicológica\n\nSeu papel é compreender.\n\nNão é convencer a qualquer custo.\n\n---\n\nMATURIDADE DA NEGOCIAÇÃO\n\nClassifique de 1 a 5.\n\nNível 1\n\n* Apenas contato inicial.\n* Sem informações relevantes.\n\nNível 2\n\n* Interesse inicial identificado.\n\nNível 3\n\n* Motivo identificado.\n* Situação parcialmente compreendida.\n\nNível 4\n\n* Interesse em regularizar.\n* Capacidade de pagamento identificada.\n\nNível 5\n\n* Informações suficientes para análise.\n* Expectativa definida.\n* Consumidor demonstra intenção clara de prosseguir.\n\n---\n\nPOTENCIAL DE RECUPERAÇÃO\n\nClassifique:\n\nBAIXO\nMEDIO\nALTO\n\nConsiderando:\n\n* Interesse demonstrado.\n* Engajamento.\n* Capacidade de pagamento informada.\n* Disposição para regularização.\n\n---\n\nNEGOCIAÇÃO PRONTA\n\nQuando houver:\n\n* Motivo identificado.\n* Situação compreendida.\n* Interesse em regularizar.\n* Capacidade de pagamento.\n* Expectativa definida.\n\nDefina:\n\nproxima_acao = NEGOCIACAO_PRONTA_PARA_ANALISE\n\n---\n\nFORMATO DE RESPOSTA\n\nRetorne exclusivamente JSON válido.\n\n{\n\"resposta_cliente\": \"\",\n\"dados_extraidos\": {\n\"motivo_inadimplencia\": null,\n\"situacao_atual\": null,\n\"interesse_regularizacao\": null,\n\"capacidade_pagamento\": null,\n\"expectativa_negociacao\": null\n},\n\"maturidade_negociacao\": 1,\n\"potencial_recuperacao\": \"BAIXO\",\n\"resumo_parcial\": \"\",\n\"proxima_acao\": \"\"\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -976,
+        1264
+      ],
+      "id": "28f347dc-7b87-478b-b38a-bc85a1bffd60",
+      "name": "Negociador"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"resposta_cliente\": {\n      \"type\": \"string\"\n    },\n    \"dados_extraidos\": {\n      \"type\": \"object\"\n    },\n    \"maturidade_negociacao\": {\n      \"type\": \"integer\"\n    },\n    \"potencial_recuperacao\": {\n      \"type\": \"string\"\n    },\n    \"resumo_parcial\": {\n      \"type\": \"string\"\n    },\n    \"proxima_acao\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -704,
+        1472
+      ],
+      "id": "461c2990-0c41-4e4a-a15e-49826df1a3e6",
+      "name": "Formatar Saida"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1024,
+        1456
+      ],
+      "id": "40d0f382-fbd0-4a0c-8966-469da2fd22d9",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "TYSxLrFJQF99nShO",
+          "name": "OpenAi Geral"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "17afc888-83c7-4960-9d06-3773815557ca",
+              "name": "resposta_cliente",
+              "value": "={{ $json.output.resposta_cliente }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -656,
+        1264
+      ],
+      "id": "cf366759-9968-439b-9108-2854fe1b45f4",
+      "name": "Formatar Resposta"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        288
+      ],
+      "id": "d50003ed-0625-4650-b7ff-eda1bde81ce0",
+      "name": "Webhook",
+      "webhookId": "3382e40a-6eff-471b-aa40-71366009314b",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "N66cyM4WDqpigPHb",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\n// ======================================================\n// DADOS DE IDENTIFICAÇÃO\n// ======================================================\n\nconst msg = j.messages?.[0] ?? {};\n\nj.PhoneConnected =\n  j.PhoneConnected ??\n  j.metadata?.phone_number_id ??\n  null;\n\nj.display_phone_number =\n  j.display_phone_number ??\n  j.metadata?.display_phone_number ??\n  null;\n\nj.Phone =\n  j.Phone ??\n  j.phone ??\n  j.contacts?.[0]?.wa_id ??\n  msg.from ??\n  null;\n\nj.Nome =\n  j.Nome ??\n  j.contacts?.[0]?.profile?.name ??\n  null;\n\n// ======================================================\n// CONFIGURAÇÃO POR NÚMERO\n// ======================================================\n\nconst phonesConfig = {\n  1068535889684555: {\n    acessToken: \"3EA6B3979B12E1B6EDC772620DC9C8F4\",\n    businessAccountID: \"1512857447000297\",\n    rotaAutenticacao:\n      \"https://tdev3-ag.icommercial002.inovamobil.com.br/api/chatbot\",\n    rotaDebitos:\n      \"https://tdev3-fat.icommercial002.inovamobil.com.br/api/debitos\",\n  },\n};\n\n// ======================================================\n// VALIDAÇÃO\n// ======================================================\n\nconst phoneConnected = (j.PhoneConnected ?? \"\")\n  .toString()\n  .replace(/\\D+/g, \"\");\n\nconst selected = phonesConfig[phoneConnected];\n\nif (!selected) {\n  throw new Error(\n    `PhoneConnected (${phoneConnected || \"vazio\"}) não mapeado em phonesConfig`,\n  );\n}\n\n// ======================================================\n// API\n// ======================================================\n\nj.api = {\n  AcessToken: selected.acessToken,\n  BusinessAccountID: selected.businessAccountID,\n  rotaPrincipalDados: selected.rotaPrincipalDados,\n\n  endpoints: {\n    ultimasFaturas: `${selected.rotaAutenticacao}/faturas-abertas`,\n    retornarUsuario: `${selected.rotaAutenticacao}/retornar-usuario`,\n    gerarFatura: `${selected.rotaAutenticacao}/fatura-pdf`,\n    retornardebitos: `${selected.rotaDebitos}/listar-debitos-em-abertos`,\n  },\n};\n\n// ======================================================\n// Configurações\n// ======================================================\n\nj.negociacao = {\n  parcelaMinima: 15,\n  parcelasMaximasPorFaixa: [\n    {\n      ate: 1000,\n      maxParcelas: 24\n    },\n    {\n      ate: 2000,\n      maxParcelas: 30\n    },\n    {\n      ate: 5000,\n      maxParcelas: 40\n    },\n    {\n      ate: 100000,\n      maxParcelas: 60\n    }\n  ]\n};\n\n\nreturn item;"
+      },
+      "id": "392aeaf4-9348-488f-88f7-513dce6c9de1",
+      "name": "Constantes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "88b902d4-1185-4546-ac30-0175ea24cff9",
+              "leftValue": "={{ $json.stopBot }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -816,
+        112
+      ],
+      "id": "6e3f6f53-18bf-4fcc-b286-71681cea065f",
+      "name": "Stop Bot ?"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -656,
+        256
+      ],
+      "id": "888d1aed-4e17-4be3-815e-b5510bd09ef4",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $input.item.json || {};\n\nconst stopBot =\n  !!j.statuses?.length ||\n  !j.messages?.length;\n\nreturn [{\n  json: {\n    ...j,\n    stopBot\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1008,
+        112
+      ],
+      "id": "c5fb48e3-1b9f-4d27-89d5-881e5fcf2634",
+      "name": "Mensagem de status ?"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst msg = j.messages?.[0] ?? {};\nconst interactive = msg.interactive ?? {};\n\n// ======================================================\n// DADOS BÁSICOS DA MENSAGEM\n// ======================================================\n\nj.message_id = msg.id ?? null;\nj.timestamp = msg.timestamp ?? null;\nj.message_type = msg.type ?? null;\n\n// ======================================================\n// TEXTO\n// ======================================================\n\nj.texto = msg.text?.body ?? null;\n\n// ======================================================\n// BOTÃO\n// ======================================================\n\nj.buttonReply = interactive.button_reply ?? null;\n\n// ======================================================\n// LISTA\n// ======================================================\n\nj.listReply = interactive.list_reply ?? null;\n\n// ======================================================\n// FLAGS\n// ======================================================\n\nj.veio_texto = !!j.texto;\nj.veio_botao = !!j.buttonReply;\nj.veio_lista = !!j.listReply;\nj.veio_interactive = j.veio_botao || j.veio_lista;\n\n// ======================================================\n// RESPOSTA PADRONIZADA\n// ======================================================\n\nj.resposta_id =\n  j.buttonReply?.id ??\n  j.listReply?.id ??\n  null;\n\nj.resposta_titulo =\n  j.buttonReply?.title ??\n  j.listReply?.title ??\n  null;\n\nj.resposta_descricao =\n  j.listReply?.description ??\n  null;\n\nj.resposta_cliente =\n  j.resposta_titulo ??\n  j.texto ??\n  null;\n\n// ======================================================\n// NORMALIZAÇÃO\n// ======================================================\n\nj.resposta_normalizada = (j.resposta_id ?? \"\")\n  .toString()\n  .trim()\n  .toUpperCase()\n  .normalize(\"NFD\")\n  .replace(/[\\u0300-\\u036f]/g, \"\");\n\n// ======================================================\n// QUEBRA DO PADRÃO\n// BOTAO_01_VER_PENDENCIAS\n// LISTA_03_SEM_CONDICOES\n// ======================================================\n\nconst partes = j.resposta_normalizada.split(\"_\");\n\nj.tipo_resposta = partes[0] ?? null;       // BOTAO | LISTA\nj.numero_fluxo = partes[1] ?? null;        // 01 | 02 | 03 ...\nj.acao_resposta = partes.slice(2).join(\"_\") || null;\n\n// ======================================================\n// FLAGS AUXILIARES\n// ======================================================\n\nj.respondeu_botao =\n  j.tipo_resposta === \"BOTAO\";\n\nj.respondeu_lista =\n  j.tipo_resposta === \"LISTA\";\n\n// ======================================================\n// DEBUG\n// ======================================================\n\nj.debug_resposta = {\n  tipo: j.tipo_resposta,\n  fluxo: j.numero_fluxo,\n  acao: j.acao_resposta,\n  resposta_id: j.resposta_id,\n  resposta_titulo: j.resposta_titulo\n};\n\nreturn item;"
+      },
+      "id": "c123fafa-39b2-4b95-afb5-fee6e26f2017",
+      "name": "Normalizar Resposta WhatsApp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM sessions\nWHERE phone = {{ $json.Phone }} and phoneconected = {{ $json.PhoneConnected }}\n\nUNION ALL\n\nSELECT {{ $json.Phone }} AS phone, NULL AS flow, NULL AS step, NULL AS expected_ref, NULL AS data_json, NULL AS expires_at, {{ $json.PhoneConnected }} AS phoneconected\nWHERE NOT EXISTS (SELECT 1 FROM sessions WHERE phone = {{ $json.Phone }} and phoneconected = {{ $json.PhoneConnected }} )\nLIMIT 1;",
+        "options": {}
+      },
+      "id": "8d986833-9480-44b4-aa38-f3093949f5e8",
+      "name": "select session",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        1696
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "JSOlg2ox0q0hmg4Y",
+          "name": "NegocIA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sessions (phone, flow, step, expected_ref, data_json, expires_at,phoneconectado)\nVALUES (\n  '{{$json.session.phone}}',\n  '{{$json.session.flow}}',\n  {{$json.session.step}},\n  {{ $json.session.expectedRef ? \"'\" + $json.session.expectedRef + \"'\" : \"NULL\" }},\n  CAST('{{ JSON.stringify($json.session.data || {}) }}' AS JSON),\n  '{{$json.session.expiresAt}}','{{ $json.session.phoneconectado }}'\n)\nON DUPLICATE KEY UPDATE\n  flow         = '{{$json.session.flow}}',\n  step         = {{$json.session.step}},\n  expected_ref = {{ $json.session.expectedRef ? \"'\" + $json.session.expectedRef + \"'\" : \"NULL\" }},\n  data_json ='{{ JSON.stringify($json.session.data || {}) }}',\n  expires_at   = '{{$json.session.expiresAt}}';\n",
+        "options": {
+          "queryReplacement": "={{$json.session.phone}}  {{$json.session.flow}}  {{$json.session.step}}  {{$json.session.expectedRef ?? null}}  {{ JSON.stringify($json.session.data ?? {}) }}  {{$json.session.expiresAt}}"
+        }
+      },
+      "id": "2bfb081d-1137-4af7-9489-d090953b2f5e",
+      "name": "update session",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        3312,
+        368
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "DjogxsxdXYGa9DzE",
+          "name": "InovaBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\n// ======================================================\n// ROUTER NEGOCIA\n// Entrada esperada do nó anterior:\n// Normalizar Resposta WhatsApp\n//\n// j.resposta_normalizada = BOTAO_01_VER_PENDENCIAS\n// j.tipo_resposta        = BOTAO | LISTA\n// j.numero_fluxo         = 01 | 02 | 03...\n// j.acao_resposta        = VER_PENDENCIAS | NAO_INTERESSE...\n// j.flow                 = estado atual da conversa\n// ======================================================\n\nconst resposta = (j.resposta_normalizada ?? \"\").trim().toUpperCase();\nconst acao = (j.acao_resposta ?? \"\").trim().toUpperCase();\nconst flowAtual = (j.flow ?? \"\").trim().toUpperCase();\n\nj.router = {\n  origem: resposta,\n  flow_anterior: flowAtual,\n  proximo_flow: null,\n  rota: null,\n  motivo: null,\n};\n\nfunction route({ flow, rota, motivo, step, maturidade }) {\n  j.router.proximo_flow = flow;\n  j.router.rota = rota ?? flow;\n  j.router.motivo = motivo;\n\n  j.rota = rota ?? flow;\n  j.flow = flow;\n\n  if (step !== undefined) j.step = step;\n  if (maturidade !== undefined) j.maturidade = maturidade;\n\n  return item;\n}\n\n// ======================================================\n// BOTAO 01 - CAMPANHA INICIAL\n// ======================================================\n\nif (resposta === \"BOTAO_01_VER_PENDENCIAS\") {\n  return route({\n    flow: \"AUTENTICAR_CONSUMIDOR\",\n    motivo: \"Consumidor deseja consultar pendências\",\n    step: 1,\n  });\n}\n\nif (resposta === \"BOTAO_01_NAO_INTERESSE\") {\n  return route({\n    flow: \"NAO_INTERESSE_MOTIVO\",\n    motivo: \"Consumidor não deseja consultar pendências\",\n    step: 1,\n    maturidade: 1,\n  });\n}\n\n// ======================================================\n// LISTA 01 - MOTIVO DO NÃO INTERESSE\n// ======================================================\n\nif (resposta === \"LISTA_01_SEM_CONDICOES_FINANCEIRAS\") {\n  j.motivoinadimplencia = \"SEM_CONDICOES_FINANCEIRAS\";\n  j.situacaoatual = \"\";\n  j.objecao = \"SEM_CONDICOES_FINANCEIRAS\";\n\n  return route({\n    flow: \"SEM_CONDICOES_FINANCEIRAS\",\n    rota: \"SEM_CONDICOES_FINANCEIRAS\",\n    motivo: \"Cliente informou que não possui condições financeiras no momento\",\n    step: 1,\n    maturidade: 2,\n  });\n}\n\nif (resposta === \"LISTA_01_RESOLVER_FUTURAMENTE\") {\n  return route({\n    flow: \"PREVISAO_RETORNO\",\n    motivo: \"Cliente pretende resolver futuramente\",\n    step: 1,\n    maturidade: 2,\n  });\n}\n\nif (resposta === \"LISTA_01_DUVIDAS_COBRANCA\") {\n  return route({\n    flow: \"DUVIDA_COBRANCA\",\n    motivo: \"Cliente possui dúvidas sobre cobrança\",\n    step: 1,\n    maturidade: 3,\n  });\n}\n\nif (resposta === \"LISTA_01_NAO_RESPONSAVEL\") {\n  return route({\n    flow: \"NAO_RESPONSAVEL_LIGACAO\",\n    motivo: \"Cliente informou não ser responsável pela ligação\",\n    step: 1,\n    maturidade: 1,\n  });\n}\n\nif (resposta === \"LISTA_01_OUTRO_MOTIVO\") {\n  return route({\n    flow: \"OUTRO_MOTIVO_TEXTO_LIVRE\",\n    motivo: \"Cliente deseja informar outro motivo\",\n    step: 1,\n  });\n}\n\n// ======================================================\n// LISTA 02 - PREVISÃO DE REGULARIZAÇÃO FUTURA\n// ======================================================\n\nif (resposta === \"LISTA_02_30_DIAS\") {\n  j.previsaoregularizacao = \"ATE_30_DIAS\";\n  j.previsaoregularizacaodias = 30;\n  j.previsaoregularizacaodescricao = \"Nos próximos 30 dias\";\n\n  j.proximaabordagem_dias = 30;\n  j.riscoinadimplencia = \"MEDIO\";\n  j.prioridaderecontato = \"ALTA\";\n  j.intencaopagamento = \"CURTO_PRAZO\";\n  j.objecao = \"RESOLVER_FUTURAMENTE\";\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente informou previsão de regularização em até 30 dias\";\n\n  return route({\n    flow: \"ENCERRAR_COM_RECONTATO\",\n    rota: \"ENCERRAR_COM_RECONTATO\",\n    motivo: \"Cliente pretende regularizar nos próximos 30 dias\",\n    step: 2,\n    maturidade: 4,\n  });\n}\n\nif (resposta === \"LISTA_02_30_90_DIAS\") {\n  j.previsaoregularizacao = \"ENTRE_30_90_DIAS\";\n  j.previsaoregularizacaodias = 60;\n  j.previsaoregularizacaodescricao = \"Entre 30 e 90 dias\";\n\n  j.proximaabordagem_dias = 60;\n  j.riscoinadimplencia = \"ALTO\";\n  j.prioridaderecontato = \"MEDIA\";\n  j.intencaopagamento = \"MEDIO_PRAZO\";\n  j.objecao = \"RESOLVER_FUTURAMENTE\";\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente informou previsão de regularização entre 30 e 90 dias\";\n\n  return route({\n    flow: \"ENCERRAR_COM_RECONTATO\",\n    rota: \"ENCERRAR_COM_RECONTATO\",\n    motivo: \"Cliente pretende regularizar entre 30 e 90 dias\",\n    step: 2,\n    maturidade: 3,\n  });\n}\n\nif (resposta === \"LISTA_02_ACIMA_90_DIAS\") {\n  j.previsaoregularizacao = \"ACIMA_90_DIAS\";\n  j.previsaoregularizacaodias = 90;\n  j.previsaoregularizacaodescricao = \"Acima de 90 dias\";\n\n  j.proximaabordagem_dias = 90;\n  j.riscoinadimplencia = \"MUITO_ALTO\";\n  j.prioridaderecontato = \"BAIXA\";\n  j.intencaopagamento = \"LONGO_PRAZO\";\n  j.objecao = \"RESOLVER_FUTURAMENTE_LONGO_PRAZO\";\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente informou previsão de regularização acima de 90 dias\";\n\n  return route({\n    flow: \"ENCERRAR_COM_ALERTA\",\n    rota: \"ENCERRAR_COM_ALERTA\",\n    motivo: \"Cliente pretende regularizar somente após 90 dias\",\n    step: 2,\n    maturidade: 2,\n  });\n}\n\nif (resposta === \"LISTA_02_AINDA_NAO_SEI\") {\n  j.previsaoregularizacao = \"SEM_PREVISAO\";\n  j.previsaoregularizacaodias = null;\n  j.previsaoregularizacaodescricao = \"Sem previsão de regularização\";\n\n  j.proximaabordagem_dias = null;\n  j.riscoinadimplencia = \"CRITICO\";\n  j.prioridaderecontato = \"BAIXA\";\n  j.intencaopagamento = \"SEM_PREVISAO\";\n  j.objecao = \"SEM_PREVISAO_REGULARIZACAO\";\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente informou não ter previsão de regularização\";\n\n  return route({\n    flow: \"ENCERRAR_COM_ALERTA\",\n    rota: \"ENCERRAR_COM_ALERTA\",\n    motivo: \"Cliente não possui previsão de regularização\",\n    step: 2,\n    maturidade: 1,\n  });\n}\n\n// ======================================================\n// LISTA 03 - DÚVIDAS SOBRE COBRANÇA\n// Todas as opções abaixo usam a rota genérica CONSULTAR_PENDENCIAS\n// ======================================================\n\nif (resposta === \"LISTA_03_VALOR_DIVIDA\") {\n  j.tipo_duvida = \"VALOR_DIVIDA\";\n  j.tipo_duvida_descricao = \"Valor da dívida\";\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente possui dúvida sobre o valor da dívida\";\n\n  return route({\n    flow: \"CONSULTAR_PENDENCIAS\",\n    rota: \"CONSULTAR_PENDENCIAS\",\n    motivo: \"Cliente deseja consultar o detalhamento dos débitos por dúvida sobre valor da dívida\",\n    step: 2,\n    maturidade: Math.max(j.maturidade ?? 1, 3),\n  });\n}\n\nif (resposta === \"LISTA_03_ORIGEM_COBRANCA\") {\n  j.tipo_duvida = \"ORIGEM_COBRANCA\";\n  j.tipo_duvida_descricao = \"Origem da cobrança\";\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente possui dúvida sobre a origem da cobrança\";\n\n  return route({\n    flow: \"CONSULTAR_PENDENCIAS\",\n    rota: \"CONSULTAR_PENDENCIAS\",\n    motivo: \"Cliente deseja consultar o detalhamento dos débitos por dúvida sobre origem da cobrança\",\n    step: 2,\n    maturidade: Math.max(j.maturidade ?? 1, 3),\n  });\n}\n\nif (resposta === \"LISTA_03_REFERENCIAS_ABERTO\") {\n  j.tipo_duvida = \"REFERENCIAS_ABERTO\";\n  j.tipo_duvida_descricao = \"Faturas em aberto\";\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente possui dúvida sobre as faturas em aberto\";\n\n  return route({\n    flow: \"CONSULTAR_PENDENCIAS\",\n    rota: \"CONSULTAR_PENDENCIAS\",\n    motivo: \"Cliente deseja consultar o detalhamento das faturas em aberto\",\n    step: 2,\n    maturidade: Math.max(j.maturidade ?? 1, 3),\n  });\n}\n\nif (resposta === \"LISTA_03_OUTRO_ASSUNTO\") {\n  j.tipo_duvida = \"OUTRO_ASSUNTO\";\n  j.tipo_duvida_descricao = \"Outro assunto\";\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente deseja informar outro assunto\";\n\n  return route({\n    flow: \"DUVIDA_COBRANCA\",\n    rota: \"OUTRO_MOTIVO_TEXTO_LIVRE\",\n    motivo: \"Cliente deseja informar outro assunto relacionado à cobrança\",\n    step: 2,\n    maturidade: Math.max(j.maturidade ?? 1, 3),\n  });\n}\n\n// ======================================================\n// BOTAO 02 - DÚVIDA ESCLARECIDA\n// ======================================================\n\nif (resposta === \"BOTAO_02_SIM\") {\n  return route({\n    flow: \"CONSULTAR_PENDENCIAS\",\n    motivo: \"Cliente informou que a dúvida foi esclarecida\",\n  });\n}\n\nif (resposta === \"BOTAO_02_NAO\") {\n  return route({\n    flow: \"ANALISE_HUMANA_DUVIDA\",\n    motivo: \"Cliente ainda possui dúvidas\",\n  });\n}\n\n// ======================================================\n// LISTA 04 - NÃO RESPONSÁVEL\n// ======================================================\n\nif (resposta === \"LISTA_04_NUNCA_FUI_RESPONSAVEL\") {\n  j.tipo_problema_cadastral = \"NUNCA_FUI_RESPONSAVEL\";\n\n  return route({\n    flow: \"NAO_RESPONSAVEL_LIGACAO\",\n    rota: \"CADASTRO_NUNCA_RESPONSAVEL\",\n    motivo: \"Cliente informou que nunca foi responsável por esta ligação\",\n    maturidade: 1,\n  });\n}\n\nif (resposta === \"LISTA_04_MUDEI_DO_IMOVEL\") {\n  j.tipo_problema_cadastral = \"MUDEI_DO_IMOVEL\";\n\n  return route({\n    flow: \"NAO_RESPONSAVEL_LIGACAO\",\n    rota: \"CADASTRO_MUDOU_DO_IMOVEL\",\n    motivo: \"Cliente informou que mudou do imóvel\",\n    maturidade: 1,\n  });\n}\n\nif (resposta === \"LISTA_04_TRANSFERENCIA_NAO_REALIZADA\") {\n  j.tipo_problema_cadastral = \"TRANSFERENCIA_NAO_REALIZADA\";\n\n  return route({\n    flow: \"NAO_RESPONSAVEL_LIGACAO\",\n    rota: \"CADASTRO_TRANSFERENCIA_PENDENTE\",\n    motivo: \"Cliente informou que a transferência de titularidade não foi realizada\",\n    maturidade: 1,\n  });\n}\n\n// ======================================================\n// BOTAO 03 - APÓS CONSULTAR PENDÊNCIAS\n// ======================================================\n\nif (resposta === \"BOTAO_03_QUERO_RESOLVER\") {\n  return route({\n    flow: \"DIAGNOSTICO_MOTIVO_INADIMPLENCIA\",\n    rota: \"DIAGNOSTICO_MOTIVO_INADIMPLENCIA\",\n    motivo: \"Cliente deseja resolver\",\n    step: 1,\n    maturidade: 3,\n  });\n}\n\nif (resposta === \"BOTAO_03_NAO_INTERESSE\") {\n  return route({\n    flow: \"NAO_INTERESSE_MOTIVO\",\n    rota: \"NAO_INTERESSE_MOTIVO\",\n    motivo: \"Cliente não deseja resolver após consultar pendências\",\n    step: 1,\n    maturidade: 1,\n  });\n}\n\n// ======================================================\n// LISTA 05 - MOTIVO DA INADIMPLÊNCIA\n// ======================================================\n\n// ======================================================\n// LISTA 05 - MOTIVO DA INADIMPLÊNCIA\n// ======================================================\n\nif (resposta.startsWith(\"LISTA_05_\")) {\n  const motivosInadimplencia = {\n    LISTA_05_DIFICULDADES_FINANCEIRAS: {\n      codigo: \"DIFICULDADES_FINANCEIRAS\",\n      descricao: \"Dificuldades financeiras\",\n      categoria: \"FINANCEIRO\",\n      maturidade: 3,\n    },\n    LISTA_05_DESEMPREGO_REDUCAO_RENDA: {\n      codigo: \"DESEMPREGO_REDUCAO_RENDA\",\n      descricao: \"Desemprego ou redução de renda\",\n      categoria: \"RENDA\",\n      maturidade: 3,\n    },\n    LISTA_05_PROBLEMAS_SAUDE: {\n      codigo: \"PROBLEMAS_SAUDE\",\n      descricao: \"Problemas de saúde\",\n      categoria: \"SAUDE\",\n      maturidade: 3,\n    },\n    LISTA_05_ESQUECIMENTO_ORGANIZACAO: {\n      codigo: \"ESQUECIMENTO_ORGANIZACAO\",\n      descricao: \"Esquecimento ou falta de organização\",\n      categoria: \"ORGANIZACAO\",\n      maturidade: 4,\n    },\n    LISTA_05_OUTRO_MOTIVO: {\n      codigo: \"OUTRO_MOTIVO\",\n      descricao: \"Outro motivo\",\n      categoria: \"OUTROS\",\n      maturidade: 3,\n    },\n  };\n\n  const motivoSelecionado = motivosInadimplencia[resposta];\n\n  j.motivoinadimplencia = motivoSelecionado?.codigo ?? acao;\n  j.motivoinadimplenciadescricao = motivoSelecionado?.descricao ?? acao;\n  j.categoriainadimplencia = motivoSelecionado?.categoria ?? \"NAO_CLASSIFICADO\";\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = j.motivoinadimplenciadescricao;\n\n  if (resposta === \"LISTA_05_OUTRO_MOTIVO\") {\n    return route({\n      flow: \"AGUARDANDO_MOTIVO_INADIMPLENCIA_TEXTO_LIVRE\",\n      rota: \"SOLICITAR_MOTIVO_INADIMPLENCIA_TEXTO_LIVRE\",\n      motivo: \"Cliente informou outro motivo para inadimplência\",\n      step: 2,\n      maturidade: 3,\n    });\n  }\n\n  return route({\n    flow: \"DIAGNOSTICO_SITUACAO_ATUAL\",\n    rota: \"DIAGNOSTICO_SITUACAO_ATUAL\",\n    motivo: `Motivo da inadimplência informado: ${j.motivoinadimplenciadescricao}`,\n    step: 2,\n    maturidade: Math.max(j.maturidade ?? 1, 3),\n  });\n}\n\n// ======================================================\n// LISTA 06 - SITUAÇÃO ATUAL\n// ======================================================\n\nif (resposta === \"BOTAO_06_ESTAVEL\") {\n  j.situacaoatual = \"ESTAVEL\";\n\n  return route({\n    flow: \"PERFIL_FINANCEIRO_ESTAVEL\",\n    rota: \"PERFIL_FINANCEIRO_ESTAVEL\",\n    motivo: \"Cliente informou que sua situação financeira está estável\",\n    step: 3,\n    maturidade: 5,\n  });\n}\n\nif (resposta === \"BOTAO_06_MELHORANDO\") {\n  j.situacaoatual = \"MELHORANDO\";\n\n  return route({\n    flow: \"PERFIL_FINANCEIRO_MELHORANDO\",\n    rota: \"PERFIL_FINANCEIRO_MELHORANDO\",\n    motivo: \"Cliente informou que sua situação financeira está melhorando\",\n    step: 3,\n    maturidade: 4,\n  });\n}\n\nif (resposta === \"BOTAO_06_AINDA_COM_DIFICULDADES\") {\n  j.situacaoatual = \"AINDA_COM_DIFICULDADES\";\n\n  return route({\n    flow: \"PERFIL_FINANCEIRO_DIFICULDADES\",\n    rota: \"PERFIL_FINANCEIRO_DIFICULDADES\",\n    motivo: \"Cliente informou que ainda está com dificuldades financeiras\",\n    step: 3,\n    maturidade: 3,\n  });\n}\n\n// ======================================================\n// BOTAO 04 - PERFIL FINANCEIRO ESTÁVEL\n// Opções após oferta à vista com desconto\n// ======================================================\n\nif (resposta === \"BOTAO_04_QUITAR_COM_DESCONTO\") {\n  j.preferenciapagamento = \"QUITACAO\";\n  j.tipoProposta = \"QUITACAO_A_VISTA\";\n  j.objecao = null;\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente escolheu quitação à vista com desconto\";\n\n  return route({\n    flow: \"SOLICITAR_PROPOSTA_QUITACAO\",\n    rota: \"SOLICITAR_PROPOSTA_QUITACAO\",\n    motivo: \"Cliente escolheu quitação à vista com desconto\",\n    step: 4,\n    maturidade: 5,\n  });\n}\n\nif (resposta === \"BOTAO_04_VER_OUTRAS_OPCOES\") {\n  j.preferenciapagamento = \"PARCELAMENTO\";\n  j.tipoProposta = \"PARCELAMENTO\";\n  j.objecao = \"NAO_OPTOU_QUITACAO_A_VISTA\";\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente deseja ver opções de parcelamento\";\n\n  return route({\n    flow: \"OPCOES_PARCELAMENTO\",\n    rota: \"OPCOES_PARCELAMENTO\",\n    motivo: \"Cliente não optou pela quitação à vista e deseja ver opções de parcelamento\",\n    step: 4,\n    maturidade: 4,\n  });\n}\n\n// ======================================================\n// LISTA 07 - CAPACIDADE DE PAGAMENTO\n// ======================================================\n\nif (resposta.startsWith(\"LISTA_07_\")) {\n  const mapaValores = {\n    LISTA_07_ATE_50: {\n      valor: 50,\n      faixa: \"ATE_50\",\n      descricao: \"Até R$ 50,00\",\n    },\n    LISTA_07_ATE_100: {\n      valor: 100,\n      faixa: \"ATE_100\",\n      descricao: \"Até R$ 100,00\",\n    },\n    LISTA_07_ATE_200: {\n      valor: 200,\n      faixa: \"ATE_200\",\n      descricao: \"Até R$ 200,00\",\n    },\n    LISTA_07_ATE_500: {\n      valor: 500,\n      faixa: \"ATE_500\",\n      descricao: \"Até R$ 500,00\",\n    },\n    LISTA_07_ACIMA_500: {\n      valor: 501,\n      faixa: \"ACIMA_500\",\n      descricao: \"Acima de R$ 500,00\",\n    },\n  };\n\n  const selecionado = mapaValores[resposta];\n\n  j.capacidadepagamento = selecionado?.valor ?? null;\n  j.faixacapacidadepagamento = selecionado?.faixa ?? null;\n  j.capacidadepagamentodescricao = selecionado?.descricao ?? null;\n\n  j.preferenciapagamento = \"PARCELAMENTO\";\n\n  return route({\n    flow: \"SIMULAR_PARCELAMENTO_COMPATIVEL\",\n    rota: \"CONSULTAR_VX_SIMULACAO\",\n    motivo: `Cliente informou capacidade mensal: ${\n      selecionado?.descricao ?? resposta\n    }`,\n    step: 4,\n    maturidade: 4,\n  });\n}\n\n// ======================================================\n// LISTA 08 - ESCOLHA DE PARCELAMENTO\n// ======================================================\n\nif (resposta.startsWith(\"LISTA_08_\")) {\n  const opcoesParcelamento = {\n    LISTA_08_PARC_03: {\n      codigo: \"PARCELAMENTO_03X\",\n      parcelas: 3,\n      descontoEncargos: 20,\n      descricao: \"Parcelamento em 3 vezes\",\n    },\n    LISTA_08_PARC_06: {\n      codigo: \"PARCELAMENTO_06X\",\n      parcelas: 6,\n      descontoEncargos: 15,\n      descricao: \"Parcelamento em 6 vezes\",\n    },\n    LISTA_08_PARC_09: {\n      codigo: \"PARCELAMENTO_09X\",\n      parcelas: 9,\n      descontoEncargos: 10,\n      descricao: \"Parcelamento em 9 vezes\",\n    },\n    LISTA_08_PARC_12: {\n      codigo: \"PARCELAMENTO_12X\",\n      parcelas: 12,\n      descontoEncargos: 5,\n      descricao: \"Parcelamento em 12 vezes\",\n    },\n  };\n\n  const proposta = opcoesParcelamento[resposta] ?? {\n    codigo: acao ?? resposta,\n    parcelas: null,\n    descontoEncargos: null,\n    descricao: acao ?? resposta,\n  };\n\n  j.proposta_escolhida = proposta.codigo;\n  j.tipoProposta = \"PARCELAMENTO\";\n  j.preferenciapagamento = \"PARCELAMENTO\";\n\n  j.parcelasEscolhidas = proposta.parcelas;\n  j.descontoEncargosEscolhido = proposta.descontoEncargos;\n  j.propostaEscolhidaDescricao = proposta.descricao;\n\n  j.statusnegociacao = \"PROPOSTA_ESCOLHIDA\";\n  j.objecao = null;\n\n  j.ultimaacao = resposta;\n  j.ultimaresposta = `Cliente escolheu ${proposta.descricao}`;\n\n  return route({\n    flow: \"PROPOSTA_ESCOLHIDA\",\n    rota: \"PROPOSTA_ESCOLHIDA\",\n    motivo: `Cliente escolheu proposta de parcelamento: ${proposta.descricao}`,\n    step: 6,\n    maturidade: 5,\n  });\n}\n\n// ======================================================\n// BOTAO 05 - CONFIRMAÇÃO DA PROPOSTA\n// ======================================================\n\nif (resposta === \"BOTAO_05_SOLICITAR_PROPOSTA\") {\n  return route({\n    flow: \"AGUARDANDO_APROVACAO\",\n    rota: \"ENVIAR_FILA_APROVACAO_VX\",\n    motivo: \"Cliente solicitou proposta\",\n    maturidade: 5,\n  });\n}\n\nif (resposta === \"BOTAO_05_PROPOSTA_NAO_ATENDE\") {\n  return route({\n    flow: \"PROPOSTA_NAO_ATENDE\",\n    motivo: \"Cliente informou que proposta não atende\",\n    maturidade: 1,\n  });\n}\n\nif (resposta === \"BOTAO_05_VOLTAR_PARCELAMENTOS\") {\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente retornou para a lista de parcelamentos\";\n\n  return route({\n    flow: \"OPCOES_PARCELAMENTO\",\n    rota: \"OPCOES_PARCELAMENTO\",\n    motivo: \"Cliente deseja revisar outras opções de parcelamento\",\n    step: 6,\n    maturidade: 3,\n  });\n}\n\nif (resposta === \"BOTAO_05_VOLTAR_VALOR_PARCELA\") {\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Cliente retornou para informar outro valor de parcela\";\n\n  return route({\n    flow: \"PERFIL_FINANCEIRO_DIFICULDADES\",\n    rota: \"PERFIL_FINANCEIRO_DIFICULDADES\",\n    motivo: \"Cliente deseja informar outro compromisso para valor de parcela\",\n    step: 6,\n    maturidade: 3,\n  });\n}\n\n// ======================================================\n// LISTA 09 - MOTIVO DA PROPOSTA NÃO ATENDER\n// ======================================================\n\nif (resposta === \"LISTA_09_PARCELA_MENOR\") {\n  j.objecao = \"VALOR_PARCELA_ALTO\";\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Preciso de parcelas menores\";\n\n  return route({\n    flow: \"CAPACIDADE_PAGAMENTO\",\n    rota: \"CAPACIDADE_PAGAMENTO\",\n    motivo: \"Cliente deseja reduzir o valor das parcelas\",\n    step: 6,\n    maturidade: 4,\n  });\n}\n\nif (resposta === \"LISTA_09_MAIS_PARCELAS\") {\n  j.objecao = \"PRAZO_INSUFICIENTE\";\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Preciso de mais parcelas\";\n\n  return route({\n    flow: \"OPCOES_PARCELAMENTO_ADICIONAIS\",\n    rota: \"OPCOES_PARCELAMENTO_ADICIONAIS\",\n    motivo: \"Cliente deseja avaliar uma quantidade maior de parcelas\",\n    step: 6,\n    maturidade: 4,\n  });\n}\n\nif (resposta === \"LISTA_09_EXPLICAR_SITUACAO\") {\n  j.objecao = \"EXPLICAR_SITUACAO\";\n  j.ultimaacao = resposta;\n  j.ultimaresposta = \"Quero explicar minha situação\";\n\n  return route({\n    flow: \"EXPLICAR_SITUACAO_TEXTO_LIVRE\",\n    rota: \"SOLICITAR_TEXTO_LIVRE\",\n    motivo: \"Cliente deseja explicar por que a proposta não atende\",\n    step: 6,\n    maturidade: 4,\n  });\n}\n\n// ======================================================\n// CLASSIFICAÇÃO IA DE TEXTO LIVRE\n// Usar quando j.classificacao_ia já tiver sido preenchido\n// ======================================================\n\nconst classificacaoIA = (j.classificacao_ia ?? \"\").trim().toUpperCase();\n\nif (flowAtual === \"EXPLICAR_SITUACAO_TEXTO_LIVRE\" && classificacaoIA) {\n  const mapaIA = {\n    FINANCEIRO: \"CAPACIDADE_PAGAMENTO\",\n    DESEMPREGO: \"CAPACIDADE_PAGAMENTO\",\n    SAUDE: \"CAPACIDADE_PAGAMENTO\",\n    VALOR_PARCELA_ALTO: \"CAPACIDADE_PAGAMENTO\",\n    PRAZO_INSUFICIENTE: \"OPCOES_PARCELAMENTO_ADICIONAIS\",\n    CONTESTACAO: \"DUVIDA_COBRANCA\",\n    CADASTRO: \"NAO_RESPONSAVEL_LIGACAO\",\n    MOMENTO_INADEQUADO: \"PREVISAO_RETORNO\",\n    OUTROS: \"ANALISE_HUMANA_ESPECIAL\",\n  };\n\n  return route({\n    flow: mapaIA[classificacaoIA] ?? \"ANALISE_HUMANA_ESPECIAL\",\n    rota: mapaIA[classificacaoIA] ?? \"ANALISE_HUMANA_ESPECIAL\",\n    motivo: `Classificação IA: ${classificacaoIA}`,\n  });\n}\n\n// ======================================================\n// FALLBACK\n// ======================================================\n\nreturn route({\n  flow: \"FALLBACK\",\n  motivo: \"Resposta não reconhecida pelo router\",\n});"
+      },
+      "id": "cbbfd514-16ee-4c54-ac3c-fde7dfab1043",
+      "name": "Router",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply = \"Cada situação é diferente e entender o motivo pode ajudar a identificar alternativas mais adequadas.\\n\\nQual é o principal motivo para não consultar ou regularizar suas pendências neste momento?\";\n\nj.interactive = {\n  type: \"list\",\n  body: {\n    text: j.reply\n  },\n  action: {\n    button: \"Selecionar motivo\",\n    sections: [\n      {\n        title: \"Motivo\",\n        rows: [\n          {\n            id: \"LISTA_01_SEM_CONDICOES_FINANCEIRAS\",\n            title: \"Condições financeiras\",\n            description: \"Estou com dificuldades financeiras\"\n          },\n          {\n            id: \"LISTA_01_RESOLVER_FUTURAMENTE\",\n            title: \"Resolver futuramente\",\n            description: \"Pretendo tratar essa situação em outro momento\"\n          },\n          {\n            id: \"LISTA_01_DUVIDAS_COBRANCA\",\n            title: \"Dúvidas sobre cobrança\",\n            description: \"Tenho dúvidas sobre os valores apresentados\"\n          },\n          {\n            id: \"LISTA_01_NAO_RESPONSAVEL\",\n            title: \"Não sou o responsável\",\n            description: \"Não sou responsável por esta ligação\"\n          },\n          {\n            id: \"LISTA_01_OUTRO_MOTIVO\",\n            title: \"Outro motivo\",\n            description: \"Quero informar outro motivo\"\n          }\n        ]\n      }\n    ]\n  }\n};\n\nreturn {\n  json: j\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -1072
+      ],
+      "id": "a6cdee6a-0420-4f8d-9399-7dcc553e7db8",
+      "name": "NAO_INTERESSE_MOTIVO_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply = \"Para que possamos acompanhar sua situação de forma mais adequada, qual é a sua expectativa para voltar a avaliar uma alternativa de regularização?\";\n\nj.interactive = {\n  type: \"list\",\n  body: {\n    text: j.reply\n  },\n  action: {\n    button: \"Selecionar prazo\",\n    sections: [\n      {\n        title: \"Prazo\",\n        rows: [\n          {\n            id: \"LISTA_02_30_DIAS\",\n            title: \"Nos próximos 30 dias\",\n            description: \"Vou resolver essa situação dentro de 30 dias.\"\n          },\n          {\n            id: \"LISTA_02_30_90_DIAS\",\n            title: \"Entre 30 e 90 dias\",\n            description: \"Vou resolver essa situação entre 30 a 90 dias.\"\n          },\n          {\n            id: \"LISTA_02_ACIMA_90_DIAS\",\n            title: \"Acima de 90 dias\",\n            description: \"Vou resolver essa situação após 90 dias.\"\n          },\n          {\n            id: \"LISTA_02_AINDA_NAO_SEI\",\n            title: \"Ainda não sei\",\n            description: \"Não tenho previsão de quando irei regularizar minha situação.\"\n          }\n        ]\n      }\n    ]\n  }\n};\n\nreturn {\n  json: j\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -720
+      ],
+      "id": "cf410e74-d9e1-4c28-81ab-2dee6773af04",
+      "name": "PREVISAO_RETORNO_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply = \"É importante esclarecer qualquer dúvida antes de avaliar uma alternativa de regularização.\\n\\nSobre qual aspecto da cobrança você gostaria de mais informações?\";\n\nj.interactive = {\n  type: \"list\",\n  body: {\n    text: j.reply\n  },\n  action: {\n    button: \"Selecionar a dúvida\",\n    sections: [\n      {\n        title: \"Duvida\",\n        rows: [\n          {\n            id: \"LISTA_03_VALOR_DIVIDA\",\n            title: \"Valor da Divida\",\n            description: \"Tenho dúvidas sobre o valor da dívida\"\n          },\n          {\n            id: \"LISTA_03_ORIGEM_COBRANCA\",\n            title: \"Origem Cobrança\",\n            description: \"Tenho dúvidas sobre a origem da cobrança\"\n          },\n          {\n            id: \"LISTA_03_REFERENCIAS_ABERTO\",\n            title: \"Faturas em Aberto\",\n            description: \"Tenho dúvidas sobre os faturas em aberto\"\n          },\n          {\n            id: \"LISTA_03_OUTRO_ASSUNTO\",\n            title: \"Outro Assunto\",\n            description: \"Quero informar outro assunto\"\n          }\n        ]\n      }\n    ]\n  }\n};\n\nreturn {\n  json: j\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -544
+      ],
+      "id": "9f8c3dad-d375-4854-94cc-ac5c16d7169a",
+      "name": "DUVIDA_COBRANCA_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply = \"Para proteger as informações da ligação, preciso entender melhor sua situação.\\n\\nA mudança de imóvel ou a falta de atualização cadastral não elimina automaticamente débitos do período de responsabilidade.\\n\\nQual opção melhor se aplica?\";\n\nj.interactive = {\n  type: \"list\",\n  body: {\n    text: j.reply\n  },\n  action: {\n    button: \"Selecione uma opção\",\n    sections: [\n      {\n        title: \"Selecione uma opção\",\n        rows: [\n          {\n            id: \"LISTA_04_NUNCA_FUI_RESPONSAVEL\",\n            title: \"Desconheço a ligação\",\n            description: \"Nunca tive vinculo com essa ligação\"\n          },\n          {\n            id: \"LISTA_04_MUDEI_DO_IMOVEL\",\n            title: \"Mudei do Imóvel\",\n            description: \"Não sou mais o responsável pelo imóvel\"\n          },\n          {\n            id: \"LISTA_04_TRANSFERENCIA_NAO_REALIZADA\",\n            title: \"Transferência pendente\",\n            description: \"A transferência foi solicitada e ainda não atualizada\"\n          }\n        ]\n      }\n    ]\n  }\n};\n\nreturn {\n  json: j\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -368
+      ],
+      "id": "81a24538-b71e-4890-832a-6db0fc1e8ce2",
+      "name": "NAO_RESPONSAVEL_LIGACAO_prepararlista"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "=https://graph.facebook.com/v22.0/1068535889684555/messages",
+        "allowUnauthorizedCerts": "={{ false }}",
+        "options": {
+          "bodyContentType": "raw"
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "messaging_product",
+              "value": "whatsapp"
+            },
+            {
+              "name": "to",
+              "value": "=553791238358"
+            },
+            {
+              "name": "type",
+              "value": "interactive"
+            },
+            {
+              "name": "interactive",
+              "value": "={{$json.interactive}}"
+            }
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": " Bearer EAAVf75K5aOkBRp4zIuoVedrrBZB3Q79iMl3SIu3a4b6aNIjIJIb0I22oBnLY2iIM0JGHdusld7eAAhUiyE5fkj4iMBZAZAftMSllx2CjcSsMaIP5JBelHZAE66dlVg02ORWEIhhi8vjFIkHfvsa2mJ8fiVS7WNV5fJWqfFnUo4O4jpdl1OZCG8vTdwRCtcDrFNQZDZD"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "preparar lista whatsapp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2928,
+        368
+      ],
+      "id": "bc9ce242-921f-4d83-9b3d-432bebebbe46",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\n// Mantém tudo que já existe no item, inclusive:\n// j.interactive\n// j.reply\n// j.api\n// j.Phone\n// j.rota\n// etc.\n\nj.session_update = {\n  flow: j.flow ?? null,\n  step: j.step ?? null,\n  maturidade: j.maturidade ?? null,\n\n  ultimaacao: j.resposta_normalizada ?? j.ultimaacao ?? null,\n  ultimaresposta: j.resposta_cliente ?? j.ultimaresposta ?? null,\n\n  motivoinadimplencia: j.motivoinadimplencia ?? null,\n  situacaoatual: j.situacaoatual ?? null,\n  capacidadepagamento: j.capacidadepagamento ?? null,\n\n  tentativasnegociacao: j.tentativasnegociacao ?? null,\n  proximaabordagem: j.proximaabordagem ?? null,\n\n  ultimadatasessao: new Date()\n    .toISOString()\n    .slice(0, 19)\n    .replace(\"T\", \" \")\n};\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2544,
+        352
+      ],
+      "id": "9c85398e-e2b8-44df-994e-f51eafea3148",
+      "name": "PrepararAtualizarSession"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply = \"Regularizar a situação costuma ser mais fácil quando as condições estão alinhadas à capacidade de pagamento de cada pessoa.\\n\\nPensando na sua realidade atual, qual dessas faixas de valor seria mais confortável para você assumir mensalmente?\";\n\nj.interactive = {\n  type: \"list\",\n  body: {\n    text: j.reply\n  },\n  action: {\n    button: \"Valor de parcela\",\n    sections: [\n      {\n        title: \"Valor de parcela\",\n        rows: [\n          {\n            id: \"LISTA_07_ATE_50\",\n            title: \"Até R$ 50,00\",\n            description: \"Consigo regularizar com parcelas de ate R$ 50,00\"\n          },\n          {\n            id: \"LISTA_07_ATE_100\",\n            title: \"Até R$ 100,00\",\n            description: \"Consigo regularizar com parcelas de ate R$ 100,00\"\n          },\n          {\n            id: \"LISTA_07_ATE_200\",\n            title: \"Até R$ 200,00\",\n            description: \"Consigo regularizar com parcelas de ate R$ 200,00\"\n          },\n          {\n            id: \"LISTA_07_ATE_500\",\n            title: \"Até R$ 500,00\",\n            description: \"Consigo regularizar com parcelas de ate R$ 500,00\"\n          },\n          {\n            id: \"LISTA_07_ACIMA_500\",\n            title: \"Acima de R$ 500,00\",\n            description: \"Consigo regularizar com parcelas acima de R$ 500,00\"\n          }\n        ]\n      }\n    ]\n  }\n};\n\nreturn {\n  json: j\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -896
+      ],
+      "id": "90657f7f-922a-4f50-9ed0-9ec48314cc46",
+      "name": "SEM_CONDICOES_FINANCEIRAS_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply = \"Para que eu possa buscar uma alternativa mais adequada para você, gostaria de entender um pouco melhor sua situação atual.\\n\\nComo você descreveria sua condição financeira hoje?\";\n\nj.interactive = {\n  type: \"list\",\n  body: {\n    text: j.reply\n  },\n  action: {\n    button: \"Condição atual\",\n    sections: [\n      {\n        title: \"Perfil atual\",\n        rows: [\n          {\n            id: \"LISTA_06_ESTAVEL\",\n            title: \"Estável\",\n            description: \"Condição financeira estável\"\n          },\n          {\n            id: \"LISTA_06_MELHORANDO\",\n            title: \"Melhorando\",\n            description: \"Minha situação financeira está melhorando\"\n          },\n          {\n            id: \"LISTA_06_AINDA_COM_DIFICULDADES\",\n            title: \"Com dificuldades\",\n            description: \"Ainda estou com dificuldades financeiras\"\n          }\n        ]\n      }\n    ]\n  }\n};\n\nreturn {\n  json: j\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        1424
+      ],
+      "id": "356c611c-43d7-4430-b648-a70d6d7b2b85",
+      "name": "SEM_CONDICOES_FINANCEIRAS_prepararlista1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Constantes').item.json.api.endpoints.retornardebitos}}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "=ligacaoId",
+              "value": "=2486"
+            }
+          ]
+        }
+      },
+      "name": "API - Débitos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -1248
+      ],
+      "id": "e4939ceb-f8a1-4456-8e12-bb61ca359048",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst j = { ...items[0].json };\n\nfunction numero(valor) {\n  if (valor === undefined || valor === null || valor === \"\") return 0;\n\n  if (typeof valor === \"string\") {\n    valor = valor.replace(/\\./g, \"\").replace(\",\", \".\");\n  }\n\n  const n = Number(valor);\n  return Number.isFinite(n) ? n : 0;\n}\n\nfunction moeda(valor) {\n  return numero(valor).toLocaleString(\"pt-BR\", {\n    style: \"currency\",\n    currency: \"BRL\",\n  });\n}\n\nfunction dataReferencia(ref) {\n  if (!ref || typeof ref !== \"string\") return new Date(\"9999-12-31\");\n\n  const [mes, ano] = ref.split(\"/\");\n  return new Date(`${ano}-${mes}-01`);\n}\n\n// A nova API está retornando 1 débito por item\nconst retorno = items.flatMap(item => {\n  const e = item.json;\n\n  if (Array.isArray(e)) return e;\n  if (Array.isArray(e.data)) return e.data;\n  if (Array.isArray(e.debitos)) return e.debitos;\n  if (Array.isArray(e.faturas)) return e.faturas;\n  if (Array.isArray(e.body)) return e.body;\n  if (Array.isArray(e.retorno)) return e.retorno;\n\n  return [e];\n});\n\nconst debitos = retorno\n  .map(d => {\n    const valorOriginal = numero(d.valorOriginal);\n    const valorAtualizado = numero(d.valorAtualizado);\n    const juros = numero(d.juros);\n    const multa = numero(d.multa);\n    const correcao = numero(d.correcaoMonetaria);\n\n    return {\n      debitoDetalheId: d.debitoDetalheId ?? null,\n      referencia: d.referencia ?? \"\",\n      statusDescricao: d.statusDescricao ?? \"\",\n      valorOriginal,\n      valorAtualizado,\n      juros,\n      multa,\n      correcao,\n      codigoBarras: d.codigoBarras ?? null,\n      linhaDigitavel: d.linhaDigitavel ?? null,\n    };\n  })\n  .sort((a, b) => dataReferencia(a.referencia) - dataReferencia(b.referencia));\n\nconst totalFaturas = debitos.reduce((acc, d) => acc + d.valorOriginal, 0);\nconst totalJuros = debitos.reduce((acc, d) => acc + d.juros, 0);\nconst totalMulta = debitos.reduce((acc, d) => acc + d.multa, 0);\nconst totalCorrecao = debitos.reduce((acc, d) => acc + d.correcao, 0);\nconst totalAtualizado = debitos.reduce((acc, d) => acc + d.valorAtualizado, 0);\n\nconst linhas = debitos.map(d => {\n  return `${d.referencia} .......... ${moeda(d.valorAtualizado)}`;\n});\n\nj.reply =\n  `*Apresentamos abaixo as pendências atualmente identificadas para esta ligação.*\\n\\n` +\n  `*Total atualizado: ${moeda(totalAtualizado)}*\\n\\n` +\n  `*Referência       Valor atualizado*\\n` +\n  `${linhas.join(\"\\n\")}\\n\\n` +\n  `*Resumo dos valores*\\n\\n` +\n  `Faturas: ${moeda(totalFaturas)}\\n` +\n  `Juros: ${moeda(totalJuros)}\\n` +\n  `Multa: ${moeda(totalMulta)}\\n` +\n  `Correção: ${moeda(totalCorrecao)}\\n\\n` +\n  `*Valor total atualizado: ${moeda(totalAtualizado)}*\\n\\n` +\n  `Regularizar sua situação agora pode ajudar a evitar o aumento dos débitos e possíveis restrições previstas para a prestação do serviço.`;\n\nj.debitos = debitos;\nj.totalFaturas = totalFaturas;\nj.totalConsumo = totalFaturas;\nj.totalJuros = totalJuros;\nj.totalMulta = totalMulta;\nj.totalCorrecao = totalCorrecao;\nj.totalDebitos = totalAtualizado;\nj.totalAtualizado = totalAtualizado;\nj.quantidadeDebitos = debitos.length;\n\nreturn [\n  {\n    json: j,\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        -1248
+      ],
+      "id": "f31ee2b0-8114-402e-8e82-c883fb8c4f68",
+      "name": "DEBITOS_prepararlista"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1068535889684555",
+        "recipientPhoneNumber": "={{ $('Router').item.json.Phone }}",
+        "textBody": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1312,
+        -1248
+      ],
+      "id": "6ba1aa31-0f5b-4a62-b1a9-5014ef92e9b4",
+      "name": "DEBITOS_imprimir",
+      "webhookId": "10a52e18-4723-4d8f-9d0e-4a8ab6279391",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply =\n  \"É possível verificar alternativas para regularização e evitar o aumento dos débitos ao longo do tempo.\\n\\nComo deseja continuar?\";\n\nj.interactive = {\n  type: \"button\",\n  body: {\n    text: j.reply\n  },\n  action: {\n    buttons: [\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_03_QUERO_RESOLVER\",\n          title: \"Eu quero resolver\"\n        }\n      },\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_03_NAO_INTERESSE\",\n          title: \"Não tenho interesse\"\n        }\n      }\n    ]\n  }\n};\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        -1248
+      ],
+      "id": "5688b79e-a2ad-4e1d-9a3a-6863b7b4592d",
+      "name": "RESOLVER_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply = \"Entender o que levou ao atraso pode ajudar a identificar uma alternativa mais adequada para a sua realidade.\\n\\n\\Qual foi o principal fator que contribuiu para o acúmulo dessas pendências?\";\n\nj.interactive = {\n  type: \"list\",\n  body: {\n    text: j.reply\n  },\n  action: {\n    button: \"Selecione uma opção\",\n    sections: [\n      {\n        title: \"Selecione uma opção\",\n        rows: [\n          {\n            id: \"LISTA_05_DIFICULDADES_FINANCEIRAS\",\n            title: \"Dificuldades financeiras\",\n            description: \"Dificuldades financeiras\"\n          },\n          {\n            id: \"LISTA_05_DESEMPREGO_REDUCAO_RENDA\",\n            title: \"Desemprego\",\n            description: \"Desemprego ou redução de renda\"\n          },\n          {\n            id: \"LISTA_05_PROBLEMAS_SAUDE\",\n            title: \"Problemas de saúde\",\n            description: \"Problemas de saúde\"\n          },\n          {\n            id: \"LISTA_05_ESQUECIMENTO_ORGANIZACAO\",\n            title: \"Esquecimento\",\n            description: \"Esquecimento ou falta de organização\"\n          },\n          {\n            id: \"LISTA_05_OUTRO_MOTIVO\",\n            title: \"Outro motivo\",\n            description: \"Quero informar outro motivo\"\n          }\n        ]\n      }\n    ]\n  }\n};\n\nreturn {\n  json: j\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        208
+      ],
+      "id": "5005b2e9-225f-4f2a-b8c7-c00a2a816858",
+      "name": "DIAGNOSTICO_MOTIVO_INADIMPLENCIA_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply =\n  \"Para que eu possa identificar uma alternativa compatível com a sua realidade atual, como você avalia sua situação hoje?\";\n\nj.interactive = {\n  type: \"button\",\n  body: {\n    text: j.reply\n  },\n  action: {\n    buttons: [\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_06_ESTAVEL\",\n          title: \"🟢 Estável\"\n        }\n      },\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_06_MELHORANDO\",\n          title: \"🟡 Melhorando\"\n        }\n      },\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_06_AINDA_COM_DIFICULDADES\",\n          title: \"🔴 Com dificuldades\"\n        }\n      }\n    ]\n  }\n};\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        384
+      ],
+      "id": "8106b6a0-da21-43d1-afe3-37b99d9a9915",
+      "name": "DIAGNOSTICO_SITUACAO_ATUAL_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply =\n  \"Para que eu possa identificar uma alternativa compatível com a sua realidade atual, como você avalia sua situação hoje?\";\n\nj.interactive = {\n  type: \"button\",\n  body: {\n    text: j.reply\n  },\n  action: {\n    buttons: [\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_06_ESTAVEL\",\n          title: \"🟢 Estável\"\n        }\n      },\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_06_MELHORANDO\",\n          title: \"🟡 Melhorando\"\n        }\n      },\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_06_DIFICULDADES\",\n          title: \"🔴 Com dificuldades\"\n        }\n      }\n    ]\n  }\n};\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        560
+      ],
+      "id": "c28a33a2-dea0-4563-858c-cede6c2073f3",
+      "name": "PERFIL_FINANCEIRO_ESTAVEL_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst j = { ...items[0].json };\n\nfunction numero(valor) {\n  if (valor === undefined || valor === null || valor === \"\") return 0;\n\n  if (typeof valor === \"string\") {\n    valor = valor.replace(/\\./g, \"\").replace(\",\", \".\");\n  }\n\n  const n = Number(valor);\n  return Number.isFinite(n) ? n : 0;\n}\n\nfunction moeda(valor) {\n  return numero(valor).toLocaleString(\"pt-BR\", {\n    style: \"currency\",\n    currency: \"BRL\",\n  });\n}\n\nfunction dataReferencia(ref) {\n  if (!ref || typeof ref !== \"string\") return new Date(\"9999-12-31\");\n\n  const [mes, ano] = ref.split(\"/\");\n  return new Date(`${ano}-${mes}-01`);\n}\n\nfunction arredondar(valor) {\n  return Math.round(numero(valor) * 100) / 100;\n}\n\n// Nova API: pode vir 1 débito por item ou array dentro do item\nconst retorno = items.flatMap(item => {\n  const e = item.json;\n\n  if (Array.isArray(e)) return e;\n  if (Array.isArray(e.data)) return e.data;\n  if (Array.isArray(e.debitos)) return e.debitos;\n  if (Array.isArray(e.faturas)) return e.faturas;\n  if (Array.isArray(e.body)) return e.body;\n  if (Array.isArray(e.retorno)) return e.retorno;\n\n  return [e];\n});\n\nconst debitos = retorno\n  .map(d => {\n    const valorOriginal = numero(d.valorOriginal);\n    const valorAtualizado = numero(d.valorAtualizado);\n    const juros = numero(d.juros);\n    const multa = numero(d.multa);\n    const correcao = numero(d.correcaoMonetaria);\n\n    return {\n      debitoDetalheId: d.debitoDetalheId ?? null,\n      referencia: d.referencia ?? \"\",\n      statusDescricao: d.statusDescricao ?? \"\",\n      valorOriginal,\n      valorAtualizado,\n      juros,\n      multa,\n      correcao,\n      codigoBarras: d.codigoBarras ?? null,\n      linhaDigitavel: d.linhaDigitavel ?? null,\n    };\n  })\n  .sort((a, b) => dataReferencia(a.referencia) - dataReferencia(b.referencia));\n\nconst totalFaturas = debitos.reduce((acc, d) => acc + d.valorOriginal, 0);\nconst totalJuros = debitos.reduce((acc, d) => acc + d.juros, 0);\nconst totalMulta = debitos.reduce((acc, d) => acc + d.multa, 0);\nconst totalCorrecao = debitos.reduce((acc, d) => acc + d.correcao, 0);\n\nconst totalEncargos = totalJuros + totalMulta + totalCorrecao;\nconst totalAtualizado = debitos.reduce((acc, d) => acc + d.valorAtualizado, 0);\n\n// Perfil financeiro estável: 30% de desconto sobre juros + multa + correção\nconst percentualDescontoEncargos = 30;\nconst valorDesconto = arredondar(totalEncargos * (percentualDescontoEncargos / 100));\nconst valorAVista = arredondar(totalAtualizado - valorDesconto);\n\nj.debitos = debitos;\n\nj.totalFaturas = totalFaturas;\nj.totalConsumo = totalFaturas;\nj.totalJuros = totalJuros;\nj.totalMulta = totalMulta;\nj.totalCorrecao = totalCorrecao;\nj.totalEncargos = totalEncargos;\nj.totalAtualizado = totalAtualizado;\nj.totalDebitos = totalAtualizado;\nj.quantidadeDebitos = debitos.length;\n\nj.percentualDescontoEncargos = percentualDescontoEncargos;\nj.valorDesconto = valorDesconto;\nj.valorAVista = valorAVista;\n\nj.reply =\n  `Há uma condição disponível para regularização dos seus débitos.\\n\\n` +\n  `Valor total atualizado: *${moeda(totalAtualizado)}*\\n\\n` +\n  `Pagamento à vista: *${moeda(valorAVista)}*\\n\\n` +\n  `Ao optar pelo pagamento à vista, você aproveita uma redução sobre os encargos incidentes nos débitos.\\n\\n` +\n  `Como deseja continuar?`;\n\nj.interactive = {\n  type: \"button\",\n  body: {\n    text: j.reply,\n  },\n  action: {\n    buttons: [\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_04_QUITAR_COM_DESCONTO\",\n          title: \"Quitar à vista\",\n        },\n      },\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_04_VER_OUTRAS_OPCOES\",\n          title: \"Ver parcelamentos\",\n        },\n      },\n    ],\n  },\n};\n\nreturn [\n  {\n    json: j,\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        560
+      ],
+      "id": "b8572de2-7184-4dab-a0e7-92d098368e09",
+      "name": "PERFILDEBITOS_prepararlista"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Constantes').item.json.api.endpoints.retornardebitos}}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "=ligacaoId",
+              "value": "=2486"
+            }
+          ]
+        }
+      },
+      "name": "API - PERFILDébitos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        896,
+        560
+      ],
+      "id": "a1c13df0-8d57-4e35-a9d8-98acb96194a7",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -1424
+      ],
+      "id": "7c1e90af-8ed8-4ef8-8278-51d8e1dd794f",
+      "name": "AUTENTICAR_CONSUMIDOR_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -1248
+      ],
+      "id": "65f5ed7d-1d49-4e2e-adbc-d7845672ff64",
+      "name": "CONSULTAR_PENDENCIAS_prepararlista"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Constantes').item.json.api.endpoints.retornardebitos}}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "=ligacaoId",
+              "value": "=2486"
+            }
+          ]
+        }
+      },
+      "name": "API - SIMULARPARCELAS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        672,
+        736
+      ],
+      "id": "9a3d18ae-5f6e-486a-820b-d0e2e007e70d",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiItems = $input.all();\n\nconst j = { ...apiItems[0].json };\n\nfunction numero(valor) {\n  if (valor === undefined || valor === null || valor === \"\") return 0;\n\n  if (typeof valor === \"number\") return valor;\n\n  if (typeof valor === \"string\") {\n    valor = valor\n      .replace(\"R$\", \"\")\n      .replace(/\\s/g, \"\")\n      .replace(/\\./g, \"\")\n      .replace(\",\", \".\");\n  }\n\n  const n = Number(valor);\n  return Number.isFinite(n) ? n : 0;\n}\n\nfunction arredondar(valor) {\n  return Math.round(numero(valor) * 100) / 100;\n}\n\nfunction moeda(valor) {\n  return numero(valor).toLocaleString(\"pt-BR\", {\n    style: \"currency\",\n    currency: \"BRL\",\n  });\n}\n\n// ======================================================\n// BUSCA DADOS DA RESPOSTA DO CLIENTE\n// ======================================================\n\nlet origemResposta = { ...j };\n\ntry {\n  const normalizado = $(\"Normalizar Resposta WhatsApp\").first().json;\n\n  origemResposta = {\n    ...normalizado,\n    ...j,\n  };\n} catch (e) {\n  origemResposta = { ...j };\n}\n\nconst resposta = String(\n  origemResposta.resposta_normalizada ??\n  origemResposta.resposta_id ??\n  origemResposta.listReply?.id ??\n  origemResposta.messages?.[0]?.interactive?.list_reply?.id ??\n  \"\"\n);\n\nconst respostaTitulo = String(\n  origemResposta.resposta_titulo ??\n  origemResposta.resposta_cliente ??\n  origemResposta.listReply?.title ??\n  origemResposta.messages?.[0]?.interactive?.list_reply?.title ??\n  \"\"\n);\n\nconst respostaDescricao = String(\n  origemResposta.resposta_descricao ??\n  origemResposta.listReply?.description ??\n  origemResposta.messages?.[0]?.interactive?.list_reply?.description ??\n  \"\"\n);\n\nconst textoResposta = `${resposta} ${respostaTitulo} ${respostaDescricao}`.toUpperCase();\n\nconst ehAcima500 =\n  resposta === \"LISTA_07_ACIMA_500\" ||\n  resposta.includes(\"ACIMA_500\") ||\n  textoResposta.includes(\"ACIMA DE R$ 500\") ||\n  textoResposta.includes(\"ACIMA DE 500\");\n\nconst mapaValores = {\n  LISTA_07_ATE_50: {\n    valor: 50,\n    tipo: \"TETO\",\n    descricao: \"Até R$ 50,00\",\n  },\n  LISTA_07_ATE_100: {\n    valor: 100,\n    tipo: \"TETO\",\n    descricao: \"Até R$ 100,00\",\n  },\n  LISTA_07_ATE_200: {\n    valor: 200,\n    tipo: \"TETO\",\n    descricao: \"Até R$ 200,00\",\n  },\n  LISTA_07_ATE_500: {\n    valor: 500,\n    tipo: \"TETO\",\n    descricao: \"Até R$ 500,00\",\n  },\n  LISTA_07_ACIMA_500: {\n    valor: 500,\n    tipo: \"PISO\",\n    descricao: \"Acima de R$ 500,00\",\n  },\n};\n\nconst regraCapacidade = ehAcima500\n  ? mapaValores.LISTA_07_ACIMA_500\n  : mapaValores[resposta] ?? {\n      valor: 0,\n      tipo: \"TETO\",\n      descricao: \"\",\n    };\n\nlet capacidadePagamento = regraCapacidade.valor;\nlet tipoCapacidade = regraCapacidade.tipo;\nlet capacidadeDescricao = regraCapacidade.descricao;\n\n// Fallback por descrição/título, caso o ID não venha\nif (!capacidadePagamento) {\n  const matchDescricao = respostaDescricao.match(/R\\$\\s*([\\d.,]+)/i);\n\n  if (matchDescricao) {\n    capacidadePagamento = numero(matchDescricao[1]);\n    capacidadeDescricao = respostaDescricao;\n    tipoCapacidade = textoResposta.includes(\"ACIMA\") ? \"PISO\" : \"TETO\";\n  }\n}\n\nif (!capacidadePagamento) {\n  const matchTitulo = respostaTitulo.match(/R\\$\\s*([\\d.,]+)/i);\n\n  if (matchTitulo) {\n    capacidadePagamento = numero(matchTitulo[1]);\n    capacidadeDescricao = respostaTitulo;\n    tipoCapacidade = textoResposta.includes(\"ACIMA\") ? \"PISO\" : \"TETO\";\n  }\n}\n\n// ======================================================\n// JUNTA DÉBITOS RETORNADOS PELA API\n// ======================================================\n\nconst retorno = apiItems.flatMap(item => {\n  const e = item.json;\n\n  if (Array.isArray(e)) return e;\n  if (Array.isArray(e.data)) return e.data;\n  if (Array.isArray(e.debitos)) return e.debitos;\n  if (Array.isArray(e.faturas)) return e.faturas;\n  if (Array.isArray(e.body)) return e.body;\n  if (Array.isArray(e.retorno)) return e.retorno;\n\n  return [e];\n});\n\nconst debitos = retorno.map(d => {\n  const valorOriginal = numero(d.valorOriginal);\n  const valorAtualizado = numero(d.valorAtualizado);\n  const juros = numero(d.juros);\n  const multa = numero(d.multa);\n  const correcao = numero(d.correcaoMonetaria);\n\n  return {\n    debitoDetalheId: d.debitoDetalheId ?? null,\n    referencia: d.referencia ?? \"\",\n    statusDescricao: d.statusDescricao ?? \"\",\n    valorOriginal,\n    valorAtualizado,\n    juros,\n    multa,\n    correcao,\n    codigoBarras: d.codigoBarras ?? null,\n    linhaDigitavel: d.linhaDigitavel ?? null,\n  };\n});\n\nconst totalFaturas = debitos.reduce((acc, d) => acc + d.valorOriginal, 0);\nconst totalJuros = debitos.reduce((acc, d) => acc + d.juros, 0);\nconst totalMulta = debitos.reduce((acc, d) => acc + d.multa, 0);\nconst totalCorrecao = debitos.reduce((acc, d) => acc + d.correcao, 0);\nconst totalEncargos = totalJuros + totalMulta + totalCorrecao;\nconst totalAtualizado = debitos.reduce((acc, d) => acc + d.valorAtualizado, 0);\n\n// ======================================================\n// REGRAS DE NEGOCIAÇÃO\n// ======================================================\n\nconst parcelaMinima = numero(\n  j.negociacao?.parcelaMinima ??\n  origemResposta.negociacao?.parcelaMinima ??\n  50\n);\n\nconst faixas =\n  Array.isArray(j.negociacao?.parcelasMaximasPorFaixa)\n    ? j.negociacao.parcelasMaximasPorFaixa\n    : Array.isArray(origemResposta.negociacao?.parcelasMaximasPorFaixa)\n      ? origemResposta.negociacao.parcelasMaximasPorFaixa\n      : [\n          { ate: 1000, maxParcelas: 18 },\n          { ate: 2000, maxParcelas: 30 },\n          { ate: 5000, maxParcelas: 40 },\n          { ate: 100000, maxParcelas: 60 },\n        ];\n\nconst regraFaixa =\n  faixas.find(f => totalAtualizado <= numero(f.ate)) ??\n  faixas[faixas.length - 1] ??\n  { ate: 0, maxParcelas: 1 };\n\nconst parcelasMaximas = numero(regraFaixa.maxParcelas || 1);\n\n// ======================================================\n// CÁLCULO DO PARCELAMENTO\n// TETO: parcela deve ficar até o valor informado.\n// PISO: parcela deve ficar a partir do valor informado.\n// ======================================================\n\nlet quantidadeParcelas;\n\nif (tipoCapacidade === \"PISO\") {\n  quantidadeParcelas =\n    capacidadePagamento > 0\n      ? Math.floor(totalAtualizado / capacidadePagamento)\n      : 1;\n\n  quantidadeParcelas = Math.max(quantidadeParcelas, 1);\n  quantidadeParcelas = Math.min(quantidadeParcelas, parcelasMaximas);\n} else {\n  quantidadeParcelas =\n    capacidadePagamento > 0\n      ? Math.ceil(totalAtualizado / capacidadePagamento)\n      : parcelasMaximas;\n\n  quantidadeParcelas = Math.min(quantidadeParcelas, parcelasMaximas);\n  quantidadeParcelas = Math.max(quantidadeParcelas, 1);\n}\n\nlet valorParcela = arredondar(totalAtualizado / quantidadeParcelas);\n\n// Garante parcela mínima geral\nwhile (valorParcela < parcelaMinima && quantidadeParcelas > 1) {\n  quantidadeParcelas--;\n  valorParcela = arredondar(totalAtualizado / quantidadeParcelas);\n}\n\n// Para ACIMA_500, garante que não retorne parcela abaixo do piso\nwhile (\n  tipoCapacidade === \"PISO\" &&\n  capacidadePagamento > 0 &&\n  valorParcela < capacidadePagamento &&\n  quantidadeParcelas > 1\n) {\n  quantidadeParcelas--;\n  valorParcela = arredondar(totalAtualizado / quantidadeParcelas);\n}\n\nconst dentroCapacidade =\n  tipoCapacidade === \"PISO\"\n    ? valorParcela >= capacidadePagamento\n    : capacidadePagamento > 0 && valorParcela <= capacidadePagamento;\n\n// ======================================================\n// SAÍDA\n// ======================================================\n\nj.debitos = debitos;\nj.totalFaturas = totalFaturas;\nj.totalConsumo = totalFaturas;\nj.totalJuros = totalJuros;\nj.totalMulta = totalMulta;\nj.totalCorrecao = totalCorrecao;\nj.totalEncargos = totalEncargos;\nj.totalAtualizado = totalAtualizado;\nj.totalDebitos = totalAtualizado;\nj.quantidadeDebitos = debitos.length;\n\nj.capacidadepagamento = capacidadePagamento;\nj.tipocapacidadepagamento = tipoCapacidade;\nj.capacidadepagamentodescricao = capacidadeDescricao;\n\nj.simulacao = {\n  totalDebitos: totalAtualizado,\n  capacidadePagamento,\n  tipoCapacidade,\n  capacidadeDescricao,\n  parcelaMinima,\n  faixaAplicada: regraFaixa,\n  parcelasMaximas,\n  quantidadeParcelas,\n  valorParcela,\n  dentroCapacidade,\n};\n\nj.reply =\n  `Com base nas condições disponíveis, encontramos esta opção:\\n\\n` +\n  `${quantidadeParcelas}x de *${moeda(valorParcela)}*\\n\\n` +\n  `Total negociado: *${moeda(totalAtualizado)}*\\n\\n` +\n  (\n    dentroCapacidade\n      ? `Essa opção está compatível com a faixa informada por você.\\n\\n`\n      : `Essa é a condição mais próxima disponível dentro das regras atuais.\\n\\n`\n  ) +\n  `Ao solicitar esta proposta, você autoriza o encaminhamento para análise.\\n\\n` +\n  `Se aprovada pelo SAAE, a negociação será efetivada automaticamente nas condições apresentadas, sem necessidade de nova confirmação.\\n\\n` +\n  `Deseja continuar?`;\n\nj.flow = \"SIMULAR_PARCELAMENTO_COMPATIVEL\";\nj.rota = \"PROPOSTA_APRESENTADA\";\nj.step = 5;\nj.maturidade = 4;\nj.preferenciapagamento = \"PARCELAMENTO\";\nj.statusnegociacao = \"PROPOSTA_APRESENTADA\";\nj.statusatendimento = \"EM_NEGOCIACAO\";\n\nj.ultimaacao = resposta;\nj.ultimaresposta = `Cliente informou capacidade de pagamento: ${\n  capacidadeDescricao || moeda(capacidadePagamento)\n}`;\n\nj.interactive = {\n  type: \"button\",\n  body: {\n    text: j.reply,\n  },\n  action: {\n    buttons: [\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_05_SOLICITAR_PROPOSTA\",\n          title: \"✅ Solicitar proposta\",\n        },\n      },\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_05_VOLTAR_VALOR_PARCELA\",\n          title: \"↩️ Ver menu anterior\",\n        },\n      },\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_05_PROPOSTA_NAO_ATENDE\",\n          title: \"❌ Recusar proposta\",\n        },\n      },\n    ],\n  },\n};\n\nreturn [\n  {\n    json: j,\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        736
+      ],
+      "id": "ad4fc412-da2f-405c-940a-348b28ba6feb",
+      "name": "CALCULAR_PARCELAMENTO_COMPATIVEL_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply =\n  \"A proposta apresentada foi calculada considerando a capacidade de pagamento informada por você e as condições atualmente disponíveis para regularização.\\n\\n\" +\n\n\"*A não regularização dos débitos poderá resultar na continuidade da cobrança, atualização dos valores pendentes e na adoção das medidas previstas para o serviço, incluindo, quando aplicável, a interrupção do fornecimento.*\\n\\n\" +\n\n\"Antes de encerrarmos esta etapa da negociação, informe qual foi o principal motivo da recusa da proposta apresentada.\";\n\n// Estado da conversa\nj.flow = \"AGUARDANDO_MOTIVO_RECUSA\";\nj.rota = \"AGUARDANDO_MOTIVO_RECUSA\";\nj.step = 6;\n\n// Indicadores da negociação\nj.maturidade = 2;\nj.objecao = \"RECUSA_PROPOSTA\";\nj.statusnegociacao = \"PROPOSTA_RECUSADA_AGUARDANDO_MOTIVO\";\n\n// Auditoria\nj.ultimaacao = \"BOTAO_08_RECUSAR_PROPOSTA\";\nj.ultimaresposta = \"Cliente recusou a proposta apresentada\";\nj.datarecusa = new Date().toISOString().slice(0, 19).replace(\"T\", \" \");\n\n// Dados da última proposta, se existirem\nj.ultimaproposta = j.simulacao?.totalDebitos ?? j.totalDebitos ?? null;\nj.ultimaparcela = j.simulacao?.valorParcela ?? null;\nj.quantidadeparcelas = j.simulacao?.quantidadeParcelas ?? null;\nj.capacidadepagamento = j.simulacao?.capacidadePagamento ?? j.capacidadepagamento ?? null;\n\nj.payload_whatsapp = {\n  messaging_product: \"whatsapp\",\n  to: j.Phone,\n  type: \"text\",\n  text: {\n    body: j.reply,\n  },\n};\n\nreturn {\n  json: j,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1072
+      ],
+      "id": "1822feac-abf6-486a-9709-1158da34415b",
+      "name": "PROPOSTA_NAOATENDE_prepararlista"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "AUTENTICAR_CONSUMIDOR",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9cd688f5-b13c-47f0-9afb-141313327754"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "03e88400-fb95-4683-81c5-6e2f6ba0952d",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "CONSULTAR_PENDENCIAS",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "999e3b5a-61ba-4b7f-91a8-bae89e556d29",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "NAO_INTERESSE_MOTIVO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "16209869-380e-45ed-898e-87954db81511",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "SEM_CONDICOES_FINANCEIRAS",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1fa90e2d-454c-43b9-bdd4-17e1d1d2481b",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "PREVISAO_RETORNO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "df0df2ec-0bfb-4e7b-8d74-cacff43f687b",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "DUVIDA_COBRANCA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0e01e6b5-83a9-439a-b0aa-5698bb40d166",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "NAO_RESPONSAVEL_LIGACAO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "86d4828b-2091-492e-ab7d-7bc774da9b4d",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "OUTRO_MOTIVO_TEXTO_LIVRE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "909d11e6-4b34-4544-a112-236e03942127",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "DIAGNOSTICO_MOTIVO_INADIMPLENCIA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a6b205cd-fb5c-4d5b-8342-2e9e7b3504c9",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "DIAGNOSTICO_SITUACAO_ATUAL",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8afbf581-46aa-4814-a279-8ce2bd6b9ad0",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "PERFIL_FINANCEIRO_ESTAVEL",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "379ea258-de8d-4cd4-b3ba-18eb9694d5ed",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "PERFIL_FINANCEIRO_MELHORANDO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f87123ce-1651-4c6e-850d-2d3ae394085b",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "PERFIL_FINANCEIRO_DIFICULDADES",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d0106481-2644-48c0-ad85-34a1e75a59bd",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "CONSULTAR_VX_SIMULACAO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "89129e6f-e139-4f8a-a238-ca783d28fd59",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "ENVIAR_FILA_APROVACAO_VX",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "625461c2-4fad-40bf-949d-f8b436e2f422",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "PROPOSTA_NAO_ATENDE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c06eb88e-f270-41e0-b13d-7c7a76fe3dfb",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "SOLICITAR_PROPOSTA_QUITACAO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8a05f407-4427-4b71-9d3c-553f5626f8ca",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "OPCOES_PARCELAMENTO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "fbfcb3a9-50b7-47aa-9899-8bfc05ae1d9b",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "ENCERRAR_COM_RECONTATO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "90e7460a-9527-42fe-a97a-58ae7b3c6d47",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "ENCERRAR_COM_ALERTA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e0475cf5-0260-4313-9a95-5943010677f4",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "CADASTRO_NUNCA_RESPONSAVEL",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1e02eba4-6104-49b4-924b-6e9d2fbba05c",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "CADASTRO_MUDOU_DO_IMOVEL",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1b534c6f-bdb8-4187-a60c-ae0619c8a34d",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "CADASTRO_TRANSFERENCIA_PENDENTE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "09dce95d-f4e0-478e-8b76-20e306fdf6b3",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "PROPOSTA_ESCOLHIDA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "fd22d2da-63a4-401e-b82d-5da39eaaf364",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "SOLICITAR_CODIGO_LIGACAO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c3f26cdd-43bb-487a-b989-d1103e74551f",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "SOLICITAR_CPF_CNPJ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6b51acbb-5285-4b9a-a0da-014842492b6c",
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "VALIDAR_CODIGO_CPF",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        -32
+      ],
+      "id": "438c52d3-0ce4-4da7-a275-de6324c28adf",
+      "name": "Fluxos"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst agora = new Date().toISOString().slice(0, 19).replace(\"T\", \" \");\n\nj.reply =\n  \"Recebemos sua solicitação e ela foi encaminhada para análise.\\n\\n\" +\n  \"Caso aprovada, a negociação será efetivada nas condições apresentadas e você receberá a confirmação por este canal.\\n\\n\" +\n  \"Enquanto a análise estiver em andamento, não é necessária nenhuma ação adicional.\\n\\n\" +\n  \"Acompanhe as próximas mensagens para atualização do andamento da solicitação.\";\n\n// Estado da conversa\nj.flow = \"AGUARDANDO_APROVACAO\";\nj.rota = \"AGUARDANDO_APROVACAO\";\nj.step = 6;\n\n// Indicadores da negociação\nj.maturidade = 5;\nj.statusnegociacao = \"EM_ANALISE\";\nj.objecao = null;\n\n// Auditoria\nj.ultimaacao = \"BOTAO_08_SOLICITAR_PROPOSTA\";\nj.ultimaresposta = \"Cliente solicitou a proposta para análise\";\nj.datasolicitacaoproposta = agora;\nj.ultimadatasessao = agora;\n\n// Dados da proposta aceita\nj.proposta = {\n  totalDebitos: j.simulacao?.totalDebitos ?? j.totalDebitos ?? null,\n  quantidadeParcelas: j.simulacao?.quantidadeParcelas ?? null,\n  valorParcela: j.simulacao?.valorParcela ?? null,\n  capacidadePagamento: j.simulacao?.capacidadePagamento ?? j.capacidadepagamento ?? null,\n  parcelaMinima: j.simulacao?.parcelaMinima ?? j.negociacao?.parcelaMinima ?? null,\n  parcelasMaximas: j.simulacao?.parcelasMaximas ?? null,\n  dentroCapacidade: j.simulacao?.dentroCapacidade ?? null,\n  faixaAplicada: j.simulacao?.faixaAplicada ?? null,\n  dataSolicitacao: agora,\n  status: \"EM_ANALISE\"\n};\n\n// Campos planos para facilitar UPDATE e INSERT\nj.valorproposta = j.proposta.totalDebitos;\nj.quantidadeparcelas = j.proposta.quantidadeParcelas;\nj.valorparcela = j.proposta.valorParcela;\nj.capacidadepagamento = j.proposta.capacidadePagamento;\nj.statusproposta = \"EM_ANALISE\";\n\n// Payload para envio de mensagem\nj.payload_whatsapp = {\n  messaging_product: \"whatsapp\",\n  to: j.Phone,\n  type: \"text\",\n  text: {\n    body: j.reply,\n  },\n};\n\nreturn {\n  json: j,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        896
+      ],
+      "id": "14d8aaa2-2b64-42a7-83ed-c932d3136945",
+      "name": "PROPOSTA_ACEITA_prepararlista"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1068535889684555",
+        "recipientPhoneNumber": "={{ $('Router').item.json.Phone }}",
+        "textBody": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1008,
+        1072
+      ],
+      "id": "bf031a37-7b71-48b3-a97d-db148f3e12d2",
+      "name": "Mensagem de proposta recusada",
+      "webhookId": "0d309e42-9dde-45b7-9723-1fdfa9851549",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1068535889684555",
+        "recipientPhoneNumber": "={{ $('Router').item.json.Phone }}",
+        "textBody": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1008,
+        896
+      ],
+      "id": "50318127-2942-410d-8511-9d20efaf417d",
+      "name": "Mensagem de proposta aprovada",
+      "webhookId": "cc2d6168-be2a-438a-9874-29b27c7f8367",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiItems = $input.all();\n\nconst j = { ...apiItems[0].json };\n\nfunction numero(valor) {\n  if (valor === undefined || valor === null || valor === \"\") return 0;\n\n  if (typeof valor === \"string\") {\n    valor = valor.replace(/\\./g, \"\").replace(\",\", \".\");\n  }\n\n  const n = Number(valor);\n  return Number.isFinite(n) ? n : 0;\n}\n\nfunction arredondar(valor) {\n  return Math.round(numero(valor) * 100) / 100;\n}\n\nfunction moeda(valor) {\n  return numero(valor).toLocaleString(\"pt-BR\", {\n    style: \"currency\",\n    currency: \"BRL\",\n  });\n}\n\nfunction dataReferencia(ref) {\n  if (!ref || typeof ref !== \"string\") return new Date(\"9999-12-31\");\n\n  const [mes, ano] = ref.split(\"/\");\n  return new Date(`${ano}-${mes}-01`);\n}\n\n// Nova API: pode retornar 1 débito por item ou array dentro do item\nconst retorno = apiItems.flatMap(item => {\n  const e = item.json;\n\n  if (Array.isArray(e)) return e;\n  if (Array.isArray(e.data)) return e.data;\n  if (Array.isArray(e.debitos)) return e.debitos;\n  if (Array.isArray(e.faturas)) return e.faturas;\n  if (Array.isArray(e.body)) return e.body;\n  if (Array.isArray(e.retorno)) return e.retorno;\n\n  return [e];\n});\n\nconst debitos = retorno\n  .map(d => {\n    const valorOriginal = numero(d.valorOriginal);\n    const valorAtualizado = numero(d.valorAtualizado);\n    const juros = numero(d.juros);\n    const multa = numero(d.multa);\n    const correcao = numero(d.correcaoMonetaria);\n\n    return {\n      debitoDetalheId: d.debitoDetalheId ?? null,\n      referencia: d.referencia ?? \"\",\n      statusDescricao: d.statusDescricao ?? \"\",\n      valorOriginal,\n      valorAtualizado,\n      juros,\n      multa,\n      correcao,\n      codigoBarras: d.codigoBarras ?? null,\n      linhaDigitavel: d.linhaDigitavel ?? null,\n    };\n  })\n  .sort((a, b) => dataReferencia(a.referencia) - dataReferencia(b.referencia));\n\nconst totalFaturas = debitos.reduce((acc, d) => acc + d.valorOriginal, 0);\nconst totalJuros = debitos.reduce((acc, d) => acc + d.juros, 0);\nconst totalMulta = debitos.reduce((acc, d) => acc + d.multa, 0);\nconst totalCorrecao = debitos.reduce((acc, d) => acc + d.correcao, 0);\n\nconst totalEncargos = totalJuros + totalMulta + totalCorrecao;\nconst totalAtualizado = debitos.reduce((acc, d) => acc + d.valorAtualizado, 0);\n\nconst regrasParcelamento = [\n  { id: \"LISTA_08_PARC_03\", parcelas: 3, descontoEncargos: 20 },\n  { id: \"LISTA_08_PARC_06\", parcelas: 6, descontoEncargos: 15 },\n  { id: \"LISTA_08_PARC_09\", parcelas: 9, descontoEncargos: 10 },\n  { id: \"LISTA_08_PARC_12\", parcelas: 12, descontoEncargos: 5 },\n];\n\nconst opcoesParcelamento = regrasParcelamento.map(regra => {\n  const valorDesconto = arredondar(\n    totalEncargos * (regra.descontoEncargos / 100)\n  );\n\n  const totalNegociado = arredondar(totalAtualizado - valorDesconto);\n  const valorParcela = arredondar(totalNegociado / regra.parcelas);\n\n  return {\n    id: regra.id,\n    parcelas: regra.parcelas,\n    descontoEncargos: regra.descontoEncargos,\n    valorDesconto,\n    totalNegociado,\n    valorParcela,\n    titulo: `${regra.parcelas}x ${moeda(valorParcela)}`,\n    descricao: `Total ${moeda(totalNegociado)}`,\n  };\n});\n\nj.debitos = debitos;\nj.totalFaturas = totalFaturas;\nj.totalConsumo = totalFaturas;\nj.totalJuros = totalJuros;\nj.totalMulta = totalMulta;\nj.totalCorrecao = totalCorrecao;\nj.totalEncargos = totalEncargos;\nj.totalAtualizado = totalAtualizado;\nj.totalDebitos = totalAtualizado;\nj.quantidadeDebitos = debitos.length;\n\nj.opcoesParcelamento = opcoesParcelamento;\n\nj.flow = \"OPCOES_PARCELAMENTO\";\nj.rota = \"OPCOES_PARCELAMENTO\";\nj.step = 5;\nj.maturidade = 4;\nj.preferenciapagamento = \"PARCELAMENTO\";\nj.ultimaacao = \"BOTAO_04_VER_OUTRAS_OPCOES\";\nj.ultimaresposta = \"Cliente solicitou opções de parcelamento\";\n\nj.reply =\n  `Encontramos estas opções de parcelamento para análise.\\n\\n` +\n  `Valor total atualizado: *${moeda(totalAtualizado)}*\\n\\n` +\n  `Selecione a opção desejada:`;\n\nj.interactive = {\n  type: \"list\",\n  body: {\n    text: j.reply,\n  },\n  action: {\n    button: \"Ver opções\",\n    sections: [\n      {\n        title: \"Parcelamentos\",\n        rows: opcoesParcelamento.map(opcao => ({\n          id: opcao.id,\n          title: opcao.titulo,\n          description: opcao.descricao,\n        })),\n      },\n    ],\n  },\n};\n\nreturn [\n  {\n    json: j,\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        1264
+      ],
+      "id": "dd25e9ed-97a7-496c-a195-11e4f4452add",
+      "name": "PARCELAMENTO_VALORES_prepararlista"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1068535889684555",
+        "recipientPhoneNumber": "={{ $('Router').item.json.Phone }}",
+        "textBody": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1008,
+        1440
+      ],
+      "id": "b7a61503-7ebf-4957-846b-51e969964c9a",
+      "name": "RECONTATO_Mensagem",
+      "webhookId": "62101fb1-8de3-4d39-a62a-96de0aac8f78",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1068535889684555",
+        "recipientPhoneNumber": "={{ $('Router').item.json.Phone }}",
+        "textBody": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1008,
+        1616
+      ],
+      "id": "85a5b95b-7fbd-4d22-8b40-8fc7ba62bb9d",
+      "name": "ALERTA_Contato",
+      "webhookId": "5aa2cfc3-69ef-46ce-913e-c6f28aa9666a",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst agora = new Date().toISOString().slice(0, 19).replace(\"T\", \" \");\n\nj.reply =\n  \"Obrigado pelas informações.\\n\\n\" +\n  \"Registramos sua previsão de regularização e ela será considerada nos próximos acompanhamentos deste débito.\\n\\n\" +\n  \"É importante lembrar que, enquanto permanecerem em aberto, os valores poderão continuar sujeitos às atualizações previstas para a cobrança.\\n\\n\" +\n  \"Caso deseje antecipar a regularização ou consultar novas condições antes do prazo informado, este canal permanecerá disponível.\";\n\nj.flow = \"ENCERRADO_COM_RECONTATO\";\nj.rota = \"ENCERRADO_COM_RECONTATO\";\n\nj.statusnegociacao = \"AGUARDANDO_RECONTATO\";\nj.statusatendimento = \"ENCERRADO\";\n\nj.maturidade = j.maturidade ?? 3;\nj.ultimaacao = j.ultimaacao ?? j.resposta_normalizada ?? null;\nj.ultimaresposta = j.ultimaresposta ?? j.resposta_cliente ?? null;\nj.ultimadatasessao = agora;\n\nreturn {\n  json: j,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1440
+      ],
+      "id": "049624be-5d03-4207-af95-b4083d5a09a9",
+      "name": "RECONTATO_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst agora = new Date().toISOString().slice(0, 19).replace(\"T\", \" \");\n\nj.reply =\n  \"Obrigado pelas informações.\\n\\n\" +\n  \"Registramos sua posição em relação à regularização dos débitos.\\n\\n\" +\n  \"A manutenção das pendências poderá resultar na continuidade da cobrança, atualização dos valores devidos e na adoção das medidas previstas para a prestação dos serviços, incluindo, quando aplicável, a interrupção do fornecimento em conformidade com a legislação e regulamentação vigentes.\\n\\n\" +\n  \"Recomendamos que a situação seja regularizada assim que possível para evitar o agravamento dos débitos e eventuais restrições relacionadas ao serviço.\\n\\n\" +\n  \"Este canal continuará disponível caso deseje consultar seus débitos ou verificar alternativas de negociação futuramente.\";\n\nj.flow = \"ENCERRADO_COM_ALERTA\";\nj.rota = \"ENCERRADO_COM_ALERTA\";\n\nj.statusnegociacao = \"SEM_PREVISAO_REGULARIZACAO\";\nj.statusatendimento = \"ENCERRADO\";\n\nj.maturidade = j.maturidade ?? 1;\nj.ultimaacao = j.ultimaacao ?? j.resposta_normalizada ?? null;\nj.ultimaresposta = j.ultimaresposta ?? j.resposta_cliente ?? null;\nj.ultimadatasessao = agora;\n\nreturn {\n  json: j,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1616
+      ],
+      "id": "f7ca8d1e-535e-4f4b-adaf-060e453e6859",
+      "name": "ALERTA_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst agora = new Date().toISOString().slice(0, 19).replace(\"T\", \" \");\n\nj.reply =\n  \"Informe, por favor, qual é sua dúvida ou situação relacionada a esta cobrança.\\n\\n\" +\n  \"Sua resposta será registrada para análise e direcionamento do atendimento adequado.\";\n\n// Estado da conversa\nj.flow = \"AGUARDANDO_DUVIDA_TEXTO_LIVRE\";\nj.rota = \"AGUARDANDO_DUVIDA_TEXTO_LIVRE\";\nj.step = 3;\n\n// Classificação\nj.tipo_duvida = \"OUTRO_ASSUNTO\";\nj.tipo_duvida_descricao = \"Outro assunto\";\nj.statusatendimento = \"AGUARDANDO_RESPOSTA_CLIENTE\";\n\n// Indicadores\nj.maturidade = Math.max(j.maturidade ?? 1, 3);\nj.riscoinadimplencia = j.riscoinadimplencia ?? \"INDEFINIDO\";\nj.objecao = j.objecao ?? \"DUVIDA_OUTRO_ASSUNTO\";\n\n// Auditoria\nj.ultimaacao = j.ultimaacao ?? j.resposta_normalizada ?? \"LISTA_03_OUTRO_ASSUNTO\";\nj.ultimaresposta = j.ultimaresposta ?? \"Cliente selecionou outro assunto relacionado à cobrança\";\nj.ultimadatasessao = agora;\n\nreturn {\n  json: j,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -176
+      ],
+      "id": "32476951-f4f3-4588-b849-fd9949dd3b28",
+      "name": "DUVIDA_prepararlista"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1068535889684555",
+        "recipientPhoneNumber": "={{ $('Router').item.json.Phone }}",
+        "textBody": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        912,
+        -176
+      ],
+      "id": "591a272a-9f2b-4f16-a6be-8bce37aa412d",
+      "name": "DUVIDA_mensagem",
+      "webhookId": "c1ed5861-d8f9-47ad-8976-a574c264ca4c",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst agora = new Date().toISOString().slice(0, 19).replace(\"T\", \" \");\n\nj.reply =\n  \"Registramos que você informou nunca ter sido responsável por esta ligação.\\n\\n\" +\n  \"Por segurança, as informações financeiras não serão apresentadas por este canal até que a situação cadastral seja analisada.\\n\\n\" +\n  \"Sua manifestação será registrada para verificação pela equipe responsável.\";\n\nj.flow = \"ANALISE_CADASTRAL\";\nj.rota = \"ANALISE_CADASTRAL\";\nj.step = 3;\n\nj.tipo_problema_cadastral = \"NUNCA_FUI_RESPONSAVEL\";\nj.statusatendimento = \"ENCAMINHADO_ANALISE_CADASTRAL\";\nj.statusnegociacao = \"SUSPENSA_ANALISE_CADASTRAL\";\nj.riscoinadimplencia = \"INDEFINIDO\";\nj.maturidade = 1;\n\nj.ultimaacao = j.ultimaacao ?? j.resposta_normalizada ?? \"LISTA_04_NUNCA_FUI_RESPONSAVEL\";\nj.ultimaresposta = \"Cliente informou que nunca foi responsável pela ligação\";\nj.ultimadatasessao = agora;\n\nreturn { json: j };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1776
+      ],
+      "id": "3609d7f0-c195-4c5e-94ad-18537c46647e",
+      "name": "DESCONHECELIGACAO_prepararlista"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1068535889684555",
+        "recipientPhoneNumber": "={{ $('Router').item.json.Phone }}",
+        "textBody": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1008,
+        1776
+      ],
+      "id": "6247a9af-f4c0-43b9-bcf9-336bdbe3f591",
+      "name": "DESCONHECE_LIGACAO_mensagem",
+      "webhookId": "4d0415f2-b58d-40bf-b0b7-fe0a79aed37a",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst agora = new Date().toISOString().slice(0, 19).replace(\"T\", \" \");\n\nj.reply =\n  \"Registramos que você informou não residir mais no imóvel.\\n\\n\" +\n  \"A mudança de imóvel não elimina automaticamente débitos vinculados ao período em que a ligação esteve sob sua responsabilidade.\\n\\n\" +\n  \"Sua situação será registrada para análise cadastral. Caso sejam confirmados débitos do período de responsabilidade, eles poderão permanecer sujeitos à cobrança e às medidas previstas para o serviço.\";\n\nj.flow = \"ANALISE_CADASTRAL\";\nj.rota = \"ANALISE_CADASTRAL\";\nj.step = 3;\n\nj.tipo_problema_cadastral = \"MUDEI_DO_IMOVEL\";\nj.statusatendimento = \"ENCAMINHADO_ANALISE_CADASTRAL\";\nj.statusnegociacao = \"PENDENTE_VALIDACAO_RESPONSABILIDADE\";\nj.riscoinadimplencia = \"ALTO\";\nj.maturidade = 1;\n\nj.ultimaacao = j.ultimaacao ?? j.resposta_normalizada ?? \"LISTA_04_MUDEI_DO_IMOVEL\";\nj.ultimaresposta = \"Cliente informou que mudou do imóvel\";\nj.ultimadatasessao = agora;\n\nreturn { json: j };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1984
+      ],
+      "id": "3d63f762-e879-4228-92c5-72208793e038",
+      "name": "MUDOU_IMOVEL_prepararlista"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1068535889684555",
+        "recipientPhoneNumber": "={{ $('Router').item.json.Phone }}",
+        "textBody": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1008,
+        1984
+      ],
+      "id": "478097e5-aabd-4bf7-bbc9-54645911f765",
+      "name": "MUDOU_IMOVEL_mensagem",
+      "webhookId": "57246549-6a13-424d-9b4b-b29a4e374537",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst agora = new Date().toISOString().slice(0, 19).replace(\"T\", \" \");\n\nj.reply =\n  \"Registramos que você informou que a transferência de titularidade não foi realizada.\\n\\n\" +\n  \"A ausência de atualização cadastral não afasta automaticamente as responsabilidades vinculadas ao período em que a ligação permaneceu associada ao responsável cadastrado.\\n\\n\" +\n  \"Sua situação será encaminhada para análise. Enquanto não houver regularização cadastral, débitos vinculados à ligação poderão permanecer sujeitos à cobrança e às medidas previstas para o serviço.\";\n\nj.flow = \"ANALISE_CADASTRAL\";\nj.rota = \"ANALISE_CADASTRAL\";\nj.step = 3;\n\nj.tipo_problema_cadastral = \"TRANSFERENCIA_NAO_REALIZADA\";\nj.statusatendimento = \"ENCAMINHADO_ANALISE_CADASTRAL\";\nj.statusnegociacao = \"PENDENTE_REGULARIZACAO_CADASTRAL\";\nj.riscoinadimplencia = \"ALTO\";\nj.maturidade = 1;\n\nj.ultimaacao = j.ultimaacao ?? j.resposta_normalizada ?? \"LISTA_04_TRANSFERENCIA_NAO_REALIZADA\";\nj.ultimaresposta = \"Cliente informou que a transferência de titularidade não foi realizada\";\nj.ultimadatasessao = agora;\n\nreturn { json: j };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        2176
+      ],
+      "id": "57ac57e7-f5c6-4505-a771-684ec2b430fe",
+      "name": "TRANSFERENCIA_PENDENTE_prepararlista"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=1068535889684555",
+        "recipientPhoneNumber": "={{ $('Router').item.json.Phone }}",
+        "textBody": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1008,
+        2176
+      ],
+      "id": "a8cdd57b-5ee4-45eb-81f2-dec5ad8ec71f",
+      "name": "TRANSFERENCIA_PENDENTE_mensagem",
+      "webhookId": "7bf31e75-86bb-4edf-b233-e24bacafd655",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Constantes').item.json.api.endpoints.retornardebitos}}",
+        "options": {
+          "splitIntoItems": false
+        },
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "=ligacaoId",
+              "value": "=2486"
+            }
+          ]
+        }
+      },
+      "name": "API - PARCELAMENTO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1264
+      ],
+      "id": "2d76af6a-ce9d-4d49-bfc1-8263454a6d79",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst agora = new Date().toISOString().slice(0, 19).replace(\"T\", \" \");\n\nfunction numero(valor) {\n  if (valor === undefined || valor === null || valor === \"\") return 0;\n\n  if (typeof valor === \"number\") return valor;\n\n  if (typeof valor === \"string\") {\n    valor = valor\n      .replace(\"R$\", \"\")\n      .replace(/\\s/g, \"\")\n      .replace(/\\./g, \"\")\n      .replace(\",\", \".\");\n  }\n\n  const n = Number(valor);\n  return Number.isFinite(n) ? n : 0;\n}\n\nfunction moeda(valor) {\n  return numero(valor).toLocaleString(\"pt-BR\", {\n    style: \"currency\",\n    currency: \"BRL\",\n  });\n}\n\nconst respostaId = j.resposta_normalizada ?? j.resposta_id ?? \"\";\nconst respostaTitulo = j.resposta_titulo ?? \"\";\nconst respostaDescricao = j.resposta_descricao ?? \"\";\n\n// Exemplo: LISTA_08_PARC_09\nconst matchParcelasId = respostaId.match(/PARC_(\\d+)/);\nconst parcelasPeloId = matchParcelasId ? Number(matchParcelasId[1]) : null;\n\n// Exemplo: 9x R$ 165,42\nconst matchTitulo = respostaTitulo.match(/(\\d+)x\\s*R\\$\\s*([\\d.,]+)/i);\nconst parcelasPeloTitulo = matchTitulo ? Number(matchTitulo[1]) : null;\nconst valorParcelaPeloTitulo = matchTitulo ? numero(matchTitulo[2]) : 0;\n\n// Exemplo: Total R$ 1.488,77\nconst matchTotal = respostaDescricao.match(/R\\$\\s*([\\d.,]+)/i);\nconst valorTotalPelaDescricao = matchTotal ? numero(matchTotal[1]) : 0;\n\nconst proposta = (j.opcoesParcelamento || []).find(\n  p => p.id === respostaId\n);\n\nconst parcelas =\n  proposta?.parcelas ??\n  j.parcelasEscolhidas ??\n  parcelasPeloId ??\n  parcelasPeloTitulo ??\n  null;\n\nconst valorParcela =\n  proposta?.valorParcela ??\n  j.valorParcelaEscolhida ??\n  valorParcelaPeloTitulo ??\n  0;\n\nconst valorTotal =\n  proposta?.totalNegociado ??\n  j.valorTotalNegociado ??\n  valorTotalPelaDescricao ??\n  j.totalAtualizado ??\n  j.totalDebitos ??\n  0;\n\nconst desconto =\n  proposta?.descontoEncargos ??\n  j.descontoEncargosEscolhido ??\n  j.percentualDescontoEscolhido ??\n  0;\n\nj.proposta_escolhida = proposta?.id ?? respostaId;\nj.tipoProposta = \"PARCELAMENTO\";\nj.preferenciapagamento = \"PARCELAMENTO\";\n\nj.parcelasEscolhidas = parcelas;\nj.valorParcelaEscolhida = valorParcela;\nj.valorTotalNegociado = valorTotal;\nj.percentualDescontoEscolhido = desconto;\nj.valorDescontoEscolhido = proposta?.valorDesconto ?? j.valorDescontoEscolhido ?? 0;\n\nj.statusnegociacao = \"PROPOSTA_APRESENTADA\";\nj.statusatendimento = \"EM_NEGOCIACAO\";\n\nj.flow = \"PROPOSTA_ESCOLHIDA\";\nj.rota = \"PROPOSTA_ESCOLHIDA\";\nj.step = 7;\nj.maturidade = 5;\n\nj.ultimaacao = respostaId;\nj.ultimaresposta =\n  parcelas\n    ? `Cliente escolheu parcelamento em ${parcelas}x`\n    : \"Cliente escolheu uma proposta de parcelamento\";\n\nj.ultimadatasessao = agora;\n\nj.reply =\n  `Você selecionou a seguinte condição para regularização:\\n\\n` +\n  `Parcelamento: *${parcelas}x*\\n` +\n  `Valor da parcela: *${moeda(valorParcela)}*\\n` +\n  `Valor total negociado: *${moeda(valorTotal)}*\\n`;\n\nif (desconto > 0) {\n  j.reply += `Redução sobre encargos: *${desconto}%*\\n\\n`;\n} else {\n  j.reply += `\\n`;\n}\n\nj.reply +=\n  `Ao solicitar esta proposta, você autoriza o encaminhamento para análise.\\n\\n` +\n  `Caso a proposta seja aprovada pelo SAAE, a negociação será efetivada automaticamente nas condições apresentadas, sem necessidade de nova confirmação.\\n\\n` +\n  `Deseja continuar?`;\n\nj.interactive = {\n  type: \"button\",\n  body: {\n    text: j.reply,\n  },\n  action: {\n    buttons: [\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_05_SOLICITAR_PROPOSTA\",\n          title: \"✅ Solicitar proposta\",\n        },\n      },\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_05_VOLTAR_PARCELAMENTOS\",\n          title: \"↩️ Ver outras opções\",\n        },\n      },\n      {\n        type: \"reply\",\n        reply: {\n          id: \"BOTAO_05_PROPOSTA_NAO_ATENDE\",\n          title: \"❌ Recusar proposta\",\n        },\n      },\n    ],\n  },\n};\n\nreturn {\n  json: j,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        2512
+      ],
+      "id": "453a5783-22ec-48ef-a223-e17eb7d575ad",
+      "name": "PROPOSTA_ESCOLHIDA_prepararlista"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply =\n  \"Agora informe o CPF ou CNPJ vinculado à ligação para validação dos dados.\";\n\nj.flow = \"AGUARDANDO_CPF_CNPJ\";\nj.statusautenticacao = \"AGUARDANDO_CPF_CNPJ\";\n\nreturn { json: j };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        752
+      ],
+      "id": "c0ea3f2b-7c17-44ec-bd30-0aaef84e8b7d",
+      "name": "SOLICITAR_CPF_CNPJ"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nj.reply =\n  \"Para consultar as pendências com segurança, informe o código da ligação.\";\n\nj.flow = \"AGUARDANDO_CODIGO_LIGACAO\";\nj.statusautenticacao = \"AGUARDANDO_CODIGO_LIGACAO\";\n\nreturn { json: j };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        944
+      ],
+      "id": "20001a71-81c9-4b86-b977-ad12ba4bb0ee",
+      "name": "SOLICITAR_CODIGO_LIGACAO"
+    },
+    {
+      "parameters": {
+        "jsCode": "j.autenticado = true;\nj.statusautenticacao = \"AUTENTICADO\";\n\nreturn route({\n  flow: \"CONSULTAR_PENDENCIAS\",\n  rota: \"CONSULTAR_PENDENCIAS\",\n  motivo: \"Cliente autenticado para consulta de pendências\",\n  step: 4,\n  maturidade: 3,\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        736
+      ],
+      "id": "5374438d-5e32-43b3-b200-543a979f5044",
+      "name": "VALIDAR_LIGACAO_DOCUMENTO"
+    },
+    {
+      "parameters": {
+        "jsCode": "return route({\n  flow: \"FALHA_AUTENTICACAO\",\n  rota: \"FALHA_AUTENTICACAO\",\n  motivo: \"Código da ligação e CPF/CNPJ não conferem\",\n  step: 4,\n  maturidade: 2,\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        928
+      ],
+      "id": "e394254e-71b8-4ea8-b9a8-066fac615ac6",
+      "name": "ERRO_VALIDAR_LIGACAO_DOCUMENTO"
+    }
+  ],
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Negociador",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Negociador": {
+      "main": [
+        [
+          {
+            "node": "Formatar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Saida": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Negociador",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Negociador",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Resposta": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Mensagem de status ?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Stop Bot ?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Constantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Constantes": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Resposta WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de status ?": {
+      "main": [
+        [
+          {
+            "node": "Stop Bot ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Resposta WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router": {
+      "main": [
+        [
+          {
+            "node": "Fluxos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NAO_INTERESSE_MOTIVO_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PREVISAO_RETORNO_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DUVIDA_COBRANCA_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NAO_RESPONSAVEL_LIGACAO_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepararAtualizarSession": {
+      "main": [
+        [
+          {
+            "node": "preparar lista whatsapp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEM_CONDICOES_FINANCEIRAS_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Débitos": {
+      "main": [
+        [
+          {
+            "node": "DEBITOS_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DEBITOS_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "DEBITOS_imprimir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DEBITOS_imprimir": {
+      "main": [
+        [
+          {
+            "node": "RESOLVER_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RESOLVER_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "preparar lista whatsapp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DIAGNOSTICO_MOTIVO_INADIMPLENCIA_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DIAGNOSTICO_SITUACAO_ATUAL_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PERFIL_FINANCEIRO_ESTAVEL_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "API - PERFILDébitos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PERFILDEBITOS_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - PERFILDébitos": {
+      "main": [
+        [
+          {
+            "node": "PERFILDEBITOS_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AUTENTICAR_CONSUMIDOR_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "API - Débitos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CONSULTAR_PENDENCIAS_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "API - Débitos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - SIMULARPARCELAS": {
+      "main": [
+        [
+          {
+            "node": "CALCULAR_PARCELAMENTO_COMPATIVEL_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CALCULAR_PARCELAMENTO_COMPATIVEL_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PROPOSTA_NAOATENDE_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "Mensagem de proposta recusada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fluxos": {
+      "main": [
+        [
+          {
+            "node": "AUTENTICAR_CONSUMIDOR_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CONSULTAR_PENDENCIAS_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NAO_INTERESSE_MOTIVO_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SEM_CONDICOES_FINANCEIRAS_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PREVISAO_RETORNO_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DUVIDA_COBRANCA_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NAO_RESPONSAVEL_LIGACAO_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DUVIDA_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DIAGNOSTICO_MOTIVO_INADIMPLENCIA_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DIAGNOSTICO_SITUACAO_ATUAL_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PERFIL_FINANCEIRO_ESTAVEL_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PERFIL_FINANCEIRO_ESTAVEL_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SEM_CONDICOES_FINANCEIRAS_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "API - SIMULARPARCELAS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PROPOSTA_ACEITA_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PROPOSTA_NAOATENDE_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PROPOSTA_ACEITA_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "API - PARCELAMENTO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RECONTATO_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ALERTA_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DESCONHECELIGACAO_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MUDOU_IMOVEL_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TRANSFERENCIA_PENDENTE_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PROPOSTA_ESCOLHIDA_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [],
+        []
+      ]
+    },
+    "PROPOSTA_ACEITA_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "Mensagem de proposta aprovada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de proposta aprovada": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de proposta recusada": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RECONTATO_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "RECONTATO_Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ALERTA_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "ALERTA_Contato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DUVIDA_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "DUVIDA_mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DUVIDA_mensagem": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DESCONHECELIGACAO_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "DESCONHECE_LIGACAO_mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MUDOU_IMOVEL_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "MUDOU_IMOVEL_mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRANSFERENCIA_PENDENTE_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "TRANSFERENCIA_PENDENTE_mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RECONTATO_Mensagem": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "preparar lista whatsapp": {
+      "main": [
+        []
+      ]
+    },
+    "PARCELAMENTO_VALORES_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - PARCELAMENTO": {
+      "main": [
+        [
+          {
+            "node": "PARCELAMENTO_VALORES_prepararlista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PROPOSTA_ESCOLHIDA_prepararlista": {
+      "main": [
+        [
+          {
+            "node": "PrepararAtualizarSession",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "565d29c6-72b2-4f66-912c-e32f557f753a",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-06-15T23:24:46.833Z",
+      "createdAt": "2026-06-15T23:24:46.833Z",
+      "role": "workflow:owner",
+      "workflowId": "rthdaWZDJRw6qvC8",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
