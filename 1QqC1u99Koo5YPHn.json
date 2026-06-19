@@ -1,0 +1,308 @@
+{
+  "id": "1QqC1u99Koo5YPHn",
+  "name": "Gestão Sessão NegocIA",
+  "createdAt": "2026-06-19T12:17:55.577Z",
+  "updatedAt": "2026-06-19T13:31:30.034Z",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -768,
+        -112
+      ],
+      "id": "273c093c-bb6f-40ed-b6d5-672efc4c3f9f",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  idsessions,\n  phone,\n  phoneconnect,\n  Nome,\n  flow,\n  step,\n  ultimadatasessao\nFROM sessions\nWHERE\n  ultimadatasessao IS NOT NULL\n  AND ultimadatasessao < DATE_SUB(NOW(), INTERVAL 12 HOUR);",
+        "options": {}
+      },
+      "id": "cebb7a30-3eaa-4aac-9717-e2f602a39ea4",
+      "name": "Selecionar Sessões expiradas",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -112
+      ],
+      "alwaysOutputData": false,
+      "credentials": {
+        "mySql": {
+          "id": "JSOlg2ox0q0hmg4Y",
+          "name": "NegocIA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "92210bfc-b8e3-4c90-bbf6-e4bd35fe14a0",
+              "leftValue": "={{ $items().some(i => i.json && !('success' in i.json)) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -400,
+        0
+      ],
+      "id": "6da6fd84-293d-4eeb-bc97-c809bc472894",
+      "name": "If",
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        128
+      ],
+      "id": "0963d308-b80d-4c09-a009-0078dae6c913",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nconst item = $input.item;\nconst j = item.json;\n\n// ======================================================\n// DADOS DE IDENTIFICAÇÃO\n// ======================================================\n\nj.phoneconnected =\n  j.phoneconnect ??\n  null;\n\nj.Phone =\n  j.Phone ??\n  j.phone ??\n  null;\n\nj.Nome =\n  j.Nome ??\n  j.contacts?.[0]?.profile?.name ??\n  null;\n\n// ======================================================\n// CONFIGURAÇÃO POR NÚMERO\n// ======================================================\n\nconst phonesConfig = {\n  \"1068535889684555\": {\n    acessToken: \"3EA6B3979B12E1B6EDC772620DC9C8F4\",\n    businessAccountID: \"1512857447000297\",\n    rotaAutenticacao:\n      \"https://tdev3-ag.icommercial002.inovamobil.com.br/api/chatbot\",\n    rotaDebitos:\n      \"https://tdev3-fat.icommercial002.inovamobil.com.br/api/debitos\",\n  },\n};\n\n// ======================================================\n// VALIDAÇÃO\n// ======================================================\n\nconst phoneConnected = (j.phoneconnect ?? \"\")\n  .toString()\n  .replace(/\\D+/g, \"\");\n\nconst selected = phonesConfig[phoneConnected];\n\nif (!selected) {\n  throw new Error(\n    `PhoneConnected (${phoneConnected || \"vazio\"}) não mapeado em phonesConfig`,\n  );\n}\n\nj.configuracoes = {\n  AcessToken: selected.acessToken,\n  BusinessAccountID: selected.businessAccountID,\n  PhoneConnected:phoneConnected\n};\n\n\nreturn item;"
+      },
+      "id": "eca58dbb-8d4f-458a-8383-133530c1209a",
+      "name": "Constantes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -96
+      ],
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -224,
+        -96
+      ],
+      "id": "9814ea2a-51dc-4a68-b84b-372da45ff5ad",
+      "name": "Merge Dados"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM sessions\nWHERE\n  phone = {{ $json.contacts[0].input }}\n  AND ultimadatasessao < DATE_SUB(NOW(), INTERVAL 12 HOUR);",
+        "options": {}
+      },
+      "id": "dc9a230c-daa4-485d-9077-fafa87cb09ec",
+      "name": "Deletar Sessão expirada",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -96
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "JSOlg2ox0q0hmg4Y",
+          "name": "NegocIA"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $json.configuracoes.PhoneConnected }}",
+        "recipientPhoneNumber": "={{ $json.phone }}",
+        "textBody": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        -96
+      ],
+      "id": "beac8701-423b-40e4-88b8-579dd87eb291",
+      "name": "MENSAGEM_imprimir",
+      "webhookId": "e9b25074-6d07-4345-b129-8e5008d1b251",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "udEYNdilNasGKcX3",
+          "name": "WhatsApp NegocIA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst j = item.json;\n\nconst nome = j.Nome ? `, ${j.Nome}` : \"\";\n\nj.reply =\n  `Olá${nome}.\\n\\n` +\n  `Como não houve continuidade no atendimento nas últimas 12 horas, esta sessão foi encerrada automaticamente.\\n\\n` +\n  `Caso ainda deseje consultar débitos, negociar ou acompanhar uma negociação, basta enviar uma nova mensagem por este canal.`;\n\nj.payload_whatsapp = {\n  messaging_product: \"whatsapp\",\n  to: j.phone,\n  type: \"text\",\n  text: {\n    body: j.reply,\n  },\n};\n\nreturn {\n  json: j,\n};"
+      },
+      "id": "7ef975b0-04c4-422f-be55-e3b850795981",
+      "name": "Preparar Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        -96
+      ],
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Selecionar Sessões expiradas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Selecionar Sessões expiradas": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Merge Dados",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Constantes": {
+      "main": [
+        [
+          {
+            "node": "Preparar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Dados": {
+      "main": [
+        [
+          {
+            "node": "Constantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MENSAGEM_imprimir": {
+      "main": [
+        [
+          {
+            "node": "Deletar Sessão expirada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "MENSAGEM_imprimir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Trigger": {
+      "recurrenceRules": [
+        18
+      ]
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "d5837b95-5b74-49f3-8f13-052fa75c60e0",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-06-19T12:17:55.583Z",
+      "createdAt": "2026-06-19T12:17:55.583Z",
+      "role": "workflow:owner",
+      "workflowId": "1QqC1u99Koo5YPHn",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
