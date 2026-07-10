@@ -1,0 +1,29 @@
+{
+  "id": "gtt2n-FaznuCiCfmhwzJm",
+  "name": "NegocIA - Republicador de propostas",
+  "createdAt": "2026-07-10T18:26:13.102Z",
+  "updatedAt": "2026-07-10T18:26:13.000Z",
+  "active": false,
+  "isArchived": false,
+  "nodes": [],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "3e541a4e-a4f7-4930-b043-fccafdff5181",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-07-10T18:26:13.106Z",
+      "createdAt": "2026-07-10T18:26:13.106Z",
+      "role": "workflow:owner",
+      "workflowId": "gtt2n-FaznuCiCfmhwzJm",
+      "projectId": "bDUBly1zU3yziLIn"
+    }
+  ],
+  "tags": []
+}
